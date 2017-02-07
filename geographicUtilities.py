@@ -1,5 +1,12 @@
 # Definitions and utilities for performing geographic operations.
 
+# Combine a point with an existing average of points.
+# Don't use for distances spanning many km
+def addToAverage(count, average, new):
+	average.lat = (average.lat * count + new.lat) / (count + 1)
+	average.long = (average.long * count + new.long) / (count + 1)
+
+
 class Point(object):
 	def __init__(self, lat, lon):
 		self.lat = lat
