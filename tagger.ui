@@ -24,7 +24,7 @@
      </rect>
     </property>
     <property name="currentIndex">
-     <number>3</number>
+     <number>1</number>
     </property>
     <widget class="QWidget" name="tab_setup">
      <attribute name="title">
@@ -178,10 +178,6 @@
               </widget>
              </item>
             </layout>
-            <zorder>list_tags</zorder>
-            <zorder>horizontalLayoutWidget_3</zorder>
-            <zorder>listWidget</zorder>
-            <zorder>groupBox_3</zorder>
            </widget>
           </item>
           <item>
@@ -196,14 +192,7 @@
         <item>
          <layout class="QVBoxLayout" name="layout_taggingImage">
           <item>
-           <widget class="QLabel" name="label_3">
-            <property name="text">
-             <string/>
-            </property>
-            <property name="pixmap">
-             <pixmap>../../Desktop/Desktop/20160430_111051_217148.jpg</pixmap>
-            </property>
-           </widget>
+           <widget class="PhotoViewer" name="taggableImage"/>
           </item>
          </layout>
         </item>
@@ -311,8 +300,6 @@
            <widget class="QListWidget" name="listWidget_3"/>
           </item>
          </layout>
-         <zorder>label_7</zorder>
-         <zorder>listWidget_3</zorder>
         </widget>
        </item>
        <item row="0" column="1">
@@ -329,8 +316,6 @@
      </widget>
     </widget>
    </widget>
-   <zorder>tabWidget</zorder>
-   <zorder>label_5</zorder>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
   <widget class="QMenuBar" name="menubar">
@@ -356,6 +341,13 @@
    </property>
   </action>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>PhotoViewer</class>
+   <extends>QGraphicsView</extends>
+   <header>photoViewer</header>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections/>
 </ui>
