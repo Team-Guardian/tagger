@@ -2,6 +2,7 @@
 
 import sys
 from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt5.QtWidgets import QDialog, QDialogButtonBox
 from tagger import Ui_MainWindow
 
 
@@ -14,10 +15,33 @@ class Window(QtWidgets.QMainWindow):
         self.ui.viewer_single.viewport().installEventFilter(self)
 
     def connectButtons(self):
+        self.ui.button_addTag.clicked.connect(self.addTag)
+
         self.ui.list_images.currentItemChanged.connect(self.currentImageChanged)
         self.ui.button_toggleReviewed.clicked.connect(self.toggleImageReviewed)
         self.ui.button_previous.clicked.connect(self.previousImage)
         self.ui.button_next.clicked.connect(self.nextImage)
+
+    def addTag(self):
+        dialog = QDialog()
+        form = QtWidgets.QFormLayout(dialog)
+        form.addRow(QtWidgets.QLabel("Create tag"))
+        tagType = QtWidgets.QLineEdit()
+        form.addRow(QtWidgets.QLabel("Type"), tagType)
+        name = QtWidgets.QLineEdit()
+        form.addRow(QtWidgets.QLabel("Name"), name)
+        combo = QtWidgets.QComboBox()
+        combo.addItems(["a", "b", "c"])
+        form.addRow(QtWidgets.QLabel("Icon"), combo)
+        buttons = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
+        form.addRow(buttons)
+
+        buttons.accepted.connect(dialog.accept)
+        buttons.rejected.connect(dialog.reject)
+
+        if dialog.exec_() == QtWidgets.QDialog.Accepted:
+            if len(name.text()) > 0:
+                self.ui.list_tags.addItem(name.text())
 
     def toggleImageReviewed(self):
         item = self.ui.list_images.currentItem()
