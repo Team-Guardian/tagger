@@ -4,6 +4,7 @@ import sys
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtWidgets import QDialog, QDialogButtonBox
 from tagger import Ui_MainWindow
+from tagDialog import TagDialog
 
 
 class Window(QtWidgets.QMainWindow):
@@ -16,6 +17,8 @@ class Window(QtWidgets.QMainWindow):
 
     def connectButtons(self):
         self.ui.button_addTag.clicked.connect(self.addTag)
+        self.ui.button_editTag.clicked.connect(self.editTag)
+        self.ui.button_removeTag.clicked.connect(self.removeTag)
 
         self.ui.list_images.currentItemChanged.connect(self.currentImageChanged)
         self.ui.button_toggleReviewed.clicked.connect(self.toggleImageReviewed)
@@ -23,25 +26,23 @@ class Window(QtWidgets.QMainWindow):
         self.ui.button_next.clicked.connect(self.nextImage)
 
     def addTag(self):
-        dialog = QDialog()
-        form = QtWidgets.QFormLayout(dialog)
-        form.addRow(QtWidgets.QLabel("Create tag"))
-        tagType = QtWidgets.QLineEdit()
-        form.addRow(QtWidgets.QLabel("Type"), tagType)
-        name = QtWidgets.QLineEdit()
-        form.addRow(QtWidgets.QLabel("Name"), name)
-        combo = QtWidgets.QComboBox()
-        combo.addItems(["a", "b", "c"])
-        form.addRow(QtWidgets.QLabel("Icon"), combo)
-        buttons = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
-        form.addRow(buttons)
+        dialog = TagDialog(title="Create tag")
+        if dialog.exec_() == QDialog.Accepted:
+            if len(dialog.name.text()) > 0:
+                self.ui.list_tags.addItem(dialog.name.text())
 
-        buttons.accepted.connect(dialog.accept)
-        buttons.rejected.connect(dialog.reject)
+    def editTag(self):
+        if self.ui.list_tags.currentRow() >= 0:
+            item = self.ui.list_tags.currentItem()
+            dialog = TagDialog(title="Edit tag")
+            dialog.name.setText(item.text())
+            if dialog.exec_() == QDialog.Accepted:
+                if len(dialog.name.text()) > 0:
+                    self.ui.list_tags.currentItem().setText(dialog.name.text())
 
-        if dialog.exec_() == QtWidgets.QDialog.Accepted:
-            if len(name.text()) > 0:
-                self.ui.list_tags.addItem(name.text())
+    def removeTag(self):
+        if self.ui.list_tags.currentRow() >= 0:
+            self.ui.list_tags.takeItem(self.ui.list_tags.currentRow())
 
     def toggleImageReviewed(self):
         item = self.ui.list_images.currentItem()
