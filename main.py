@@ -7,6 +7,7 @@ from tagger import Ui_MainWindow
 from tagDialog import TagDialog
 
 
+# Main window and entry point for application
 class Window(QtWidgets.QMainWindow):
     def __init__(self):
         super(Window, self).__init__()
@@ -51,6 +52,8 @@ class Window(QtWidgets.QMainWindow):
             font.setBold(not font.bold())
             item.setFont(font)
 
+    # opens image an item is clicked in any of the image lists
+    # single = tagging tab, targets = target tab, map = map tab
     def currentImageChanged(self, current, _):
         viewer = self.ui.viewer_single
         listName = current.listWidget().objectName()
@@ -75,6 +78,8 @@ class Window(QtWidgets.QMainWindow):
         if 0 <= row < self.ui.list_images.count():
             self.ui.list_images.setCurrentRow(row)
 
+    # handles events from widgets we have registered with
+    # use installEventFilter() on a widget to register
     def eventFilter(self, source, event):
         if (event.type() == QtCore.QEvent.MouseMove and
                 source is self.ui.viewer_single.viewport()):
