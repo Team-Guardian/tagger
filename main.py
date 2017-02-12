@@ -3,8 +3,8 @@
 import sys
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtWidgets import QDialog, QDialogButtonBox
-from tagger import Ui_MainWindow
-from tagDialog import TagDialog
+from gui.tagger import Ui_MainWindow
+from gui.tagDialog import TagDialog
 
 
 # Main window and entry point for application
