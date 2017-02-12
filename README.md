@@ -27,7 +27,7 @@ postgres
 ```
 5. Create a new database called *tagger* and set owner to *postgres* user.
 ```
-create database tagger with owner postgres
+create database tagger with owner postgres;
 \q
 ```
 6. Log out
