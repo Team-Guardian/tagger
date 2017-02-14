@@ -5,6 +5,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtWidgets import QDialog, QDialogButtonBox
 from gui.tagger import Ui_MainWindow
 from gui.tagDialog import TagDialog
+from db.dbHelper import *
 
 
 # Main window and entry point for application
@@ -92,6 +93,7 @@ class Window(QtWidgets.QMainWindow):
 
 
 if __name__ == '__main__':
+
     app = QtWidgets.QApplication(sys.argv)
     window = Window()
     window.show()
