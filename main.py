@@ -53,6 +53,10 @@ class Window(QtWidgets.QMainWindow):
             font.setBold(not font.bold())
             item.setFont(font)
 
+            # image was marked as reviewed
+            if not font.bold():
+                self.nextImage()
+
     # opens image an item is clicked in any of the image lists
     # single = tagging tab, targets = target tab, map = map tab
     def currentImageChanged(self, current, _):
