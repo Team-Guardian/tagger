@@ -8,8 +8,18 @@ from tagDialog import TagDialog
 class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab):
     def __init__(self):
         super(TaggingTab, self).__init__()
+
+        self.observers = []
+
         self.setupUi(self)
         self.connectButtons()
+
+    def addObserver(self, observer):
+        self.observers.append(observer)
+
+    def notify(self, source, event, data):
+        for observer in self.observers:
+            observer.notify(source, event, data)
 
     def connectButtons(self):
         self.button_addTag.clicked.connect(self.addTag)
