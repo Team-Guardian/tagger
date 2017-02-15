@@ -13,7 +13,6 @@ class Controller(object):
 
         self.window = MainWindow()
         self.window.show()
-
         self.window.addObserver(self)
 
     def notify(self, source, event, data):
