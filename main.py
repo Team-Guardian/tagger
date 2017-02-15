@@ -7,16 +7,31 @@ from gui.mainWindow import MainWindow
 class Controller(object):
     def __init__(self):
         super(Controller, self).__init__()
-        self.tags = {}
-        self.images = {}
-        self.markers = {}
+        self.tags = get_all_tags()
+        self.images = []
+        self.markers = []
 
         self.window = MainWindow()
         self.window.show()
         self.window.addObserver(self)
 
-    def notify(self, source, event, data):
-        pass
+        # populate lists
+        for tag in self.tags:
+            self.window.taggingTab.addTagToUi(tag)
+
+    def notify(self, event, id, data):
+        if event is "TAG_CREATED":
+            self.tags.append(data)
+        elif event is "TAG_EDITED":
+            tag = self.tags[id]
+            tag.type = data.type
+            tag.subtype = data.type
+            tag.symbol = data.symbol
+            tag.num_occurrences = data.num_occurrences
+            tag.save()
+        elif event is "TAG_DELETED":
+            tag = self.tags.pop(id)
+            tag.delete()
 
 if __name__ == '__main__':
 

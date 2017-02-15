@@ -1,8 +1,9 @@
 from PyQt5 import QtWidgets, QtGui, QtCore
-from PyQt5.QtWidgets import QDialog
+from PyQt5.QtWidgets import QDialog, QTableWidgetItem
 
 from ui.ui_taggingTab import Ui_TaggingTab
 from tagDialog import TagDialog
+from db.dbHelper import *
 
 
 class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab):
@@ -17,9 +18,9 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab):
     def addObserver(self, observer):
         self.observers.append(observer)
 
-    def notify(self, source, event, data):
+    def notify(self, event, id, data):
         for observer in self.observers:
-            observer.notify(source, event, data)
+            observer.notify(event, id, data)
 
     def connectButtons(self):
         self.button_addTag.clicked.connect(self.addTag)
@@ -34,21 +35,53 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab):
     def addTag(self):
         dialog = TagDialog(title="Create tag")
         if dialog.exec_() == QDialog.Accepted:
-            if len(dialog.name.text()) > 0:
-                self.list_tags.addItem(dialog.name.text())
+            if len(dialog.subtype.text()) > 0:
+                tagType = dialog.tagType.text()
+                subtype = dialog.subtype.text()
+                count = "0"
+                icon = dialog.icons.currentText()
+                t = create_tag(type=tagType, subtype=subtype, symbol=icon, num_occurrences=int(count))
+                self.addTagToUi(t)
+                self.notify("TAG_CREATED", -1, t)
+
+    def addTagToUi(self, tag):
+        row = self.list_tags.rowCount()
+        self.list_tags.insertRow(row)
+        # update all columns in row with these texts
+        texts = [tag.type, tag.subtype, tag.num_occurrences, tag.symbol]
+        [self.list_tags.setItem(row, col, QTableWidgetItem(text)) for col, text in enumerate(texts)]
 
     def editTag(self):
-        if self.list_tags.currentRow() >= 0:
-            item = self.list_tags.currentItem()
+        row = self.list_tags.currentRow()
+        if row >= 0:
+            tagType = self.list_tags.item(row, 0).text()
+            subtype = self.list_tags.item(row, 1).text()
+            count = "0"
+            icon = self.list_tags.item(row, 3).text()
             dialog = TagDialog(title="Edit tag")
-            dialog.name.setText(item.text())
+            dialog.tagType.setText(tagType)
+            dialog.subtype.setText(subtype)
+            index = dialog.icons.findText(icon)
+            dialog.icons.setCurrentIndex(index)
             if dialog.exec_() == QDialog.Accepted:
-                if len(dialog.name.text()) > 0:
-                    self.list_tags.currentItem().setText(dialog.name.text())
+                if len(dialog.subtype.text()) > 0:
+                    tagType = dialog.tagType.text()
+                    subtype = dialog.subtype.text()
+                    count = "0"
+                    icon = dialog.icons.currentText()
+
+                    # update all columns in row with these texts
+                    texts = [tagType, subtype, count, icon]
+                    [self.list_tags.setItem(row, col, QTableWidgetItem(text)) for col, text in enumerate(texts)]
+
+                    t = Tag(type=tagType, subtype=subtype, symbol=icon, num_occurrences=int(count))
+                    self.notify("TAG_EDITED", row, t)
 
     def removeTag(self):
-        if self.list_tags.currentRow() >= 0:
-            self.list_tags.takeItem(self.list_tags.currentRow())
+        row = self.list_tags.currentRow()
+        if row >= 0:
+            self.list_tags.removeRow(row)
+            self.notify("TAG_DELETED", row, None)
 
     def toggleImageReviewed(self):
         item = self.list_images.currentItem()

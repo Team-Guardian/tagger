@@ -23,13 +23,33 @@
        </property>
        <layout class="QVBoxLayout" name="verticalLayout_2">
         <item>
-         <widget class="QListWidget" name="list_tags">
+         <widget class="QTableWidget" name="list_tags">
           <property name="maximumSize">
            <size>
             <width>16777215</width>
             <height>150</height>
            </size>
           </property>
+          <column>
+           <property name="text">
+            <string>Type</string>
+           </property>
+          </column>
+          <column>
+           <property name="text">
+            <string>Subtype</string>
+           </property>
+          </column>
+          <column>
+           <property name="text">
+            <string>Current (Total)</string>
+           </property>
+          </column>
+          <column>
+           <property name="text">
+            <string>Icon</string>
+           </property>
+          </column>
          </widget>
         </item>
         <item>

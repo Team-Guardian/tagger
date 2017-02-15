@@ -35,9 +35,9 @@ class MainWindow(QtWidgets.QMainWindow):
     def addObserver(self, observer):
         self.observers.append(observer)
 
-    def notify(self, source, event, data):
+    def notify(self, event, id, data):
         for observer in self.observers:
-            observer.notify(source, event, data)
+            observer.notify(event, id, data)
 
     # handles events from widgets we have registered with
     # use installEventFilter() on a widget to register
