@@ -11,7 +11,9 @@ from db.models import * # Must go after django.setup()
 
 # Tag
 def create_tag(type, subtype, symbol, num_occurrences=0):
-    return Tag(type, subtype, symbol, num_occurrences)
+    t = Tag(type=type, subtype=subtype, symbol=symbol, num_occurrences=num_occurrences)
+    t.save()
+    return t
 
 def delete_tag(tag):
     tag.delete()
