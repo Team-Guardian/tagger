@@ -1,4 +1,3 @@
-from __future__ import unicode_literals
 from django.db import models
 
 
@@ -21,7 +20,7 @@ class Image(models.Model):
     is_reviewed = models.BooleanField(default=False)
 
 class Tag(models.Model):
-    type = models.CharField(max_length=30, unique=True)
+    type = models.CharField(max_length=30)
     subtype = models.CharField(max_length=30, unique=True)
     symbol = models.CharField(max_length=1)
     num_occurrences = models.IntegerField(default=0)
