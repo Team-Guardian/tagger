@@ -22,6 +22,8 @@ class Ui_TaggingTab(object):
         self.verticalLayout_2.setObjectName("verticalLayout_2")
         self.list_tags = QtWidgets.QTableWidget(self.groupBox_2)
         self.list_tags.setMaximumSize(QtCore.QSize(16777215, 150))
+        self.list_tags.setEditTriggers(QtWidgets.QAbstractItemView.NoEditTriggers)
+        self.list_tags.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectRows)
         self.list_tags.setObjectName("list_tags")
         self.list_tags.setColumnCount(4)
         self.list_tags.setRowCount(0)
