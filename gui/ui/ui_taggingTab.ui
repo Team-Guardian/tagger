@@ -181,7 +181,7 @@
   <customwidget>
    <class>PhotoViewer</class>
    <extends>QGraphicsView</extends>
-   <header>photoViewer</header>
+   <header>gui/photoViewer</header>
   </customwidget>
  </customwidgets>
  <resources/>

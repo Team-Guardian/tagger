@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'ui_targetsTab.ui'
+# Form implementation generated from reading ui file 'gui/ui/ui_targetsTab.ui'
 #
 # Created by: PyQt5 UI code generator 5.5.1
 #
@@ -60,4 +60,4 @@ class Ui_TargetsTab(object):
         self.lineEdit.setText(_translate("TargetsTab", "search image by name"))
         self.label_6.setText(_translate("TargetsTab", "MINIMAP"))
 
-from photoViewer import PhotoViewer
+from gui.photoViewer import PhotoViewer

@@ -25,7 +25,7 @@ class Controller(object):
         elif event is "TAG_EDITED":
             tag = self.tags[id]
             tag.type = data.type
-            tag.subtype = data.type
+            tag.subtype = data.subtype
             tag.symbol = data.symbol
             tag.num_occurrences = data.num_occurrences
             tag.save()
