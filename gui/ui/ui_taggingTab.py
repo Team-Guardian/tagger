@@ -11,7 +11,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_TaggingTab(object):
     def setupUi(self, TaggingTab):
         TaggingTab.setObjectName("TaggingTab")
-        TaggingTab.resize(795, 592)
+        TaggingTab.resize(1355, 837)
         self.horizontalLayout = QtWidgets.QHBoxLayout(TaggingTab)
         self.horizontalLayout.setObjectName("horizontalLayout")
         self.layout_taggingControls = QtWidgets.QVBoxLayout()
@@ -74,10 +74,11 @@ class Ui_TaggingTab(object):
         self.button_toggleView.setObjectName("button_toggleView")
         self.gridLayout_2.addWidget(self.button_toggleView, 2, 0, 1, 1)
         self.verticalLayout_3.addLayout(self.gridLayout_2)
-        self.label_5 = QtWidgets.QLabel(self.groupBox_3)
-        self.label_5.setMinimumSize(QtCore.QSize(0, 150))
-        self.label_5.setObjectName("label_5")
-        self.verticalLayout_3.addWidget(self.label_5)
+        self.graphicsView = MiniMap(self.groupBox_3)
+        self.graphicsView.setMinimumSize(QtCore.QSize(300, 190))
+        self.graphicsView.setMaximumSize(QtCore.QSize(500, 400))
+        self.graphicsView.setObjectName("graphicsView")
+        self.verticalLayout_3.addWidget(self.graphicsView)
         self.layout_taggingControls.addWidget(self.groupBox_3)
         self.horizontalLayout.addLayout(self.layout_taggingControls)
         self.layout_taggingImage = QtWidgets.QVBoxLayout()
@@ -113,6 +114,6 @@ class Ui_TaggingTab(object):
         self.button_fitScreen.setText(_translate("TaggingTab", "Fit to Screen"))
         self.button_previous.setText(_translate("TaggingTab", "Previous"))
         self.button_toggleView.setText(_translate("TaggingTab", "Toggle View"))
-        self.label_5.setText(_translate("TaggingTab", "MINIMAP"))
 
+from gui.miniMap import MiniMap
 from gui.photoViewer import PhotoViewer

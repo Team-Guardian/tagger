@@ -84,11 +84,6 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab):
             self.notify("TAG_DELETED", row, None)
 
     def addImageToUi(self, image):
-        # row = self.list_images.rowCount()
-        # self.list_images.insertRow(row)
-        # # update all columns in row with these texts
-        # texts = [image.filename, image.altitude]
-        # [self.list_images.setItem(row, col, QTableWidgetItem(text)) for col, text in enumerate(texts)]
         item = QtWidgets.QListWidgetItem(image.filename)
         self.list_images.addItem(item)
 
@@ -105,8 +100,10 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab):
                 self.nextImage()
 
     def currentImageChanged(self, current, _):
-        path = current.text()
-        self.openImage(path, self.viewer_single)
+        filename = current.text()
+        self.openImage(filename, self.viewer_single)
+
+        self.notify("CURRENT_IMG_CHANGED", None, filename)
 
     def openImage(self, filename, viewer):
         path = 'flights/SFU Surrey - 2017-02-18/{}'.format(filename)

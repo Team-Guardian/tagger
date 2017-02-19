@@ -50,3 +50,13 @@ class MainWindow(QtWidgets.QMainWindow):
                     self.ui.statusbar.showMessage('x: %d, y: %d' % (round(point.x()), round(point.y())))
 
         return QtWidgets.QWidget.eventFilter(self, source, event)
+
+    def resizeEvent(self, resizeEvent):
+        openedTab = self.ui.tabWidget.currentWidget()
+        currentPhotoViewer = openedTab.findChild(QtWidgets.QGraphicsView)
+
+        # if no PhotoViewers exist in current tab, do nothing
+        if currentPhotoViewer is None:
+            pass
+        else:
+            currentPhotoViewer.fitInView()
