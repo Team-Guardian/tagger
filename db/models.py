@@ -7,6 +7,8 @@ class Flight(models.Model):
     location = models.CharField(max_length=30)
     reference_altitude = models.IntegerField()
     date = models.DateField(auto_now=True)
+    img_path = models.CharField(max_length=100, default='')
+    intrinsic_matrix = models.CharField(max_length=100, default='')
 
 
 class Image(models.Model):
