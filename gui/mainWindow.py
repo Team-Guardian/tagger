@@ -7,13 +7,12 @@ from mapTab import MapTab
 from setupTab import SetupTab
 from taggingTab import TaggingTab
 from targetsTab import TargetsTab
+from observer import *
 
 
-class MainWindow(QtWidgets.QMainWindow):
+class MainWindow(QtWidgets.QMainWindow, Observable):
     def __init__(self):
         super(MainWindow, self).__init__()
-
-        self.observers = []
 
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
@@ -22,7 +21,6 @@ class MainWindow(QtWidgets.QMainWindow):
         self.ui.tabWidget.addTab(self.setupTab, "Setup")
 
         self.taggingTab = TaggingTab()
-        self.taggingTab.addObserver(self)
         self.taggingTab.viewer_single.viewport().installEventFilter(self)
         self.ui.tabWidget.addTab(self.taggingTab, "Tagging")
 
@@ -32,12 +30,6 @@ class MainWindow(QtWidgets.QMainWindow):
         self.mapTab = MapTab()
         self.ui.tabWidget.addTab(self.mapTab, "Map")
 
-    def addObserver(self, observer):
-        self.observers.append(observer)
-
-    def notify(self, event, id, data):
-        for observer in self.observers:
-            observer.notify(event, id, data)
 
     # handles events from widgets we have registered with
     # use installEventFilter() on a widget to register

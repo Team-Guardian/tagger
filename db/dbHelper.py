@@ -16,6 +16,12 @@ def create_flight(location, reference_altitude, intrinsic_matrix, date=datetime.
 def delete_flight(flight):
     flight.delete()
 
+def get_all_flights():
+    list = []
+    for f in Flight.objects.all():
+        list.append(f)
+    return list
+
 # Image
 
 # Tag
