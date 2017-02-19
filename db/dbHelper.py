@@ -1,11 +1,20 @@
 import os
 import django
+import datetime
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "django_settings.settings")
 django.setup()
 from db.models import * # Must go after django.setup()
 
 # Flight
+def create_flight(location, reference_altitude, intrinsic_matrix, date=datetime.datetime.now().date()):
+    img_path = '{} - {}'.format(location, date)
+    f = Flight(location=location, reference_altitude=reference_altitude, date=date, img_path=img_path, intrinsic_matrix=intrinsic_matrix)
+    f.save()
+    return f
+
+def delete_flight(Fight):
+    Flight.delete()
 
 # Image
 
@@ -31,3 +40,7 @@ if __name__=="__main__":
     # Usage example
     my_tags = get_all_tags()
     print my_tags
+
+    f = create_flight('SFU Surrey', 123, 'my_matrix')
+    print f.__dict__
+    delete_flight(f)
