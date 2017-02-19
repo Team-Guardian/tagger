@@ -8,7 +8,7 @@ class Controller(object):
     def __init__(self):
         super(Controller, self).__init__()
         self.tags = get_all_tags()
-        self.images = []
+        self.images = get_all_images()
         self.markers = []
 
         self.window = MainWindow()
@@ -18,6 +18,11 @@ class Controller(object):
         # populate lists
         for tag in self.tags:
             self.window.taggingTab.addTagToUi(tag)
+
+        for image in self.images:
+            self.window.taggingTab.addImageToUi(image)
+
+        print 'breakpoint'
 
     def notify(self, event, id, data):
         if event is "TAG_CREATED":

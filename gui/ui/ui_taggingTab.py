@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'gui/ui/ui_taggingTab.ui'
+# Form implementation generated from reading ui file 'ui_taggingTab.ui'
 #
 # Created by: PyQt5 UI code generator 5.5.1
 #
@@ -55,12 +55,6 @@ class Ui_TaggingTab(object):
         self.verticalLayout_3.setObjectName("verticalLayout_3")
         self.list_images = QtWidgets.QListWidget(self.groupBox_3)
         self.list_images.setObjectName("list_images")
-        item = QtWidgets.QListWidgetItem()
-        self.list_images.addItem(item)
-        item = QtWidgets.QListWidgetItem()
-        self.list_images.addItem(item)
-        item = QtWidgets.QListWidgetItem()
-        self.list_images.addItem(item)
         self.verticalLayout_3.addWidget(self.list_images)
         self.gridLayout_2 = QtWidgets.QGridLayout()
         self.gridLayout_2.setObjectName("gridLayout_2")
@@ -114,15 +108,6 @@ class Ui_TaggingTab(object):
         self.button_editTag.setText(_translate("TaggingTab", "Edit"))
         self.button_removeTag.setText(_translate("TaggingTab", "Remove"))
         self.groupBox_3.setTitle(_translate("TaggingTab", "Images"))
-        __sortingEnabled = self.list_images.isSortingEnabled()
-        self.list_images.setSortingEnabled(False)
-        item = self.list_images.item(0)
-        item.setText(_translate("TaggingTab", "20160430_111051_217148.jpg"))
-        item = self.list_images.item(1)
-        item.setText(_translate("TaggingTab", "20160430_111051_217148.jpg"))
-        item = self.list_images.item(2)
-        item.setText(_translate("TaggingTab", "20160430_111051_217148.jpg"))
-        self.list_images.setSortingEnabled(__sortingEnabled)
         self.button_toggleReviewed.setText(_translate("TaggingTab", "Mark as Reviewed"))
         self.button_next.setText(_translate("TaggingTab", "Next"))
         self.button_fitScreen.setText(_translate("TaggingTab", "Fit to Screen"))

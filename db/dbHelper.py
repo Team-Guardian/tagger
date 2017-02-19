@@ -17,6 +17,19 @@ def delete_flight(flight):
     flight.delete()
 
 # Image
+def create_image(flight, filename, latitude, longitude, altitude, roll, pitch, yaw):
+    i = Image(flight=flight, filename=filename, latitude=latitude, longitude=longitude, altitude=altitude, roll=roll, pitch=pitch, yaw=yaw)
+    i.save()
+    return i
+
+def delete_image(image):
+    image.delete()
+
+def get_all_images():
+    list = []
+    for l in Image.objects.all():
+        list.append(l)
+    return list
 
 # Tag
 def create_tag(type, subtype, symbol, num_occurrences=0):
@@ -40,7 +53,12 @@ if __name__=="__main__":
     # Usage example
     my_tags = get_all_tags()
     print my_tags
-
-    f = create_flight('SFU Surrey', 123, 'my_matrix')
-    print f.__dict__
-    delete_flight(f)
+    #
+    # f = create_flight('SFU Surrey', 123, 'my_matrix')
+    # print f.__dict__
+    #
+    #
+    # create_image(f, '20160430_111051_217148.jpg', 49.908254, -98.276356, 462.350000, 0.021058, 0.014051, -0.416897)
+    # create_image(f, '20160430_111116_587485.jpg', 49.910539, -98.281069, 469.460000, -0.086662, -0.503747, -1.800234)
+    #
+    #
