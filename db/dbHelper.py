@@ -13,8 +13,8 @@ def create_flight(location, reference_altitude, intrinsic_matrix, date=datetime.
     f.save()
     return f
 
-def delete_flight(Fight):
-    Flight.delete()
+def delete_flight(flight):
+    flight.delete()
 
 # Image
 
