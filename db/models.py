@@ -16,6 +16,7 @@ class Image(models.Model):
     flight = models.ForeignKey(Flight, on_delete=models.CASCADE)
     latitude = models.FloatField()
     longitude = models.FloatField()
+    altitude = models.FloatField()
     roll = models.FloatField()
     pitch = models.FloatField()
     yaw = models.FloatField()
