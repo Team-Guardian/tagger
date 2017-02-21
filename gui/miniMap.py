@@ -1,4 +1,5 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
+from db.models import *
 
 class MiniMap(QtWidgets.QGraphicsView):
 	def __init__(self, parent):
@@ -23,6 +24,10 @@ class MiniMap(QtWidgets.QGraphicsView):
 	def notify(self, event, _, data):
 		if event is "CURRENT_IMG_CHANGED":
 			# Todo: implement search DB for the image with filename
+			img = Image.objects.filter(filename='').last()
+
+
+
 			if data == '20160430_111051_217148.jpg':
 				self.overlayCoordinates1(self._minimap_path)
 
