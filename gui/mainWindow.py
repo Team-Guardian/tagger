@@ -53,10 +53,11 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def resizeEvent(self, resizeEvent):
         openedTab = self.ui.tabWidget.currentWidget()
-        currentPhotoViewer = openedTab.findChild(QtWidgets.QGraphicsView)
-
+        imageViewers = openedTab.findChildren(QtWidgets.QGraphicsView)
+    
         # if no PhotoViewers exist in current tab, do nothing
-        if currentPhotoViewer is None:
+        if imageViewers == None:
             pass
         else:
-            currentPhotoViewer.fitInView()
+            for imgViewer in imageViewers:
+                imgViewer.fitInView()
