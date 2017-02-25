@@ -118,3 +118,6 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab):
     def setImageRow(self, row):
         if 0 <= row < self.list_images.count():
             self.list_images.setCurrentRow(row)
+
+    def getSelectedImageSize(self):
+        return self.viewer_single.getImageSize()
