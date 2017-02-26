@@ -4,23 +4,16 @@ from PyQt5.QtWidgets import QDialog, QTableWidgetItem
 from ui.ui_taggingTab import Ui_TaggingTab
 from tagDialog import TagDialog
 from db.dbHelper import *
+from observer import *
 
 
-class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab):
+class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
     def __init__(self):
         super(TaggingTab, self).__init__()
-
-        self.observers = []
+        Observable.__init__(self)
 
         self.setupUi(self)
         self.connectButtons()
-
-    def addObserver(self, observer):
-        self.observers.append(observer)
-
-    def notify(self, event, id, data):
-        for observer in self.observers:
-            observer.notify(event, id, data)
 
     def connectButtons(self):
         self.button_addTag.clicked.connect(self.addTag)
@@ -42,7 +35,7 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab):
                 icon = dialog.icons.currentText()
                 t = create_tag(type=tagType, subtype=subtype, symbol=icon, num_occurrences=int(count))
                 self.addTagToUi(t)
-                self.notify("TAG_CREATED", -1, t)
+                self.notifyObservers("TAG_CREATED", -1, t)
 
     def addTagToUi(self, tag):
         row = self.list_tags.rowCount()
@@ -75,13 +68,13 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab):
                     [self.list_tags.setItem(row, col, QTableWidgetItem(text)) for col, text in enumerate(texts)]
 
                     t = Tag(type=tagType, subtype=subtype, symbol=icon, num_occurrences=int(count))
-                    self.notify("TAG_EDITED", row, t)
+                    self.notifyObservers("TAG_EDITED", row, t)
 
     def removeTag(self):
         row = self.list_tags.currentRow()
         if row >= 0:
             self.list_tags.removeRow(row)
-            self.notify("TAG_DELETED", row, None)
+            self.notifyObservers("TAG_DELETED", row, None)
 
     def toggleImageReviewed(self):
         item = self.list_images.currentItem()
