@@ -22,11 +22,11 @@ class SetupTab(QtWidgets.QWidget, Ui_SetupTab, Observable):
         self.combo_flights.addItem(flight.location + " " + str(flight.date))
 
     def loadFlight(self):
-        self.notifyObservers("FLIGHT_LOAD", self.combo_flights.currentIndex(), self.combo_flights.currentText())
+        self.notifyObservers("FLIGHT_LOAD", self.combo_flights.currentText(), None)
 
     def createFlight(self):
         location = self.line_locationName.text()
         elevation = float(self.line_siteElevation.text())
         date = self.edit_flightDate.text()
         f = create_flight(location, elevation, "default.xml", date)
-        self.notifyObservers("FLIGHT_CREATED", -1, f)
+        self.notifyObservers("FLIGHT_CREATED", f.location + " " + str(f.date), f)

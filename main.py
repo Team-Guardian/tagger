@@ -17,10 +17,11 @@ class Controller(Observer):
 
         self.window = MainWindow()
         self.window.show()
+        self.window.setupTab.addObserver(self)
         self.window.taggingTab.addObserver(self)
 
         # populate lists
-        for flight in self.flights:
+        for flight in self.flights.values():
             self.window.setupTab.addFlightToUi(flight)
 
         for tag in self.tags:
@@ -30,7 +31,7 @@ class Controller(Observer):
         if event is "FLIGHT_LOAD":
             self.currentFlight = self.flights[id]
         elif event is "FLIGHT_CREATED":
-            self.flights.append(data)
+            self.flights[id] = data
         elif event is "TAG_CREATED":
             self.tags.append(data)
         elif event is "TAG_EDITED":

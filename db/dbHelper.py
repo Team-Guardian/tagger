@@ -17,10 +17,10 @@ def delete_flight(flight):
     flight.delete()
 
 def get_all_flights():
-    list = []
+    flights = {}
     for f in Flight.objects.all():
-        list.append(f)
-    return list
+        flights[f.location + " " + str(f.date)] = f
+    return flights
 
 # Image
 
