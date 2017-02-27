@@ -135,7 +135,7 @@
          </layout>
         </item>
         <item>
-         <widget class="MiniMap" name="graphicsView">
+         <widget class="MiniMap" name="minimap">
           <property name="minimumSize">
            <size>
             <width>300</width>

@@ -6,15 +6,27 @@ os.environ.setdefault("DJANGO_SETTINGS_MODULE", "django_settings.settings")
 django.setup()
 from db.models import * # Must go after django.setup()
 
+# AreaMap
+def create_areamap(name, filename, ul_lat, ul_lon, lr_lat, lr_lon):
+    am = AreaMap(name=name, filename=filename, ul_lat=ul_lat, ul_lon=ul_lon, lr_lat=lr_lat, lr_lon=lr_lon)
+    am.save()
+    return am
+
 # Flight
-def create_flight(location, reference_altitude, intrinsic_matrix, date=datetime.datetime.now().date()):
-    img_path = '{} - {}'.format(location, date)
-    f = Flight(location=location, reference_altitude=reference_altitude, date=date, img_path=img_path, intrinsic_matrix=intrinsic_matrix)
+def create_flight(location, reference_altitude, intrinsic_matrix, img_path, date=datetime.datetime.now().date(), area_map=None):
+    # img_path = '{} - {}'.format(location, date)
+    f = Flight(location=location, reference_altitude=reference_altitude, date=date, img_path=img_path, intrinsic_matrix=intrinsic_matrix, area_map=area_map)
     f.save()
     return f
 
 def delete_flight(flight):
     flight.delete()
+
+def get_all_flights():
+    flights = {}
+    for f in Flight.objects.all():
+        flights[f.location + " " + str(f.date)] = f
+    return flights
 
 # Image
 def create_image(flight, filename, latitude, longitude, altitude, roll, pitch, yaw):
@@ -53,12 +65,7 @@ if __name__=="__main__":
     # Usage example
     my_tags = get_all_tags()
     print my_tags
-    #
-    # f = create_flight('SFU Surrey', 123, 'my_matrix')
-    # print f.__dict__
-    #
-    #
-    # create_image(f, '20160430_111051_217148.jpg', 49.908254, -98.276356, 462.350000, 0.021058, 0.014051, -0.416897)
-    # create_image(f, '20160430_111116_587485.jpg', 49.910539, -98.281069, 469.460000, -0.086662, -0.503747, -1.800234)
-    #
-    #
+
+    f = create_flight('SFU Surrey', 123, 'my_matrix')
+    print f.__dict__
+    delete_flight(f)
