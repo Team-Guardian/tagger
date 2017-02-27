@@ -46,18 +46,12 @@
       <string>Create Flight</string>
      </property>
      <layout class="QGridLayout" name="gridLayout">
-      <item row="4" column="0">
-       <widget class="QLabel" name="label_6">
+      <item row="1" column="0">
+       <widget class="QLabel" name="label_4">
         <property name="text">
-         <string>Area Map</string>
+         <string>Site Elevation (MSL):</string>
         </property>
        </widget>
-      </item>
-      <item row="0" column="2">
-       <widget class="QLineEdit" name="line_locationName"/>
-      </item>
-      <item row="1" column="2">
-       <widget class="QLineEdit" name="line_siteElevation"/>
       </item>
       <item row="2" column="0">
        <widget class="QLabel" name="label_5">
@@ -66,24 +60,10 @@
         </property>
        </widget>
       </item>
-      <item row="2" column="2">
-       <widget class="QDateEdit" name="edit_flightDate">
-        <property name="calendarPopup">
-         <bool>true</bool>
-        </property>
-       </widget>
-      </item>
-      <item row="5" column="2">
-       <widget class="QPushButton" name="button_createFlight">
+      <item row="4" column="0">
+       <widget class="QLabel" name="label_6">
         <property name="text">
-         <string>Create and Load</string>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="0">
-       <widget class="QLabel" name="label_4">
-        <property name="text">
-         <string>Site Elevation (MSL):</string>
+         <string>Area Map</string>
         </property>
        </widget>
       </item>
@@ -94,11 +74,37 @@
         </property>
        </widget>
       </item>
+      <item row="2" column="2">
+       <widget class="QDateEdit" name="edit_flightDate">
+        <property name="calendarPopup">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="2">
+       <widget class="QLineEdit" name="line_locationName"/>
+      </item>
       <item row="4" column="2">
        <widget class="QLineEdit" name="line_areaMap"/>
       </item>
+      <item row="5" column="2">
+       <widget class="QPushButton" name="button_createFlight">
+        <property name="text">
+         <string>Create and Load</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="2">
+       <widget class="QLineEdit" name="line_siteElevation"/>
+      </item>
       <item row="4" column="3">
-       <widget class="QToolButton" name="select_areaMap">
+       <widget class="QPushButton" name="button_selectAreaMap">
+        <property name="maximumSize">
+         <size>
+          <width>40</width>
+          <height>16777215</height>
+         </size>
+        </property>
         <property name="text">
          <string>...</string>
         </property>
