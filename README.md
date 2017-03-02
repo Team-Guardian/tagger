@@ -3,7 +3,7 @@
 ## 1. Installing All Dependencies
 ```
 sudo apt-get update
-sudo apt-get install qttools5-dev-tools python-pyqt5 postgresql python-psycopg2 python-pip pgadmin3
+sudo apt-get install qttools5-dev-tools python-pyqt5 postgresql python-psycopg2 python-pip pgadmin3 python-pyexiv2
 sudo -H pip install django
 ```
 ## 2. PostgreSQL Installation and Setup

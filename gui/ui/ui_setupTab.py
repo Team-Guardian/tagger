@@ -108,4 +108,3 @@ class Ui_SetupTab(object):
         self.groupBox_3.setTitle(_translate("SetupTab", "General"))
         self.label.setText(_translate("SetupTab", "Watch Directory:"))
         self.button_browseWatchDirectory.setText(_translate("SetupTab", "Browse..."))
-

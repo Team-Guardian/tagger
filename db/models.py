@@ -44,4 +44,3 @@ class Marker(models.Model):
 
 
 
-
