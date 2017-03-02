@@ -17,6 +17,7 @@ class PhotoViewer(QtWidgets.QGraphicsView):
         self.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
         self.setBackgroundBrush(QtGui.QBrush(QtGui.QColor(30, 30, 30)))
         self.setFrameShape(QtWidgets.QFrame.NoFrame)
+        self.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
 
     def fitInView(self):
         rect = QtCore.QRectF(self._photo.pixmap().rect())
