@@ -1,6 +1,7 @@
 # StackOverflow for the win! http://stackoverflow.com/questions/35508711/how-to-enable-pan-and-zoom-in-a-qgraphicsview
 
 from PyQt5 import QtCore, QtGui, QtWidgets
+from photoItem import PhotoItem
 
 
 class PhotoViewer(QtWidgets.QGraphicsView):
@@ -8,7 +9,7 @@ class PhotoViewer(QtWidgets.QGraphicsView):
         super(PhotoViewer, self).__init__(parent)
         self._zoom = 0
         self._scene = QtWidgets.QGraphicsScene(self)
-        self._photo = QtWidgets.QGraphicsPixmapItem()
+        self._photo = PhotoItem()
         self._scene.addItem(self._photo)
         self.setScene(self._scene)
         self.setTransformationAnchor(QtWidgets.QGraphicsView.AnchorUnderMouse)
@@ -17,7 +18,7 @@ class PhotoViewer(QtWidgets.QGraphicsView):
         self.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
         self.setBackgroundBrush(QtGui.QBrush(QtGui.QColor(30, 30, 30)))
         self.setFrameShape(QtWidgets.QFrame.NoFrame)
-        self.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
+        # self.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
 
     def fitInView(self):
         rect = QtCore.QRectF(self._photo.pixmap().rect())
@@ -65,3 +66,9 @@ class PhotoViewer(QtWidgets.QGraphicsView):
 
     def getImageSize(self):
         return self._photo.pixmap().rect()
+
+    def getScene(self):
+        return self._scene
+
+    def getPhotoItem(self):
+        return self._photo

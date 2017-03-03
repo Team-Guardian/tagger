@@ -22,18 +22,13 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
 
         self.setupUi(self)
         self.connectButtons()
+
         # self.marker_context_menu_triggered = False # Flag to prevent the QGraphicsView context menu from triggering
         # self.viewer_single.customContextMenuRequested.connect(self.taggingImageContextMenuOpen)
 
     def notify(self, event, id, data):
         for observer in self.observers:
             observer.notify(event, id, data)
-
-        if event == "MARKER_CONTEXT_MENU_TRIGGERED": # QGraphicsPixMapItem context menu triggered
-            self.marker_context_menu_triggered = True
-        elif event == "MARKER_DELETE": # QGraphicsPixMapItem context menu Delete option triggered
-            self.viewer_single._scene.removeItem(data)
-            self.marker_context_menu_triggered = True
 
     def connectButtons(self):
         self.button_addTag.clicked.connect(self.addTag)
@@ -61,10 +56,12 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
     def addTagToUi(self, tag):
         row = self.list_tags.rowCount()
         self.list_tags.insertRow(row)
-        # update all columns in row with these texts
+
         texts = [tag.type, tag.subtype, str(tag.num_occurrences), tag.symbol]
         [self.list_tags.setItem(row, col, TagTableItem(text, tag)) for col, text in enumerate(texts)]
         self.tag_context_menu.addTagToContextMenu(tag.subtype)
+
+        self.viewer_single.getPhotoItem().context_menu.addTagToContextMenu(tag.subtype)
 
     def editTag(self):
         row = self.list_tags.currentRow()
