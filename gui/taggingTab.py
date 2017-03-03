@@ -23,12 +23,22 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
         self.setupUi(self)
         self.connectButtons()
 
-        # self.marker_context_menu_triggered = False # Flag to prevent the QGraphicsView context menu from triggering
-        # self.viewer_single.customContextMenuRequested.connect(self.taggingImageContextMenuOpen)
-
     def notify(self, event, id, data):
         for observer in self.observers:
             observer.notify(event, id, data)
+
+        if event == "MARKER_CREATE_REQUEST":
+            marker = MarkerItem()
+            marker.addObserver(self)
+            _event, _action = data
+            scenePoint = _event.scenePos()
+            markerXPos = scenePoint.x() - marker.pixmap().size().width() / 2  # To position w.r.t. center of pixMap
+            markerYPos = scenePoint.y() - marker.pixmap().size().height() / 2 # To position w.r.t. center of pixMap
+            marker.setPos(markerXPos, markerYPos)
+            self.viewer_single.getScene().addItem(marker)
+
+        elif event == "MARKER_DELETE":
+            self.viewer_single.getScene().removeItem(data)
 
     def connectButtons(self):
         self.button_addTag.clicked.connect(self.addTag)
@@ -126,6 +136,7 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
 
     def openImage(self, path, viewer):
         viewer.setPhoto(QtGui.QPixmap(path))
+        viewer.getPhotoItem().addObserver(self)
 
     def previousImage(self):
         self.setImageRow(self.list_images.currentRow() - 1)
