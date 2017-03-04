@@ -13,8 +13,8 @@ def create_areamap(name, filename, ul_lat, ul_lon, lr_lat, lr_lon):
     return am
 
 # Flight
-def create_flight(location, reference_altitude, intrinsic_matrix, img_path, date=datetime.datetime.now().date(), area_map=None):
-    # img_path = '{} - {}'.format(location, date)
+def create_flight(location, reference_altitude, intrinsic_matrix, date=datetime.datetime.now().date(), area_map=None):
+    img_path = '{} - {}'.format(location, date)
     f = Flight(location=location, reference_altitude=reference_altitude, date=date, img_path=img_path, intrinsic_matrix=intrinsic_matrix, area_map=area_map)
     f.save()
     return f
