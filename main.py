@@ -30,6 +30,7 @@ class Controller(Observer):
     def notify(self, event, id, data):
         if event is "FLIGHT_LOAD":
             self.currentFlight = self.flights[id]
+            self.window.taggingTab.currentFlight = self.currentFlight
         elif event is "FLIGHT_CREATED":
             self.flights[id] = data
         elif event is "TAG_CREATED":

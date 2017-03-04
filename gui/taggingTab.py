@@ -5,12 +5,15 @@ from ui.ui_taggingTab import Ui_TaggingTab
 from tagDialog import TagDialog
 from db.dbHelper import *
 from observer import *
+from utils.imageInfo import loadImageWithExif
 
 
 class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
     def __init__(self):
         super(TaggingTab, self).__init__()
         Observable.__init__(self)
+
+        self.currentFlight = None
 
         self.setupUi(self)
         self.connectButtons()
@@ -24,6 +27,7 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
         self.button_toggleReviewed.clicked.connect(self.toggleImageReviewed)
         self.button_previous.clicked.connect(self.previousImage)
         self.button_next.clicked.connect(self.nextImage)
+        self.button_addImage.clicked.connect(self.addImage)
 
     def addTag(self):
         dialog = TagDialog(title="Create tag")
@@ -86,6 +90,17 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
             # image was marked as reviewed
             if not font.bold():
                 self.nextImage()
+
+    def addImage(self):
+        # TODO: copy image to flight directory
+        paths = QtWidgets.QFileDialog.getOpenFileNames(self, "Select images", ".", "Images (*.jpg)")[0]
+        for path in paths:
+            image = loadImageWithExif(path, self.currentFlight)
+            self.addImageToUi(image)
+            # TODO: create in DB when create_image() is merged
+
+    def addImageToUi(self, image):
+        self.list_images.addItem(image.filename)
 
     def currentImageChanged(self, current, _):
         path = current.text()
