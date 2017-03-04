@@ -25,9 +25,9 @@ class MarkerItem(QtWidgets.QGraphicsPixmapItem, Observable):
         for observer in self.observers:
             observer.notify(event, id, data)
 
-        if event == "SCENE_ZOOM" :
+        if event is "SCENE_ZOOM" :
             self.setScale(self.scale()*data)
-        elif event == "SCENE_RESET":
+        elif event is "SCENE_RESET":
             self.setScale(1.0)
 
     def mousePressEvent(self, event):
@@ -36,4 +36,4 @@ class MarkerItem(QtWidgets.QGraphicsPixmapItem, Observable):
         elif event.button() == QtCore.Qt.RightButton:
             action = self.context_menu.exec_(QtCore.QPoint(event.screenPos().x(), event.screenPos().y()))
             if action == self.delete_marker_handle:
-                self.notify("MARKER_DELETE", 0, self)
+                self.notify("MARKER_DELETED", 0, self)

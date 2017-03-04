@@ -26,9 +26,3 @@ class TagContextMenu(QtWidgets.QMenu):
 
         if len(self.actions()) == 1:
             self.defaultActionHandle.setVisible(True)
-
-class Tag():
-    def __init__(self, _name, _type, _icon):
-        self.name = _name
-        self.type = _type
-        self.icon = _icon

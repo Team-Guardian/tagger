@@ -26,4 +26,4 @@ class PhotoItem(QtWidgets.QGraphicsPixmapItem, Observable):
                 if current_action == action:
                     scenePoint = event.scenePos()
                     print action.text(), round(scenePoint.x()), round(scenePoint.y()) # For debugging
-                    self.notify("MARKER_CREATE_REQUEST", 0, [event, action])
+                    self.notify("MARKER_CREATED", 0, [event, action])

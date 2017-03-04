@@ -27,9 +27,9 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
         for observer in self.observers:
             observer.notify(event, id, data)
 
-        if event == "MARKER_CREATE_REQUEST":
+        if event is "MARKER_CREATED":
             _event, _action = data
-            marker = MarkerItem(initial_zoom=self.viewer_single._zoom)
+            marker = MarkerItem(initial_zoom=self.viewer_single.zoomFactor())
             marker.addObserver(self)
             scenePoint = _event.scenePos()
             markerXPos = scenePoint.x() - marker.pixmap().size().width() / 2  # To position w.r.t. center of pixMap
@@ -39,7 +39,7 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
             marker.setTransformOriginPoint(marker.pixmap().size().width() / 2, marker.pixmap().size().height() / 2)
             self.viewer_single.getScene().addItem(marker)
 
-        elif event == "MARKER_DELETE":
+        elif event is "MARKER_DELETED":
             self.viewer_single.getScene().removeItem(data)
 
     def connectButtons(self):

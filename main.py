@@ -36,6 +36,10 @@ class Controller(Observer):
         elif event is "TAG_DELETED":
             self.tags.remove(data)
             data.delete()
+        elif event is "MARKER_CREATED":
+            print "Marker Created:", data[1].text()
+        elif event is "MARKER_DELETED":
+            print "Marker Deleted"
 
     def loadFlight(self, id):
         self.currentFlight = self.flights[id]
