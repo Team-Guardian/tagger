@@ -22,8 +22,8 @@ class PhotoItem(QtWidgets.QGraphicsPixmapItem, Observable):
             event.ignore() # Need this to enable click-and-drag panning
         elif event.button() == QtCore.Qt.RightButton:
             current_action = self.context_menu.exec_(QtCore.QPoint(event.screenPos().x(), event.screenPos().y()))
-            for action in self.context_menu.actions():
-                if current_action == action:
-                    scenePoint = event.scenePos()
-                    print action.text(), round(scenePoint.x()), round(scenePoint.y()) # For debugging
-                    self.notify("MARKER_CREATED", 0, [event, action])
+            for _tag, _action in self.context_menu.tag_action_tuples:
+                if current_action == _action:
+                    scenePoint = event.scenePos() # For debugging
+                    print _action.text(), round(scenePoint.x()), round(scenePoint.y()) # For debugging
+                    self.notify("MARKER_CREATE", 0, [event, _tag])

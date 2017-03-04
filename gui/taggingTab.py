@@ -27,17 +27,8 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
         for observer in self.observers:
             observer.notify(event, id, data)
 
-        if event is "MARKER_CREATED":
-            _event, _action = data
-            marker = MarkerItem(initial_zoom=self.viewer_single.zoomFactor())
-            marker.addObserver(self)
-            scenePoint = _event.scenePos()
-            markerXPos = scenePoint.x() - marker.pixmap().size().width() / 2  # To position w.r.t. center of pixMap
-            markerYPos = scenePoint.y() - marker.pixmap().size().height() / 2 # To position w.r.t. center of pixMap
-            marker.setPos(markerXPos, markerYPos)
-            # The following line makes sure that the scaling happens w.r.t. center of pixMap
-            marker.setTransformOriginPoint(marker.pixmap().size().width() / 2, marker.pixmap().size().height() / 2)
-            self.viewer_single.getScene().addItem(marker)
+        if event is "MARKER_CREATE":
+            self.addMarker(data)
 
         elif event is "MARKER_DELETED":
             self.viewer_single.getScene().removeItem(data)
@@ -69,11 +60,37 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
         row = self.list_tags.rowCount()
         self.list_tags.insertRow(row)
 
+        # update all columns in row with these texts
         texts = [tag.type, tag.subtype, str(tag.num_occurrences), tag.symbol]
         [self.list_tags.setItem(row, col, TagTableItem(text, tag)) for col, text in enumerate(texts)]
         self.tag_context_menu.addTagToContextMenu(tag.subtype)
 
-        self.viewer_single.getPhotoItem().context_menu.addTagToContextMenu(tag.subtype)
+        # add tag to context men
+        self.viewer_single.getPhotoItem().context_menu.addTagToContextMenu(tag)
+
+    def addMarker(self, data):
+        _event, _tag = data
+        # TODO
+        # Create db marker object here
+        # Pass marker.pk or the marker db object to the addMarkerToUi function. Remove association with tag object.
+
+        self.addMarkerToUi(data)
+
+    def addMarkerToUi(self, data):
+        _event, _tag = data
+
+        marker = MarkerItem(parent_tag=_tag, initial_zoom=self.viewer_single.zoomFactor())
+        marker.addObserver(self)
+
+        scenePoint = _event.scenePos()
+        markerXPos = scenePoint.x() - marker.pixmap().size().width() / 2  # To position w.r.t. center of pixMap
+        markerYPos = scenePoint.y() - marker.pixmap().size().height() / 2  # To position w.r.t. center of pixMap
+        marker.setPos(markerXPos, markerYPos)
+
+        # The following line makes sure that the scaling happens w.r.t. center of pixMap
+        marker.setTransformOriginPoint(marker.pixmap().size().width() / 2, marker.pixmap().size().height() / 2)
+
+        self.viewer_single.getScene().addItem(marker)
 
     def editTag(self):
         row = self.list_tags.currentRow()

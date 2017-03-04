@@ -36,10 +36,24 @@ class Controller(Observer):
         elif event is "TAG_DELETED":
             self.tags.remove(data)
             data.delete()
-        elif event is "MARKER_CREATED":
+        elif event is "MARKER_CREATE":
             print "Marker Created:", data[1].text()
+        elif event is "TAG_EDITED":
+            tag = self.tags[id]
+            old_tag = tag
+
+            tag.type = data.type
+            tag.subtype = data.subtype
+            tag.symbol = data.symbol
+            tag.num_occurrences = data.num_occurrences
+            tag.save()
+
+            self.updateTaggingContextMenu(old_tag, tag)
         elif event is "MARKER_DELETED":
-            print "Marker Deleted"
+            print "Marker Deleted:", data.getParentTag().type, data.getParentTag().subtype
+
+    def updateTaggingContextMenu(self, old_tag, tag):
+        self.window.taggingTab.viewer_single.getPhotoItem().context_menu.updateTagItem(old_tag, tag)
 
     def loadFlight(self, id):
         self.currentFlight = self.flights[id]

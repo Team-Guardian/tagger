@@ -4,10 +4,11 @@ from observer import *
 
 # This sub-class is used to display markers for targets.
 class MarkerItem(QtWidgets.QGraphicsPixmapItem, Observable):
-    def __init__(self, parent=None, initial_zoom=0):
+    def __init__(self, parent=None, parent_tag=None, initial_zoom=0):
         super(MarkerItem, self).__init__(parent)
         Observable.__init__(self)
 
+        self._parent_tag = parent_tag # TODO - change this to a DB marker object instead of parent tag
         self.context_menu = QtWidgets.QMenu()
         self.delete_marker_handle = self.context_menu.addAction("Delete Marker")
 
@@ -37,3 +38,6 @@ class MarkerItem(QtWidgets.QGraphicsPixmapItem, Observable):
             action = self.context_menu.exec_(QtCore.QPoint(event.screenPos().x(), event.screenPos().y()))
             if action == self.delete_marker_handle:
                 self.notify("MARKER_DELETED", 0, self)
+
+    def getParentTag(self):
+        return self._parent_tag
