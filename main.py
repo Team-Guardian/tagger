@@ -31,6 +31,7 @@ class Controller(Observer):
         if event is "FLIGHT_LOAD":
             self.loadFlight(id)
             self.loadMap(self.currentFlight)
+            self.window.taggingTab.currentFlight = self.currentFlight
         elif event is "FLIGHT_CREATED":
             self.flights[id] = data
             self.loadFlight(id)
