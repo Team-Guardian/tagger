@@ -27,7 +27,7 @@ class MiniMap(QtWidgets.QGraphicsView, Observer):
         self._current_flight = flight
         self._current_area_map = flight.area_map
 
-        self._map_full_filepath = flight.img_path + flight.area_map.filename
+        self._map_full_filepath = "./area_maps/" + flight.area_map.filename
         self._original_pixmap = QtGui.QPixmap(self._map_full_filepath)
         self._map.setPixmap(self._original_pixmap)
         self.fitInView()
