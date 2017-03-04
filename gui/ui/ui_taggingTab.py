@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'gui/ui/ui_taggingTab.ui'
+# Form implementation generated from reading ui file 'ui_taggingTab.ui'
 #
 # Created by: PyQt5 UI code generator 5.5.1
 #
@@ -11,7 +11,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_TaggingTab(object):
     def setupUi(self, TaggingTab):
         TaggingTab.setObjectName("TaggingTab")
-        TaggingTab.resize(795, 592)
+        TaggingTab.resize(1355, 837)
         self.horizontalLayout = QtWidgets.QHBoxLayout(TaggingTab)
         self.horizontalLayout.setObjectName("horizontalLayout")
         self.layout_taggingControls = QtWidgets.QVBoxLayout()
@@ -77,10 +77,11 @@ class Ui_TaggingTab(object):
         self.button_addImage.setObjectName("button_addImage")
         self.gridLayout_2.addWidget(self.button_addImage, 2, 1, 1, 1)
         self.verticalLayout_3.addLayout(self.gridLayout_2)
-        self.label_5 = QtWidgets.QLabel(self.groupBox_3)
-        self.label_5.setMinimumSize(QtCore.QSize(0, 150))
-        self.label_5.setObjectName("label_5")
-        self.verticalLayout_3.addWidget(self.label_5)
+        self.minimap = MiniMap(self.groupBox_3)
+        self.minimap.setMinimumSize(QtCore.QSize(300, 190))
+        self.minimap.setMaximumSize(QtCore.QSize(500, 400))
+        self.minimap.setObjectName("minimap")
+        self.verticalLayout_3.addWidget(self.minimap)
         self.layout_taggingControls.addWidget(self.groupBox_3)
         self.horizontalLayout.addLayout(self.layout_taggingControls)
         self.layout_taggingImage = QtWidgets.QVBoxLayout()
@@ -119,4 +120,5 @@ class Ui_TaggingTab(object):
         self.button_addImage.setText(_translate("TaggingTab", "Add Image"))
         self.label_5.setText(_translate("TaggingTab", "MINIMAP"))
 
+from gui.miniMap import MiniMap
 from gui.photoViewer import PhotoViewer

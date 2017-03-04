@@ -6,10 +6,16 @@ os.environ.setdefault("DJANGO_SETTINGS_MODULE", "django_settings.settings")
 django.setup()
 from db.models import * # Must go after django.setup()
 
+# AreaMap
+def create_areamap(name, filename, ul_lat, ul_lon, lr_lat, lr_lon):
+    am = AreaMap(name=name, filename=filename, ul_lat=ul_lat, ul_lon=ul_lon, lr_lat=lr_lat, lr_lon=lr_lon)
+    am.save()
+    return am
+
 # Flight
-def create_flight(location, reference_altitude, intrinsic_matrix, date=datetime.datetime.now().date()):
+def create_flight(location, reference_altitude, intrinsic_matrix, date=datetime.datetime.now().date(), area_map=None):
     img_path = '{} - {}'.format(location, date)
-    f = Flight(location=location, reference_altitude=reference_altitude, date=date, img_path=img_path, intrinsic_matrix=intrinsic_matrix)
+    f = Flight(location=location, reference_altitude=reference_altitude, date=date, img_path=img_path, intrinsic_matrix=intrinsic_matrix, area_map=area_map)
     f.save()
     return f
 
@@ -23,6 +29,19 @@ def get_all_flights():
     return flights
 
 # Image
+def create_image(flight, filename, latitude, longitude, altitude, roll, pitch, yaw):
+    i = Image(flight=flight, filename=filename, latitude=latitude, longitude=longitude, altitude=altitude, roll=roll, pitch=pitch, yaw=yaw)
+    i.save()
+    return i
+
+def delete_image(image):
+    image.delete()
+
+def get_all_images():
+    list = []
+    for l in Image.objects.all():
+        list.append(l)
+    return list
 
 # Tag
 def create_tag(type, subtype, symbol, num_occurrences=0):

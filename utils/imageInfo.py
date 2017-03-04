@@ -16,3 +16,9 @@ def loadImageWithExif(path, flight):
     return Image(filename=path, flight=flight,
                  latitude=latitude, longitude=longitude, altitude=altitude,
                  roll=roll, pitch=pitch, yaw=yaw)
+
+# load geotiff data and convert image from tiff to png
+def loadGeotiff(img):
+    ul_lat, ul_lon = 49.922492, -98.312083
+    lr_lat, lr_lon = 49.886744, -98.233800
+    return ul_lat, ul_lon, lr_lat, lr_lon

@@ -61,3 +61,6 @@ class PhotoViewer(QtWidgets.QGraphicsView):
 
     def isImageNull(self):
         return self._photo.pixmap().isNull()
+
+    def getImageSize(self):
+        return self._photo.pixmap().rect()
