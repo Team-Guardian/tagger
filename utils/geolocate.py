@@ -1,33 +1,24 @@
-# import subprocess
-# import calendar
-# import re
-
 from math import cos, sin, sqrt, radians, degrees
 from math import acos, asin, atan2
 import numpy
 
-def georectify(img, pu, pv):
+def geolocate_pixel(img, site_elevation, pu, pv):
     lat = radians(img.latitude)
     lon = radians(img.longitude)
     # maybe these can be useful - no idea what these do
     #orig_roll = roll
     #roll = atan(cos(img.pitch)*tan(orig_roll))#RMissue:8, corrects roll for img.pitched axis
 
-    elevation = img.altitude
-
+    # choose a reference location inside flight area
     latRef = radians(49.903867)
     lonRef = radians(-98.273483)
-    # altRef = elevation # the altitude of the ground at the reference point
-   
-    altRef = 261 # hard-coded for now!!!
 
-    ecefRef = selectEcefRef(latRef, lonRef, altRef)
-
-    groundEcef = geodeticToEcef(lat, lon, elevation)
+    # get the coordinates of reference location in ECEF
+    ecefRef = selectEcefRef(latRef, lonRef, site_elevation)
+    # get coordinates of the plane in ECEF
+    groundEcef = geodeticToEcef(lat, lon, site_elevation)
+    # get the coordinates of the plane in NED
     vehicleNed = transformEcefToNed(lat, lon, ecefRef, groundEcef)
-
-    #if vehicleNed[2] != 0:
-     #   vehicleNed[2] = 0    
 
     rotationCameraToNed = createRotationCameraToNed(img.pitch, img.roll, img.yaw)
 
@@ -35,16 +26,12 @@ def georectify(img, pu, pv):
                                    [0, 3431.11804, 1002.49563],
                                    [0, 0, 1]])
 
-    #
-    # Finding the coordinate of a pixel in NED frame
-    #
-
     # image frame (pixel location) column vector
     imagePoint = numpy.array([[pu],
                               [pv],
                                [1]], dtype=numpy.float64)
 
-    zNedToCam = (img.altitude - altRef) # z-axis is pointing downh
+    zNedToCam = (img.altitude - site_elevation) # z-axis is pointing downh
     yNedToCam = vehicleNed[1]
     xNedToCam = vehicleNed[0]
     posVectorNedToCamera = numpy.array([[xNedToCam],
@@ -58,8 +45,8 @@ def georectify(img, pu, pv):
     rayOrientation = numpy.dot((numpy.dot(rotationCameraToNed, intrinsicMatrixInverse)), imagePoint) # (R^-1*A^-1)*p
     scalingFactor = -1*posVectorNedToCamera[2]/rayOrientation[2]
 
-    Xm = posVectorNedToCamera[0] + scalingFactor*rayOrientation[0] + 6.71
-    Ym = posVectorNedToCamera[1] + scalingFactor*rayOrientation[1] + 5.95
+    Xm = posVectorNedToCamera[0] + scalingFactor*rayOrientation[0]
+    Ym = posVectorNedToCamera[1] + scalingFactor*rayOrientation[1]
     Zm = 0 # the entire solution rests on the assumptions that we are shooting objects at the ground level, flush with NED's xy-plane, such that Zned = Zm = 0
 
     pixelNed = numpy.array([[Xm], 

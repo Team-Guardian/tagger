@@ -1,6 +1,6 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
 
-import utils.georef
+import utils.geolocate
 from observer import *
 from db.models import *
 
@@ -8,13 +8,12 @@ class MiniMap(QtWidgets.QGraphicsView, Observer):
     def __init__(self, parent):
         super(MiniMap, self).__init__(parent)
 
-        # get current flight information
-
         # initialize objects
         self._scene = QtWidgets.QGraphicsScene(self)
         self._map = QtWidgets.QGraphicsPixmapItem()
         self._scene.addItem(self._map)
         self.setScene(self._scene)
+        self._img_contour = Contour()
 
         # configure MiniMap to be an observer of TaggingTab
         self.window().addObserver(self)
@@ -36,23 +35,45 @@ class MiniMap(QtWidgets.QGraphicsView, Observer):
     def notify(self, event, id, data):
         if event is "CURRENT_IMG_CHANGED":
             if self._current_area_map is not None:
-                # retrieve full image object from DB
-                img = Image.objects.filter(filename=data).last()
-                rect = QtCore.QRect(self.parent().parent().getSelectedImageSize())
+                # try to retrieve full image object from DB
+                if Image.objects.filter(filename=data).exists():
+                    img = Image.objects.filter(filename=data).last()
+                    map_dims = self._map.boundingRect()
 
-                (img_upper_left_lat, img_upper_left_lon) = utils.georef.georectify(img, 0, 0)
-                (img_lower_right_lat, img_lower_right_lon) = utils.georef.georectify(img, rect.width(), rect.height())
+                    site_elevation = img.flight.reference_altitude
+                    (img_upper_left_lat, img_upper_left_lon) = utils.geolocate.geolocate_pixel(img, site_elevation, 0, 0)
+                    (img_upper_right_lat, img_upper_right_lon) = utils.geolocate.geolocate_pixel(img, site_elevation,
+                                                                                                 map_dims.width(), 0)
+                    (img_lower_right_lat, img_lower_right_lon) = utils.geolocate.geolocate_pixel(img, site_elevation,
+                                                                                                 map_dims.width(), map_dims.height())
+                    (img_lower_left_lat, img_lower_left_lon) = utils.geolocate.geolocate_pixel(img, site_elevation,
+                                                                                               0, map_dims.height())
 
-                # interpolate the location of the image on the minimap (in px)
-                topLeftX = ((img_upper_left_lon - self._current_area_map.ul_lon)/(self._current_area_map.lr_lon - self._current_area_map.ul_lon)) * rect.width()
-                topLeftY = ((img_upper_left_lat - self._current_area_map.ul_lat)/(self._current_area_map.lr_lat - self._current_area_map.ul_lat)) * rect.height()
+                    # interpolate the location of the image on the minimap (in px)
+                    self._img_contour._topLeftX = ((img_upper_left_lon - self._current_area_map.ul_lon) / (
+                    self._current_area_map.lr_lon - self._current_area_map.ul_lon)) * map_dims.width()
+                    self._img_contour._topLeftY = ((img_upper_left_lat - self._current_area_map.ul_lat) / (
+                    self._current_area_map.lr_lat - self._current_area_map.ul_lat)) * map_dims.height()
 
-                bottomRightX = ((img_lower_right_lon - self._current_area_map.ul_lon)/(self._current_area_map.lr_lon - self._current_area_map.ul_lon)) * rect.width()
-                bottomRightY = ((img_lower_right_lat - self._current_area_map.ul_lat)/(self._current_area_map.lr_lat - self._current_area_map.ul_lat)) * rect.height()
+                    self._img_contour._topRightX = ((img_upper_right_lon - self._current_area_map.ul_lon) / (
+                    self._current_area_map.lr_lon - self._current_area_map.ul_lon)) * map_dims.width()
+                    self._img_contour._topRightY = ((img_upper_right_lat - self._current_area_map.ul_lat) / (
+                    self._current_area_map.lr_lat - self._current_area_map.ul_lat)) * map_dims.height()
 
-                contour_coordinates = QtCore.QRect(QtCore.QPoint(topLeftX, topLeftY), QtCore.QPoint(bottomRightX, bottomRightY))
+                    self._img_contour._bottomRightX = ((img_lower_right_lon - self._current_area_map.ul_lon) / (
+                    self._current_area_map.lr_lon - self._current_area_map.ul_lon)) * map_dims.width()
+                    self._img_contour._bottomRightY = ((img_lower_right_lat - self._current_area_map.ul_lat) / (
+                    self._current_area_map.lr_lat - self._current_area_map.ul_lat)) * map_dims.height()
 
-                self.showImageContourOnMinimap(img, contour_coordinates)
+                    self._img_contour._bottomLeftX = ((img_lower_left_lon - self._current_area_map.ul_lon) / (
+                    self._current_area_map.lr_lon - self._current_area_map.ul_lon)) * map_dims.width()
+                    self._img_contour._bottomLeftY = ((img_lower_left_lat - self._current_area_map.ul_lat) / (
+                    self._current_area_map.lr_lat - self._current_area_map.ul_lat)) * map_dims.height()
+
+                    self.showImageContourOnMinimap(self._img_contour)
+                else:
+                    print "Error! Selected image does not exist in the database"
+                    return
 
     def restoreOriginalPixmap(self):
         self._map.setPixmap(self._original_pixmap)
@@ -65,20 +86,43 @@ class MiniMap(QtWidgets.QGraphicsView, Observer):
             self._map.setPixmap(self._map.pixmap().scaled(viewrect.width(), viewrect.height(), QtCore.Qt.KeepAspectRatio))
             self.centerOn(self._map.pixmap().rect().center())
 
-            return self._map.pixmap() # optional return for when one needs to continue working with this pixmap (such as drawing on top of it)
+            return self._map.pixmap()  # optional return for when one needs to continue working with this pixmap (such as drawing on top of it)
 
-    # placeholder for the actual function that will be used - overlay funcs below are for testing
-    def showImageContourOnMinimap(self, current_image, contour_coords):
-        pixmap_marked_copy = QtGui.QPixmap(self._map_full_filepath)
-        self._map.setPixmap(pixmap_marked_copy)
-        scaled_pixmap_copy = self.fitInView()
+    def showImageContourOnMinimap(self, contour_coords):
 
-        painter = QtGui.QPainter()
-        has_painter_started = painter.begin(scaled_pixmap_copy)
-        if not has_painter_started:
-            pass
-        else:
-            painter.setPen(QtGui.QColor("red"))
-            painter.drawRect(contour_coords)
-            painter.end()
-        self._map.setPixmap(scaled_pixmap_copy)
+        line_item1 = QtWidgets.QGraphicsLineItem(contour_coords._topLeftX, contour_coords._topLeftY,
+                                                 contour_coords._topRightX, contour_coords._topRightY)
+        line_item2 = QtWidgets.QGraphicsLineItem(contour_coords._topRightX, contour_coords._topRightY,
+                                                 contour_coords._bottomRightX, contour_coords._bottomRightY)
+        line_item3 = QtWidgets.QGraphicsLineItem(contour_coords._bottomRightX, contour_coords._bottomRightY,
+                                                 contour_coords._bottomLeftX, contour_coords._bottomLeftY)
+        line_item4 = QtWidgets.QGraphicsLineItem(contour_coords._bottomLeftX, contour_coords._bottomLeftY,
+                                                 contour_coords._topLeftX, contour_coords._topLeftY)
+
+        pen = QtGui.QPen()
+        pen.setColor(QtCore.Qt.red)
+        pen.setWidth(2)
+        line_item1.setPen(pen)
+        line_item2.setPen(pen)
+        line_item3.setPen(pen)
+        line_item4.setPen(pen)
+
+        self._scene.addItem(line_item1)
+        self._scene.addItem(line_item2)
+        self._scene.addItem(line_item3)
+        self._scene.addItem(line_item4)
+
+# utility class to hold and access current image corner coordinates in a
+class Contour():
+    def __init__(self):
+        self._topLeftX = 0
+        self._topLeftY = 0
+
+        self._topRightX = 0
+        self._topRightY = 0
+
+        self._bottomRightX = 0
+        self._bottomRightY = 0
+
+        self._bottomLeftX = 0
+        self._bottomLeftY = 0

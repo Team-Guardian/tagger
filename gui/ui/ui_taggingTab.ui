@@ -93,7 +93,13 @@
        </property>
        <layout class="QVBoxLayout" name="verticalLayout_3">
         <item>
-         <widget class="QListWidget" name="list_images"/>
+         <widget class="QListWidget" name="list_images">
+          <item>
+           <property name="text">
+            <string>20160430_111051_217148.jpg</string>
+           </property>
+          </item>
+         </widget>
         </item>
         <item>
          <layout class="QGridLayout" name="gridLayout_2">
