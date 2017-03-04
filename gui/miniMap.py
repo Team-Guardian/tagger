@@ -15,6 +15,11 @@ class MiniMap(QtWidgets.QGraphicsView, Observer):
         self.setScene(self._scene)
         self._img_contour = Contour()
 
+        # construct an empty pixmap object placeholder and show it
+        self._original_pixmap = QtGui.QPixmap(self._map.boundingRect().width(), self._map.boundingRect().height())
+        self._map.setPixmap(self._original_pixmap)
+        self.fitInView()
+
         # configure MiniMap to be an observer of TaggingTab
         self.window().addObserver(self)
 
