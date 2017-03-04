@@ -1,4 +1,4 @@
-from PyQt5 import QtWidgets, QtGui, QtCore
+from PyQt5 import QtWidgets, QtGui
 from PyQt5.QtWidgets import QDialog, QTableWidgetItem
 
 from ui.ui_taggingTab import Ui_TaggingTab
@@ -90,6 +90,7 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
     def currentImageChanged(self, current, _):
         path = current.text()
         self.openImage(path, self.viewer_single)
+        self.notifyObservers("CURRENT_IMG_CHANGED", None, path)
 
     def openImage(self, path, viewer):
         viewer.setPhoto(QtGui.QPixmap(path))
@@ -103,3 +104,6 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
     def setImageRow(self, row):
         if 0 <= row < self.list_images.count():
             self.list_images.setCurrentRow(row)
+
+    def getSelectedImageSize(self):
+        return self.viewer_single.getImageSize()

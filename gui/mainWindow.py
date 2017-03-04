@@ -20,6 +20,7 @@ class MainWindow(QtWidgets.QMainWindow, Observable):
         self.setupTab = SetupTab()
         self.ui.tabWidget.addTab(self.setupTab, "Setup")
 
+
         self.taggingTab = TaggingTab()
         self.taggingTab.viewer_single.viewport().installEventFilter(self)
         self.ui.tabWidget.addTab(self.taggingTab, "Tagging")
@@ -42,3 +43,14 @@ class MainWindow(QtWidgets.QMainWindow, Observable):
                     self.ui.statusbar.showMessage('x: %d, y: %d' % (round(point.x()), round(point.y())))
 
         return QtWidgets.QWidget.eventFilter(self, source, event)
+
+    def resizeEvent(self, resizeEvent):
+        openedTab = self.ui.tabWidget.currentWidget()
+        imageViewers = openedTab.findChildren(QtWidgets.QGraphicsView)
+    
+        # if no PhotoViewers exist in current tab, do nothing
+        if imageViewers == None:
+            pass
+        else:
+            for imgViewer in imageViewers:
+                imgViewer.fitInView()
