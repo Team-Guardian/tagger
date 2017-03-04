@@ -19,7 +19,7 @@ class PhotoItem(QtWidgets.QGraphicsPixmapItem, Observable):
 
     def mousePressEvent(self, event):
         if event.button() == QtCore.Qt.LeftButton:
-            print "Left Button"
+            event.ignore() # Need this to enable click-and-drag panning
         elif event.button() == QtCore.Qt.RightButton:
             current_action = self.context_menu.exec_(QtCore.QPoint(event.screenPos().x(), event.screenPos().y()))
             for action in self.context_menu.actions():

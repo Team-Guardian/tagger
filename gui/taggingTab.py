@@ -28,13 +28,15 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
             observer.notify(event, id, data)
 
         if event == "MARKER_CREATE_REQUEST":
-            marker = MarkerItem()
-            marker.addObserver(self)
             _event, _action = data
+            marker = MarkerItem(initial_zoom=self.viewer_single._zoom)
+            marker.addObserver(self)
             scenePoint = _event.scenePos()
             markerXPos = scenePoint.x() - marker.pixmap().size().width() / 2  # To position w.r.t. center of pixMap
             markerYPos = scenePoint.y() - marker.pixmap().size().height() / 2 # To position w.r.t. center of pixMap
             marker.setPos(markerXPos, markerYPos)
+            # The following line makes sure that the scaling happens w.r.t. center of pixMap
+            marker.setTransformOriginPoint(marker.pixmap().size().width() / 2, marker.pixmap().size().height() / 2)
             self.viewer_single.getScene().addItem(marker)
 
         elif event == "MARKER_DELETE":
@@ -99,12 +101,13 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
 
                     tag.save()
                     self.notifyObservers("TAG_EDITED", None, tag)
+                    self.viewer_single.getPhotoItem().context_menu.updateTagItem(old_subtype, subtype)
 
     def removeTag(self):
         row = self.list_tags.currentRow()
         tag = self.list_tags.item(row, 0).getTag()
         if row >= 0:
-            self.tag_context_menu.removeTagItem(self.list_tags.item(row, 1).text())
+            self.viewer_single.getPhotoItem().context_menu.removeTagItem(self.list_tags.item(row, 1).text())
             self.list_tags.removeRow(row)
             self.notifyObservers("TAG_DELETED", None, tag)
 
