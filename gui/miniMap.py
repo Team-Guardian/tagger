@@ -40,14 +40,10 @@ class MiniMap(QtWidgets.QGraphicsView, Observer):
                     img = Image.objects.filter(filename=data).last()
                     map_dims = self._map.boundingRect()
 
-                    site_elevation = img.flight.reference_altitude
-                    (img_upper_left_lat, img_upper_left_lon) = utils.geolocate.geolocate_pixel(img, site_elevation, 0, 0)
-                    (img_upper_right_lat, img_upper_right_lon) = utils.geolocate.geolocate_pixel(img, site_elevation,
-                                                                                                 map_dims.width(), 0)
-                    (img_lower_right_lat, img_lower_right_lon) = utils.geolocate.geolocate_pixel(img, site_elevation,
-                                                                                                 map_dims.width(), map_dims.height())
-                    (img_lower_left_lat, img_lower_left_lon) = utils.geolocate.geolocate_pixel(img, site_elevation,
-                                                                                               0, map_dims.height())
+                    (img_upper_left_lat, img_upper_left_lon) = utils.geolocate.geolocate_pixel(img, 0, 0)
+                    (img_upper_right_lat, img_upper_right_lon) = utils.geolocate.geolocate_pixel(img, map_dims.width(), 0)
+                    (img_lower_right_lat, img_lower_right_lon) = utils.geolocate.geolocate_pixel(img, map_dims.width(), map_dims.height())
+                    (img_lower_left_lat, img_lower_left_lon) = utils.geolocate.geolocate_pixel(img, 0, map_dims.height())
 
                     # interpolate the location of the image on the minimap (in px)
                     self._img_contour._topLeftX = ((img_upper_left_lon - self._current_area_map.ul_lon) / (
@@ -102,6 +98,7 @@ class MiniMap(QtWidgets.QGraphicsView, Observer):
         pen = QtGui.QPen()
         pen.setColor(QtCore.Qt.red)
         pen.setWidth(2)
+
         line_item1.setPen(pen)
         line_item2.setPen(pen)
         line_item3.setPen(pen)

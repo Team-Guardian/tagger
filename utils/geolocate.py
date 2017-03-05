@@ -1,13 +1,16 @@
 from math import cos, sin, sqrt, radians, degrees
 from math import acos, asin, atan2
+import utils.xmlParser
 import numpy
 
-def geolocate_pixel(img, site_elevation, pu, pv):
+def geolocate_pixel(img, pu, pv):
     lat = radians(img.latitude)
     lon = radians(img.longitude)
     # maybe these can be useful - no idea what these do
     #orig_roll = roll
     #roll = atan(cos(img.pitch)*tan(orig_roll))#RMissue:8, corrects roll for img.pitched axis
+
+    site_elevation = img.flight.reference_altitude
 
     # choose a reference location inside flight area
     latRef = radians(49.903867)
@@ -22,9 +25,7 @@ def geolocate_pixel(img, site_elevation, pu, pv):
 
     rotationCameraToNed = createRotationCameraToNed(img.pitch, img.roll, img.yaw)
 
-    intrinsicMatrix = numpy.array([[3446.85229, 0, 1477.50261],
-                                   [0, 3431.11804, 1002.49563],
-                                   [0, 0, 1]])
+    intrinsicMatrix = utils.xmlParser.getIntrinsicMatrix(img.flight.intrinsic_matrix)
 
     # image frame (pixel location) column vector
     imagePoint = numpy.array([[pu],
