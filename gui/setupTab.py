@@ -21,6 +21,7 @@ class SetupTab(QtWidgets.QWidget, Ui_SetupTab, Observable):
         self.button_loadFlight.clicked.connect(self.loadFlight)
         self.button_createFlight.clicked.connect(self.createFlight)
         self.button_selectAreaMap.clicked.connect(self.selectAreaMap)
+        self.button_selectIntrinsicMatrix.clicked.connect(self.selectIntrinsicMatrix)
 
     def addFlightToUi(self, flight):
         self.combo_flights.addItem(flight.location + " " + str(flight.date))
@@ -33,6 +34,7 @@ class SetupTab(QtWidgets.QWidget, Ui_SetupTab, Observable):
         elevation = float(self.line_siteElevation.text())
         date = self.edit_flightDate.text()
         area_map = self.line_areaMap.text()
+        intrinsic_matrix = self.line_IntrinsicMatrix.text()
 
         if AreaMap.objects.filter(name=area_map).exists():
             am = AreaMap.objects.filter(name=area_map).last()
@@ -40,11 +42,19 @@ class SetupTab(QtWidgets.QWidget, Ui_SetupTab, Observable):
             ul_lat, ul_lon, lr_lat, lr_lon = loadGeotiff('./area_maps/area_map')
             am = create_areamap(area_map, area_map + '.png', ul_lat, ul_lon, lr_lat, lr_lon)
 
-        f = create_flight(location, elevation, "default.xml", date, am)
+        f = create_flight(location, elevation, intrinsic_matrix + '.xml', date, am)
         self.notifyObservers("FLIGHT_CREATED", f.img_path, f)
 
     def selectAreaMap(self):
-        filepath = QtWidgets.QFileDialog.getOpenFileName(self, "Select Area Map to Load", "./area_maps", "Images (*.png)")
+        filepath = QtWidgets.QFileDialog.getOpenFileName(self, "Select Area Map to Load", "./area_maps",
+                                                         "Images (*.png)")
         file_info = QtCore.QFileInfo(filepath[0])
         filename = file_info.baseName()
         self.line_areaMap.setText(filename)
+
+    def selectIntrinsicMatrix(self):
+        filepath = QtWidgets.QFileDialog.getOpenFileName(self, "Select Intrinsic Matrix to Load", "./intrinsic_matrices",
+                                                         "XML Files (*.xml)")
+        file_info = QtCore.QFileInfo(filepath[0])
+        filename = file_info.baseName()
+        self.line_IntrinsicMatrix.setText(filename)
