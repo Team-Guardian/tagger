@@ -14,7 +14,6 @@ class Controller(Observer):
         self.currentFlight = None
         self.tags = []
         self.images = []
-        self.markers = []
 
         self.window = MainWindow()
         self.window.show()
@@ -24,7 +23,6 @@ class Controller(Observer):
         # populate lists
         for flight in self.flights.values():
             self.window.setupTab.addFlightToUi(flight)
-
 
     def notify(self, event, id, data):
         if event is "FLIGHT_LOAD":
@@ -36,29 +34,7 @@ class Controller(Observer):
             self.tags.append(data)
         elif event is "TAG_DELETED":
             self.tags.remove(data)
-            data.delete()
-        elif event is "MARKER_CREATE":
-            print "Marker Created:", data[1].text()
-            self.addTaggingContextMenuItem(data)
-        elif event is "TAG_EDITED":
-            tag = self.tags[id]
-            old_tag = tag
-
-            tag.type = data.type
-            tag.subtype = data.subtype
-            tag.symbol = data.symbol
-            tag.num_occurrences = data.num_occurrences
-            tag.save()
-
-            self.updateTaggingContextMenuItem(old_tag, tag)
-        elif event is "MARKER_DELETED":
-            print "Marker Deleted:", data.getParentTag().type, data.getParentTag().subtype
-
-    def addTaggingContextMenuItem(self, tag):
-        self.window.taggingTab.viewer_single.getPhotoItem().context_menu.addTagToContextMenu(tag)
-
-    def updateTaggingContextMenuItem(self, old_tag, tag):
-        self.window.taggingTab.viewer_single.getPhotoItem().context_menu.updateTagItem(old_tag, tag)
+            delete_marker(data)
 
     def loadFlight(self, id):
         self.currentFlight = self.flights[id]
@@ -72,17 +48,6 @@ class Controller(Observer):
         for tag in self.tags:
             self.window.taggingTab.addTagToUi(tag)
 
-    def deleteTaggingContextMenuItem(self, tag):
-        self.window.taggingTab.viewer_single.getPhotoItem().context_menu.removeTagItem(tag)
-
-    def deleteTagMarkers(self, tag):
-        sceneObjects = self.window.taggingTab.viewer_single.getScene().items()
-        for item in sceneObjects:
-            if type(item) is MarkerItem:
-                if item.getParentTag() is tag:
-                    self.window.taggingTab.viewer_single.getScene().removeItem(item)
-                    #TODO - Add DB integration here
-
     def loadMap(self, flight):
         self.window.taggingTab.minimap.setMinimap(flight)
 
@@ -90,7 +55,6 @@ class Controller(Observer):
         self.images = get_all_images_for_flight(self.currentFlight)
         for i in self.images:
             self.window.taggingTab.addImageToUi(i)
-
 
 if __name__ == '__main__':
 

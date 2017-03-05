@@ -15,18 +15,21 @@ class TagContextMenu(QtWidgets.QMenu):
         if len(self.actions()) > 1:
             self.defaultActionHandle.setVisible(False)
 
-    def updateTagItem(self, _old_tag, _new_tag):
+    def updateTagItem(self, tag):
         for i, _data in enumerate(self.tag_action_tuples):
             _tag, _action = _data
-            if _tag == _old_tag:
-                _action.setText(_new_tag.type + ", " + _new_tag.subtype)
+            if _tag is tag:
+                _action.setText(tag.type + ", " + tag.subtype)
                 self.tag_action_tuples.pop(i)
-                self.tag_action_tuples.append((_new_tag, _action))
+                self.tag_action_tuples.append((tag, _action))
 
     def removeTagItem(self, tag):
         for _tag, _action in self.tag_action_tuples:
             if _tag == tag:
+                self.tag_action_tuples.remove((_tag, _action))
                 self.removeAction(_action)
 
         if len(self.actions()) == 1:
             self.defaultActionHandle.setVisible(True)
+
+

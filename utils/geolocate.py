@@ -2,6 +2,14 @@ from math import cos, sin, sqrt, radians, degrees
 from math import acos, asin, atan2
 import numpy
 
+
+def get_pixel_from_lat_lon(image, image_width, image_height, site_elevation, lat, lon): #TODO
+    origin_lat, origin_lon = geolocate_pixel(image, site_elevation, 0, 0)
+    bottom_right_lat, bottom_right_lon = geolocate_pixel(image, site_elevation, image_width, image_height)
+    x = ((lon - origin_lon)/(bottom_right_lon - origin_lon))*image_width
+    y = ((lat - origin_lat)/(bottom_right_lat - origin_lat))*image_height
+    return x, y
+
 def geolocate_pixel(img, site_elevation, pu, pv):
     lat = radians(img.latitude)
     lon = radians(img.longitude)
@@ -24,7 +32,7 @@ def geolocate_pixel(img, site_elevation, pu, pv):
 
     intrinsicMatrix = numpy.array([[3446.85229, 0, 1477.50261],
                                    [0, 3431.11804, 1002.49563],
-                                   [0, 0, 1]])
+                                   [0, 0, 1]], dtype=numpy.float64)
 
     # image frame (pixel location) column vector
     imagePoint = numpy.array([[pu],

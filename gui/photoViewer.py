@@ -62,6 +62,7 @@ class PhotoViewer(QtWidgets.QGraphicsView):
 
             if self._zoom > 0:
                 self.scale(factor, factor)
+
                 for item in marker_items:
                     if event.angleDelta().y() > 0:
                         item.notify("SCENE_ZOOM", 0, 0.8)
@@ -69,6 +70,7 @@ class PhotoViewer(QtWidgets.QGraphicsView):
                         item.notify("SCENE_ZOOM", 0, 1.25)
             elif self._zoom == 0:
                 self.fitInView()
+
                 for item in marker_items:
                     item.notify("SCENE_RESET", 0, factor)
             else:

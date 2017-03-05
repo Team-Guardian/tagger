@@ -1,14 +1,15 @@
 from PyQt5 import QtWidgets, QtGui
-from PyQt5.QtWidgets import QDialog, QTableWidgetItem
+from PyQt5.QtWidgets import QDialog
 
 from ui.ui_taggingTab import Ui_TaggingTab
 from tagDialog import TagDialog
 from db.dbHelper import *
 from observer import *
 from utils.imageInfo import createImageWithExif
+from utils.geolocate import geolocate_pixel, get_pixel_from_lat_lon
+from utils.geographicUtilities import *
 from gui.imageListItem import ImageListItem
 from gui.tagTableItem import TagTableItem
-from tagContextMenu import TagContextMenu
 from markerItem import MarkerItem
 
 
@@ -23,15 +24,16 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
         self.setupUi(self)
         self.connectButtons()
 
-    def notify(self, event, id, data):
-        for observer in self.observers:
-            observer.notify(event, id, data)
+        self.viewer_single.getPhotoItem().addObserver(self)
 
+    def notify(self, event, id, data):
         if event is "MARKER_CREATE":
             self.addMarker(data)
 
         elif event is "MARKER_DELETED":
             self.viewer_single.getScene().removeItem(data)
+            data.getMarker().tag.num_occurrences -= 1
+            data.getMarker().delete()
 
     def connectButtons(self):
         self.button_addTag.clicked.connect(self.addTag)
@@ -63,34 +65,9 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
         # update all columns in row with these texts
         texts = [tag.type, tag.subtype, str(tag.num_occurrences), tag.symbol]
         [self.list_tags.setItem(row, col, TagTableItem(text, tag)) for col, text in enumerate(texts)]
-        self.tag_context_menu.addTagToContextMenu(tag.subtype)
 
-        # add tag to context men
+        # add tag to context menu
         self.viewer_single.getPhotoItem().context_menu.addTagToContextMenu(tag)
-
-    def addMarker(self, data):
-        _event, _tag = data
-        # TODO
-        # Create db marker object here
-        # Pass marker.pk or the marker db object to the addMarkerToUi function. Remove association with tag object.
-
-        self.addMarkerToUi(data)
-
-    def addMarkerToUi(self, data):
-        _event, _tag = data
-
-        marker = MarkerItem(parent_tag=_tag, initial_zoom=self.viewer_single.zoomFactor())
-        marker.addObserver(self)
-
-        scenePoint = _event.scenePos()
-        markerXPos = scenePoint.x() - marker.pixmap().size().width() / 2  # To position w.r.t. center of pixMap
-        markerYPos = scenePoint.y() - marker.pixmap().size().height() / 2  # To position w.r.t. center of pixMap
-        marker.setPos(markerXPos, markerYPos)
-
-        # The following line makes sure that the scaling happens w.r.t. center of pixMap
-        marker.setTransformOriginPoint(marker.pixmap().size().width() / 2, marker.pixmap().size().height() / 2)
-
-        self.viewer_single.getScene().addItem(marker)
 
     def editTag(self):
         row = self.list_tags.currentRow()
@@ -111,21 +88,67 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
                     tag.subtype = dialog.subtype.text()
                     tag.num_occurrences = -1
                     tag.symbol = dialog.icons.currentText()
+                    tag.save()
 
                     # update all columns in row with these texts
                     texts = [tag.type, tag.subtype, str(tag.num_occurrences), tag.symbol]
                     [self.list_tags.setItem(row, col, TagTableItem(text, tag)) for col, text in enumerate(texts)]
 
-                    tag.save()
+                    # update tag in context menu
+                    self.viewer_single.getPhotoItem().context_menu.updateTagItem(tag)
+
                     self.notifyObservers("TAG_EDITED", None, tag)
-                    self.viewer_single.getPhotoItem().context_menu.updateTagItem(old_subtype, subtype)
 
     def removeTag(self):
         row = self.list_tags.currentRow()
         tag = self.list_tags.item(row, 0).getTag()
         if row >= 0:
             self.list_tags.removeRow(row)
+            self.viewer_single.getPhotoItem().context_menu.removeTagItem(tag)
+            self.deleteMarkers(tag=tag)
             self.notifyObservers("TAG_DELETED", None, tag)
+
+    def addMarker(self, data):
+        event, tag = data
+        pu = event.scenePos().x()
+        pv = event.scenePos().y()
+        lat, lon = geolocate_pixel(self.currentImage, self.currentFlight.reference_altitude, pu, pv)
+        m = create_marker(tag=tag, image=self.currentImage, latitude=lat, longitude=lon)
+        m.tag.num_occurrences += 1
+        self.addMarkerToUi(pu, pv, m, 1.0) # 1.0 means fully opaque for markers created in current image
+        self.notifyObservers("MARKER_CREATED", None, m)
+
+    def addMarkerToUi(self, x, y, marker, opacity):
+        # Create MarkerItem
+        image_width = self.getSelectedImageSize().width()
+        initial_zoom = self.viewer_single.zoomFactor()
+        marker = MarkerItem(marker, image_width=image_width, initial_zoom=initial_zoom)
+        marker.addObserver(self)
+
+        # Correctly position the MarkerItem graphic on the UI
+        markerXPos = x - marker.pixmap().size().width() / 2  # To position w.r.t. center of pixMap
+        markerYPos = y - marker.pixmap().size().height() / 2  # To position w.r.t. center of pixMap
+        marker.setPos(markerXPos, markerYPos)
+
+        # The following line makes sure that the scaling happens w.r.t. center of pixMap
+        marker.setTransformOriginPoint(marker.pixmap().size().width() / 2, marker.pixmap().size().height() / 2)
+
+        # Set image opacity
+        marker.setOpacity(opacity)
+
+        self.viewer_single.getScene().addItem(marker)
+
+    def deleteMarkers(self, tag=None):
+        sceneObjects = self.viewer_single.getScene().items()
+        for item in sceneObjects:
+            if type(item) is MarkerItem:
+                if tag != None:
+                    if item.getMarker().tag == tag:
+                        self.viewer_single.getScene().removeItem(item)
+                        item.getMarker().tag.num_occurrences -= 1
+                        delete_marker(item.getMarker())
+                else:
+                    self.viewer_single.getScene().removeItem(item)
 
     def toggleImageReviewed(self):
         item = self.list_images.currentItem()
@@ -149,13 +172,27 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
         self.list_images.addItem(item)
 
     def currentImageChanged(self, current, _):
+        # Clear the scene
+        self.deleteMarkers()
+
         self.currentImage = current.getImage()
         self.openImage(self.currentImage.filename, self.viewer_single)
         self.notifyObservers("CURRENT_IMG_CHANGED", None, self.currentImage.filename)
 
+        # Display markers for this image
+        image_width = self.viewer_single.getImageSize().width()
+        image_height = self.viewer_single.getImageSize().height()
+        marker_list = self.getMarkersForImage(self.currentImage, image_width, image_height)
+        reference_altitude = self.currentFlight.reference_altitude
+        for marker in marker_list: #TODO
+            x, y = get_pixel_from_lat_lon(self.currentImage, image_width, image_height, reference_altitude, marker.latitude, marker.longitude)
+            opacity = 1.0
+            if marker.image != self.currentImage:
+                opacity = 0.5
+            self.addMarkerToUi(x, y, marker, opacity)
+
     def openImage(self, path, viewer):
         viewer.setPhoto(QtGui.QPixmap(path))
-        viewer.getPhotoItem().addObserver(self)
 
     def previousImage(self):
         self.setImageRow(self.list_images.currentRow() - 1)
@@ -175,3 +212,35 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
 
     def getCurrentFlight(self):
         return self.currentFlight
+
+    def getMarkersForImage(self, image, image_width, image_height):
+        list = []
+        for m in get_all_markers():
+            if m.image == image:
+                list.append(m)
+            else:
+                image_bounds = PolygonBounds()
+
+                #The order of UL UR LR LL is important
+                # Upper Left
+                lat, lon = geolocate_pixel(image, self.currentFlight.reference_altitude, 0, 0)
+                image_bounds.addVertex(Point(lat, lon))
+
+                # Upper Right
+                lat, lon = geolocate_pixel(image, self.currentFlight.reference_altitude, image_width, 0)
+                image_bounds.addVertex(Point(lat, lon))
+
+                # Lower Right
+                lat, lon = geolocate_pixel(image, self.currentFlight.reference_altitude, image_width, image_height)
+                image_bounds.addVertex(Point(lat, lon))
+
+                # Lower Left
+                lat, lon = geolocate_pixel(image, self.currentFlight.reference_altitude, 0, image_height)
+                image_bounds.addVertex(Point(lat, lon))
+
+                marker_loc = Point(m.latitude, m.longitude)
+
+                if image_bounds.isPointInsideBounds(marker_loc):
+                    list.append(m)
+
+        return list

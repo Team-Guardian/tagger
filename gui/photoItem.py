@@ -13,10 +13,6 @@ class PhotoItem(QtWidgets.QGraphicsPixmapItem, Observable):
 
         self.context_menu = TagContextMenu()
 
-    def notify(self, event, id, data):
-        for observer in self.observers:
-            observer.notify(event, id, data)
-
     def mousePressEvent(self, event):
         if event.button() == QtCore.Qt.LeftButton:
             event.ignore() # Need this to enable click-and-drag panning
@@ -24,6 +20,4 @@ class PhotoItem(QtWidgets.QGraphicsPixmapItem, Observable):
             current_action = self.context_menu.exec_(QtCore.QPoint(event.screenPos().x(), event.screenPos().y()))
             for _tag, _action in self.context_menu.tag_action_tuples:
                 if current_action == _action:
-                    scenePoint = event.scenePos() # For debugging
-                    print _action.text(), round(scenePoint.x()), round(scenePoint.y()) # For debugging
-                    self.notify("MARKER_CREATE", 0, [event, _tag])
+                    self.notifyObservers("MARKER_CREATE", None, [event, _tag])
