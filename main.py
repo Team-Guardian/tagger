@@ -4,6 +4,7 @@ from PyQt5 import QtWidgets
 from db.dbHelper import *
 from gui.mainWindow import MainWindow
 from observer import *
+from gui.markerItem import MarkerItem
 
 
 class Controller(Observer):
@@ -38,6 +39,7 @@ class Controller(Observer):
             data.delete()
         elif event is "MARKER_CREATE":
             print "Marker Created:", data[1].text()
+            self.addTaggingContextMenuItem(data)
         elif event is "TAG_EDITED":
             tag = self.tags[id]
             old_tag = tag
@@ -48,11 +50,14 @@ class Controller(Observer):
             tag.num_occurrences = data.num_occurrences
             tag.save()
 
-            self.updateTaggingContextMenu(old_tag, tag)
+            self.updateTaggingContextMenuItem(old_tag, tag)
         elif event is "MARKER_DELETED":
             print "Marker Deleted:", data.getParentTag().type, data.getParentTag().subtype
 
-    def updateTaggingContextMenu(self, old_tag, tag):
+    def addTaggingContextMenuItem(self, tag):
+        self.window.taggingTab.viewer_single.getPhotoItem().context_menu.addTagToContextMenu(tag)
+
+    def updateTaggingContextMenuItem(self, old_tag, tag):
         self.window.taggingTab.viewer_single.getPhotoItem().context_menu.updateTagItem(old_tag, tag)
 
     def loadFlight(self, id):
@@ -66,6 +71,17 @@ class Controller(Observer):
         self.tags = get_all_tags()
         for tag in self.tags:
             self.window.taggingTab.addTagToUi(tag)
+
+    def deleteTaggingContextMenuItem(self, tag):
+        self.window.taggingTab.viewer_single.getPhotoItem().context_menu.removeTagItem(tag)
+
+    def deleteTagMarkers(self, tag):
+        sceneObjects = self.window.taggingTab.viewer_single.getScene().items()
+        for item in sceneObjects:
+            if type(item) is MarkerItem:
+                if item.getParentTag() is tag:
+                    self.window.taggingTab.viewer_single.getScene().removeItem(item)
+                    #TODO - Add DB integration here
 
     def loadMap(self, flight):
         self.window.taggingTab.minimap.setMinimap(flight)

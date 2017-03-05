@@ -124,7 +124,6 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
         row = self.list_tags.currentRow()
         tag = self.list_tags.item(row, 0).getTag()
         if row >= 0:
-            self.viewer_single.getPhotoItem().context_menu.removeTagItem(self.list_tags.item(row, 1).text())
             self.list_tags.removeRow(row)
             self.notifyObservers("TAG_DELETED", None, tag)
 

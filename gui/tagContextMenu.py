@@ -23,10 +23,10 @@ class TagContextMenu(QtWidgets.QMenu):
                 self.tag_action_tuples.pop(i)
                 self.tag_action_tuples.append((_new_tag, _action))
 
-    def removeTagItem(self, _name):
-        for action in self.actions():
-            if action.text() == _name:
-                self.removeAction(action)
+    def removeTagItem(self, tag):
+        for _tag, _action in self.tag_action_tuples:
+            if _tag == tag:
+                self.removeAction(_action)
 
         if len(self.actions()) == 1:
             self.defaultActionHandle.setVisible(True)
