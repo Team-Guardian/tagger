@@ -38,10 +38,18 @@ def delete_image(image):
     image.delete()
 
 def get_all_images():
-    list = []
-    for l in Image.objects.all():
-        list.append(l)
-    return list
+    images = []
+    for i in Image.objects.all():
+        images.append(i)
+    return images
+
+def get_all_images_for_flight(flight):
+    images = []
+    result = Image.objects.filter(flight=flight)
+    if result.exists():
+        for i in result:
+            images.append(i)
+    return images
 
 # Tag
 def create_tag(type, subtype, symbol, num_occurrences=0):
