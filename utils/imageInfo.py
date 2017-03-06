@@ -1,10 +1,10 @@
 from math import degrees
 import pyexiv2
-from db.models import Image
+from db.dbHelper import create_image
 
 
-# sets telemetry info on Image from the file's EXIF tags
-def loadImageWithExif(path, flight):
+# reads EXIF from file on disk and returns new Image in DB
+def createImageWithExif(path, flight):
     if not flight:
         raise Exception("Need a flight to load an image")
 
@@ -13,9 +13,9 @@ def loadImageWithExif(path, flight):
     telemetry = exif['Exif.Photo.UserComment'].raw_value.split()
     latitude, longitude, altitude = [float(x) for x in telemetry[0:3]]
     pitch, roll, yaw = [degrees(float(x)) for x in telemetry[3:]]
-    return Image(filename=path, flight=flight,
-                 latitude=latitude, longitude=longitude, altitude=altitude,
-                 roll=roll, pitch=pitch, yaw=yaw)
+    return create_image(filename=path, flight=flight,
+                        latitude=latitude, longitude=longitude, altitude=altitude,
+                        roll=roll, pitch=pitch, yaw=yaw)
 
 # load geotiff data and convert image from tiff to png
 def loadGeotiff(img):

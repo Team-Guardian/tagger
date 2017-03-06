@@ -5,7 +5,7 @@ from ui.ui_taggingTab import Ui_TaggingTab
 from tagDialog import TagDialog
 from db.dbHelper import *
 from observer import *
-from utils.imageInfo import loadImageWithExif
+from utils.imageInfo import createImageWithExif
 
 
 class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
@@ -92,12 +92,10 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
                 self.nextImage()
 
     def addImage(self):
-        # TODO: copy image to flight directory
         paths = QtWidgets.QFileDialog.getOpenFileNames(self, "Select images", ".", "Images (*.jpg)")[0]
         for path in paths:
-            image = loadImageWithExif(path, self.currentFlight)
+            image = createImageWithExif(path, self.currentFlight)
             self.addImageToUi(image)
-            # TODO: create in DB when create_image() is merged
 
     def addImageToUi(self, image):
         self.list_images.addItem(image.filename)
