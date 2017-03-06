@@ -118,7 +118,6 @@ class Ui_TaggingTab(object):
         self.button_previous.setText(_translate("TaggingTab", "Previous"))
         self.button_toggleView.setText(_translate("TaggingTab", "Toggle View"))
         self.button_addImage.setText(_translate("TaggingTab", "Add Image"))
-        self.label_5.setText(_translate("TaggingTab", "MINIMAP"))
-
+        
 from gui.miniMap import MiniMap
 from gui.photoViewer import PhotoViewer
