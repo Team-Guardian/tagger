@@ -29,10 +29,11 @@ class Controller(Observer):
 
     def notify(self, event, id, data):
         if event is "FLIGHT_LOAD":
-            self.currentFlight = self.flights[id]
+            self.loadFlight(id)
             self.loadMap(self.currentFlight)
         elif event is "FLIGHT_CREATED":
             self.flights[id] = data
+            self.loadFlight(id)
         elif event is "TAG_CREATED":
             self.tags.append(data)
         elif event is "TAG_EDITED":
@@ -46,8 +47,12 @@ class Controller(Observer):
             tag = self.tags.pop(id)
             tag.delete()
 
+    def loadFlight(self, id):
+        self.currentFlight = self.flights[id]
+
     def loadMap(self, flight):
         self.window.taggingTab.minimap.setMinimap(flight)
+
 
 if __name__ == '__main__':
 
