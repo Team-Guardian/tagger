@@ -3,7 +3,7 @@ from math import acos, asin, atan2
 import utils.xmlParser
 import numpy
 
-def geolocate_pixel(img, pu, pv):
+def geolocatePixel(img, pu, pv):
     lat = radians(img.latitude)
     lon = radians(img.longitude)
     # maybe these can be useful - no idea what these do
