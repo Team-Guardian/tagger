@@ -30,7 +30,6 @@ class Controller(Observer):
     def notify(self, event, id, data):
         if event is "FLIGHT_LOAD":
             self.loadFlight(id)
-            self.loadMap(self.currentFlight)
         elif event is "FLIGHT_CREATED":
             self.flights[id] = data
             self.loadFlight(id)
@@ -49,9 +48,17 @@ class Controller(Observer):
 
     def loadFlight(self, id):
         self.currentFlight = self.flights[id]
+        self.loadMap(self.currentFlight)
+        self.window.taggingTab.currentFlight = self.currentFlight
+        self.loadImages()
 
     def loadMap(self, flight):
         self.window.taggingTab.minimap.setMinimap(flight)
+
+    def loadImages(self):
+        self.images = get_all_images_for_flight(self.currentFlight)
+        for i in self.images:
+            self.window.taggingTab.addImageToUi(i)
 
 
 if __name__ == '__main__':
