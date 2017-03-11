@@ -6,6 +6,7 @@ from tagDialog import TagDialog
 from db.dbHelper import *
 from observer import *
 from utils.imageInfo import createImageWithExif
+from gui.imageListItem import ImageListItem
 
 
 class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
@@ -14,6 +15,7 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
         Observable.__init__(self)
 
         self.currentFlight = None
+        self.currentImage = None
 
         self.setupUi(self)
         self.connectButtons()
@@ -98,12 +100,13 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
             self.addImageToUi(image)
 
     def addImageToUi(self, image):
-        self.list_images.addItem(image.filename)
+        item = ImageListItem(image.filename, image)
+        self.list_images.addItem(item)
 
     def currentImageChanged(self, current, _):
-        path = current.text()
-        self.openImage(path, self.viewer_single)
-        self.notifyObservers("CURRENT_IMG_CHANGED", None, path)
+        self.currentImage = current.getImage()
+        self.openImage(self.currentImage.filename, self.viewer_single)
+        self.notifyObservers("CURRENT_IMG_CHANGED", None, self.currentImage.filename)
 
     def openImage(self, path, viewer):
         viewer.setPhoto(QtGui.QPixmap(path))
