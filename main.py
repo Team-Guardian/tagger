@@ -11,7 +11,7 @@ class Controller(Observer):
         super(Controller, self).__init__()
         self.flights = get_all_flights()
         self.currentFlight = None
-        self.tags = get_all_tags()
+        self.tags = []
         self.images = []
         self.markers = []
 
@@ -24,8 +24,6 @@ class Controller(Observer):
         for flight in self.flights.values():
             self.window.setupTab.addFlightToUi(flight)
 
-        for tag in self.tags:
-            self.window.taggingTab.addTagToUi(tag)
 
     def notify(self, event, id, data):
         if event is "FLIGHT_LOAD":
@@ -35,22 +33,21 @@ class Controller(Observer):
             self.loadFlight(id)
         elif event is "TAG_CREATED":
             self.tags.append(data)
-        elif event is "TAG_EDITED":
-            tag = self.tags[id]
-            tag.type = data.type
-            tag.subtype = data.subtype
-            tag.symbol = data.symbol
-            tag.num_occurrences = data.num_occurrences
-            tag.save()
         elif event is "TAG_DELETED":
-            tag = self.tags.pop(id)
-            tag.delete()
+            self.tags.remove(data)
+            data.delete()
 
     def loadFlight(self, id):
         self.currentFlight = self.flights[id]
+        self.loadTags()
         self.loadMap(self.currentFlight)
         self.window.taggingTab.currentFlight = self.currentFlight
         self.loadImages()
+
+    def loadTags(self):
+        self.tags = get_all_tags()
+        for tag in self.tags:
+            self.window.taggingTab.addTagToUi(tag)
 
     def loadMap(self, flight):
         self.window.taggingTab.minimap.setMinimap(flight)

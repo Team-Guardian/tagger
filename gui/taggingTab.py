@@ -6,6 +6,8 @@ from tagDialog import TagDialog
 from db.dbHelper import *
 from observer import *
 from utils.imageInfo import createImageWithExif
+from gui.imageListItem import ImageListItem
+from gui.tagTableItem import TagTableItem
 
 
 class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
@@ -14,6 +16,7 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
         Observable.__init__(self)
 
         self.currentFlight = None
+        self.currentImage = None
 
         self.setupUi(self)
         self.connectButtons()
@@ -39,22 +42,23 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
                 icon = dialog.icons.currentText()
                 t = create_tag(type=tagType, subtype=subtype, symbol=icon, num_occurrences=int(count))
                 self.addTagToUi(t)
-                self.notifyObservers("TAG_CREATED", -1, t)
+                self.notifyObservers("TAG_CREATED", None, t)
 
     def addTagToUi(self, tag):
         row = self.list_tags.rowCount()
         self.list_tags.insertRow(row)
         # update all columns in row with these texts
-        texts = [tag.type, tag.subtype, tag.num_occurrences, tag.symbol]
-        [self.list_tags.setItem(row, col, QTableWidgetItem(text)) for col, text in enumerate(texts)]
+        texts = [tag.type, tag.subtype, str(tag.num_occurrences), tag.symbol]
+        [self.list_tags.setItem(row, col, TagTableItem(text, tag)) for col, text in enumerate(texts)]
 
     def editTag(self):
         row = self.list_tags.currentRow()
         if row >= 0:
-            tagType = self.list_tags.item(row, 0).text()
-            subtype = self.list_tags.item(row, 1).text()
+            tag = self.list_tags.item(row, 0).getTag()
+            tagType = tag.type
+            subtype = tag.subtype
             count = "0"
-            icon = self.list_tags.item(row, 3).text()
+            icon = tag.symbol
             dialog = TagDialog(title="Edit tag")
             dialog.tagType.setText(tagType)
             dialog.subtype.setText(subtype)
@@ -62,23 +66,24 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
             dialog.icons.setCurrentIndex(index)
             if dialog.exec_() == QDialog.Accepted:
                 if len(dialog.subtype.text()) > 0:
-                    tagType = dialog.tagType.text()
-                    subtype = dialog.subtype.text()
-                    count = "0"
-                    icon = dialog.icons.currentText()
+                    tag.type = dialog.tagType.text()
+                    tag.subtype = dialog.subtype.text()
+                    tag.num_occurrences = -1
+                    tag.symbol = dialog.icons.currentText()
 
                     # update all columns in row with these texts
-                    texts = [tagType, subtype, count, icon]
-                    [self.list_tags.setItem(row, col, QTableWidgetItem(text)) for col, text in enumerate(texts)]
+                    texts = [tag.type, tag.subtype, str(tag.num_occurrences), tag.symbol]
+                    [self.list_tags.setItem(row, col, TagTableItem(text, tag)) for col, text in enumerate(texts)]
 
-                    t = Tag(type=tagType, subtype=subtype, symbol=icon, num_occurrences=int(count))
-                    self.notifyObservers("TAG_EDITED", row, t)
+                    tag.save()
+                    self.notifyObservers("TAG_EDITED", None, tag)
 
     def removeTag(self):
         row = self.list_tags.currentRow()
+        tag = self.list_tags.item(row, 0).getTag()
         if row >= 0:
             self.list_tags.removeRow(row)
-            self.notifyObservers("TAG_DELETED", row, None)
+            self.notifyObservers("TAG_DELETED", None, tag)
 
     def toggleImageReviewed(self):
         item = self.list_images.currentItem()
@@ -98,12 +103,13 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
             self.addImageToUi(image)
 
     def addImageToUi(self, image):
-        self.list_images.addItem(image.filename)
+        item = ImageListItem(image.filename, image)
+        self.list_images.addItem(item)
 
     def currentImageChanged(self, current, _):
-        path = current.text()
-        self.openImage(path, self.viewer_single)
-        self.notifyObservers("CURRENT_IMG_CHANGED", None, path)
+        self.currentImage = current.getImage()
+        self.openImage(self.currentImage.filename, self.viewer_single)
+        self.notifyObservers("CURRENT_IMG_CHANGED", None, self.currentImage.filename)
 
     def openImage(self, path, viewer):
         viewer.setPhoto(QtGui.QPixmap(path))
