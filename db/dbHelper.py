@@ -7,8 +7,8 @@ django.setup()
 from db.models import * # Must go after django.setup()
 
 # AreaMap
-def create_areamap(name, filename, ul_lat, ul_lon, lr_lat, lr_lon):
-    am = AreaMap(name=name, filename=filename, ul_lat=ul_lat, ul_lon=ul_lon, lr_lat=lr_lat, lr_lon=lr_lon)
+def create_areamap(name, filename, ul_lat, ul_lon, ll_lat, ll_lon, lr_lat, lr_lon, ur_lat, ur_lon):
+    am = AreaMap(name=name, filename=filename, ul_lat=ul_lat, ul_lon=ul_lon, ll_lat=ll_lat, ll_lon=ll_lon, lr_lat=lr_lat, lr_lon=lr_lon, ur_lat=ur_lat, ur_lon=ur_lon)
     am.save()
     return am
 

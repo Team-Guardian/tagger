@@ -1,6 +1,7 @@
+# loadGeotiff(...): http://gis.stackexchange.com/questions/57834/how-to-get-raster-corner-coordinates-using-python-gdal-bindings/57837#57837
+
 from math import degrees
-from osgeo import gdal
-import re
+from osgeo import gdal, osr
 import pyexiv2
 
 
@@ -13,42 +14,63 @@ def loadExif(img):
     img.latitude, img.longitude, img.altitude = [float(x) for x in telemetry[0:3]]
     img.pitch, img.roll, img.yaw = [degrees(float(x)) for x in telemetry[3:]]
 
-# load geotiff data and convert image from tiff to png
 def loadGeotiff(img_path):
-    metadata = gdal.Info(img_path + '.tif') # read GeoTIFF metadata from the given image in *.tif* format
+    raster=img_path + '.tif'
+    ds=gdal.Open(raster)
 
-    # find lines containing geo-information in metadata
-    ul = re.search("(Upper Left).+$", metadata, flags=re.MULTILINE)
-    # ur = re.match("(Upper Right).+$", metadata, flags=re.MULTILINE)
-    lr = re.search("(Lower Right).+$", metadata, flags=re.MULTILINE)
-    # ll = re.match("(Lower Left).+$", metadata, flags=re.MULTILINE)
+    gt=ds.GetGeoTransform()
+    cols = ds.RasterXSize
+    rows = ds.RasterYSize
+    ext=GetExtent(gt,cols,rows)
 
-    lon_pattern = re.compile("\d+(?=d.*[W|E])|\d+(?=\'.*[W|E])|\d+\.\d+(?=\"[W|E])|[W|E]")
-    lat_pattern = re.compile("\d+(?!.*[W|E])(?=d.*[N|S])|\d+(?!.*[W|E])(?=\'.*[N|S])|\d+\.\d+(?!.*[W|E])(?=\"[N|S])|[N|S]")
+    src_srs=osr.SpatialReference()
+    src_srs.ImportFromWkt(ds.GetProjection())
+    #tgt_srs=osr.SpatialReference()
+    #tgt_srs.ImportFromEPSG(4326)
+    tgt_srs = src_srs.CloneGeogCS()
 
-    # parse the strings to get geodetic coordinates in DMS
-    ul_dms_lon = lon_pattern.findall(ul.group(0))
-    ul_dms_lat = lat_pattern.findall(ul.group(0))
+    geo_ext=ReprojectCoords(ext,src_srs,tgt_srs)
+    return geo_ext
 
-    # ur_dms_lon = re.findall("(\d+(?=d)|\d+(?=\')|\d+\.\d+(?=\"))(?=.*[W|E])", ur.group(0))
-    # ur_dms_lat = re.findall("(\d+(?=d)|\d+(?=\')|\d+\.\d+(?=\"))(?=.*[N|S])", ur.group(0))
+def GetExtent(gt,cols,rows):
+    ''' Return list of corner coordinates from a geotransform
 
-    lr_dms_lon = lon_pattern.findall(lr.group(0))
-    lr_dms_lat = lat_pattern.findall(lr.group(0))
+        @type gt:   C{tuple/list}
+        @param gt: geotransform
+        @type cols:   C{int}
+        @param cols: number of columns in the dataset
+        @type rows:   C{int}
+        @param rows: number of rows in the dataset
+        @rtype:    C{[float,...,float]}
+        @return:   coordinates of each corner
+    '''
+    ext=[]
+    xarr=[0,cols]
+    yarr=[0,rows]
 
-    # ll_dms_lon = re.findall("(\d+(?=d)|\d+(?=\')|\d+\.\d+(?=\"))(?=.*[W|E])", ll.group(0))
-    # ll_dms_lat = re.findall("(\d+(?=d)|\d+(?=\')|\d+\.\d+(?=\"))(?=.*[N|S])", ll.group(0))
+    for px in xarr:
+        for py in yarr:
+            x=gt[0]+(px*gt[1])+(py*gt[2])
+            y=gt[3]+(px*gt[4])+(py*gt[5])
+            ext.append([x,y])
+        yarr.reverse()
+    return ext
 
-    ul_lat = convertDmsToDecimal(ul_dms_lat)
-    ul_lon = convertDmsToDecimal(ul_dms_lon)
-    lr_lat = convertDmsToDecimal(lr_dms_lat)
-    lr_lon = convertDmsToDecimal(lr_dms_lon)
+def ReprojectCoords(coords,src_srs,tgt_srs):
+    ''' Reproject a list of x,y coordinates.
 
-    return ul_lat, ul_lon, lr_lat, lr_lon
-
-# data is fed in as a list of strings of form [d, m, s, hemisphere]
-def convertDmsToDecimal(dms_coords):
-    degree_coords = float(dms_coords[0]) + ((float(dms_coords[1]) + (float(dms_coords[2])/60) )/60)
-    if dms_coords[3] == 'S' or dms_coords[3] == 'W':
-        degree_coords = -degree_coords
-    return degree_coords
+        @type geom:     C{tuple/list}
+        @param geom:    List of [[x,y],...[x,y]] coordinates
+        @type src_srs:  C{osr.SpatialReference}
+        @param src_srs: OSR SpatialReference object
+        @type tgt_srs:  C{osr.SpatialReference}
+        @param tgt_srs: OSR SpatialReference object
+        @rtype:         C{tuple/list}
+        @return:        List of transformed [[x,y],...[x,y]] coordinates
+    '''
+    trans_coords=[]
+    transform = osr.CoordinateTransformation( src_srs, tgt_srs)
+    for x,y in coords:
+        x,y,z = transform.TransformPoint(x,y)
+        trans_coords.append([x,y])
+    return trans_coords
