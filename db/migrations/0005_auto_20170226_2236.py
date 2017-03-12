@@ -21,12 +21,8 @@ class Migration(migrations.Migration):
                 ('filename', models.CharField(max_length=100, unique=True)),
                 ('ul_lat', models.FloatField()),
                 ('ul_lon', models.FloatField()),
-                ('ll_lat', models.FloatField()),
-                ('ll_lon', models.FloatField()),
                 ('lr_lat', models.FloatField()),
                 ('lr_lon', models.FloatField()),
-                ('ur_lat', models.FloatField()),
-                ('ur_lon', models.FloatField())
             ],
         ),
         migrations.AlterField(
