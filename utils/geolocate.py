@@ -20,7 +20,7 @@ def geolocate_pixel(img, site_elevation, pu, pv):
     # get the coordinates of the plane in NED
     vehicleNed = transformEcefToNed(lat, lon, ecefRef, groundEcef)
 
-    rotationCameraToNed = createRotationCameraToNed(img.pitch, img.roll, img.yaw)
+    rotationCameraToNed = createRotationCameraToNed(radians(img.pitch), radians(img.roll), radians(img.yaw))
 
     intrinsicMatrix = numpy.array([[3446.85229, 0, 1477.50261],
                                    [0, 3431.11804, 1002.49563],
@@ -31,7 +31,7 @@ def geolocate_pixel(img, site_elevation, pu, pv):
                               [pv],
                                [1]], dtype=numpy.float64)
 
-    zNedToCam = (img.altitude - site_elevation) # z-axis is pointing downh
+    zNedToCam = (site_elevation - img.altitude) # z-axis is pointing downh
     yNedToCam = vehicleNed[1]
     xNedToCam = vehicleNed[0]
     posVectorNedToCamera = numpy.array([[xNedToCam],
