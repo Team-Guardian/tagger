@@ -10,12 +10,13 @@ def createImageWithExif(path, flight):
 
     exif = pyexiv2.ImageMetadata(path)
     exif.read()
+    width, height = exif.dimensions
     telemetry = exif['Exif.Photo.UserComment'].raw_value.split()
     # degrees, degrees, metres
     latitude, longitude, altitude = [float(x) for x in telemetry[0:3]]
     # store as degrees, but exif has radians
     pitch, roll, yaw = [degrees(float(x)) for x in telemetry[3:]]
-    return create_image(filename=path, flight=flight,
+    return create_image(filename=path, width=width, height=height, flight=flight,
                         latitude=latitude, longitude=longitude, altitude=altitude,
                         roll=roll, pitch=pitch, yaw=yaw)
 
