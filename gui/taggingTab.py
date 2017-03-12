@@ -126,3 +126,9 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
 
     def getSelectedImageSize(self):
         return self.viewer_single.getImageSize()
+
+    def getCurrentImage(self):
+        return self.currentImage
+
+    def getCurrentFlight(self):
+        return self.currentFlight
