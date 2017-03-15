@@ -4,6 +4,7 @@ from PyQt5 import QtWidgets
 from db.dbHelper import *
 from gui.mainWindow import MainWindow
 from observer import *
+from watcher import Watcher
 
 
 class Controller(Observer):
@@ -11,6 +12,7 @@ class Controller(Observer):
         super(Controller, self).__init__()
         self.flights = get_all_flights()
         self.currentFlight = None
+        self.imageWatcher = Watcher()
         self.tags = []
         self.images = []
         self.markers = []
@@ -19,6 +21,7 @@ class Controller(Observer):
         self.window.show()
         self.window.setupTab.addObserver(self)
         self.window.taggingTab.addObserver(self)
+        self.imageWatcher.event_handler.addObserver(self)
 
         # populate lists
         for flight in self.flights.values():
@@ -36,9 +39,14 @@ class Controller(Observer):
         elif event is "TAG_DELETED":
             self.tags.remove(data)
             data.delete()
+        elif event is "IMAGE_RECEIVED":
+            new_image = data
+            self.images.append(new_image)
+            self.window.taggingTab.addImageToUi(new_image)
 
     def loadFlight(self, id):
         self.currentFlight = self.flights[id]
+        self.imageWatcher.startWatching(self.currentFlight, self.window.setupTab.line_watchDirectory.text())
         self.loadTags()
         self.loadMap(self.currentFlight)
         self.window.taggingTab.currentFlight = self.currentFlight

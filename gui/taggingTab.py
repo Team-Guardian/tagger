@@ -108,7 +108,7 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
 
     def currentImageChanged(self, current, _):
         self.currentImage = current.getImage()
-        self.openImage(self.currentImage.filename, self.viewer_single)
+        self.openImage('./flights/{}/{}'.format(self.currentFlight.img_path, self.currentImage.filename), self.viewer_single)
         self.notifyObservers("CURRENT_IMG_CHANGED", None, self.currentImage.filename)
 
     def openImage(self, path, viewer):

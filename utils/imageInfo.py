@@ -1,5 +1,6 @@
 from math import degrees
 import pyexiv2
+import ntpath
 from db.dbHelper import create_image
 
 
@@ -13,9 +14,14 @@ def createImageWithExif(path, flight):
     telemetry = exif['Exif.Photo.UserComment'].raw_value.split()
     latitude, longitude, altitude = [float(x) for x in telemetry[0:3]]
     pitch, roll, yaw = [degrees(float(x)) for x in telemetry[3:]]
-    return create_image(filename=path, flight=flight,
+    return create_image(filename=getFileNameFromFullPath(path), flight=flight,
                         latitude=latitude, longitude=longitude, altitude=altitude,
                         roll=roll, pitch=pitch, yaw=yaw)
+
+
+def getFileNameFromFullPath(path):
+    head, tail = ntpath.split(path)
+    return tail
 
 # load geotiff data and convert image from tiff to png
 def loadGeotiff(img):

@@ -21,6 +21,7 @@ class SetupTab(QtWidgets.QWidget, Ui_SetupTab, Observable):
         self.button_loadFlight.clicked.connect(self.loadFlight)
         self.button_createFlight.clicked.connect(self.createFlight)
         self.button_selectAreaMap.clicked.connect(self.selectAreaMap)
+        self.button_browseWatchDirectory.clicked.connect(self.selectWatchDirectory)
 
     def addFlightToUi(self, flight):
         self.combo_flights.addItem(flight.location + " " + str(flight.date))
@@ -48,3 +49,7 @@ class SetupTab(QtWidgets.QWidget, Ui_SetupTab, Observable):
         file_info = QtCore.QFileInfo(filepath[0])
         filename = file_info.baseName()
         self.line_areaMap.setText(filename)
+
+    def selectWatchDirectory(self):
+        filepath = QtWidgets.QFileDialog.getExistingDirectory(self, "Select Directory to Watch", "../vision-system/")
+        self.line_watchDirectory.setText(filepath)
