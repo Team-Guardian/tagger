@@ -3,7 +3,7 @@ from math import acos, asin, atan2
 import numpy
 
 
-def get_pixel_from_lat_lon(image, image_width, image_height, site_elevation, pixel_lat, pixel_lon): #TODO: test
+def getPixelFromLatLon(image, image_width, image_height, site_elevation, pixel_lat, pixel_lon): #TODO: test
 
     lat_img = radians(image.latitude)
     lon_img = radians(image.longitude)
@@ -40,7 +40,7 @@ def get_pixel_from_lat_lon(image, image_width, image_height, site_elevation, pix
 
     return x, y
 
-def geolocate_pixel(img, site_elevation, pu, pv):
+def geolocateLatLonFromPixel(img, site_elevation, pu, pv):
     lat = radians(img.latitude)
     lon = radians(img.longitude)
     # maybe these can be useful - no idea what these do

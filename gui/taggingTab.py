@@ -6,7 +6,7 @@ from tagDialog import TagDialog
 from db.dbHelper import *
 from observer import *
 from utils.imageInfo import createImageWithExif
-from utils.geolocate import geolocate_pixel, get_pixel_from_lat_lon
+from utils.geolocate import geolocateLatLonFromPixel, getPixelFromLatLon
 from utils.geographicUtilities import *
 from gui.imageListItem import ImageListItem
 from gui.tagTableItem import TagTableItem
@@ -112,7 +112,7 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
         event, tag = data
         pu = event.scenePos().x()
         pv = event.scenePos().y()
-        lat, lon = geolocate_pixel(self.currentImage, self.currentFlight.reference_altitude, pu, pv)
+        lat, lon = geolocateLatLonFromPixel(self.currentImage, self.currentFlight.reference_altitude, pu, pv)
         m = create_marker(tag=tag, image=self.currentImage, latitude=lat, longitude=lon)
         m.tag.num_occurrences += 1
         self.addMarkerToUi(pu, pv, m, 1.0) # 1.0 means fully opaque for markers created in current image
@@ -185,7 +185,7 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
         marker_list = self.getMarkersForImage(self.currentImage, image_width, image_height)
         reference_altitude = self.currentFlight.reference_altitude
         for marker in marker_list: #TODO
-            x, y = get_pixel_from_lat_lon(self.currentImage, image_width, image_height, reference_altitude, marker.latitude, marker.longitude)
+            x, y = getPixelFromLatLon(self.currentImage, image_width, image_height, reference_altitude, marker.latitude, marker.longitude)
             opacity = 1.0
             if marker.image != self.currentImage:
                 opacity = 0.5
@@ -223,19 +223,19 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
 
                 #The order of UL UR LR LL is important
                 # Upper Left
-                lat, lon = geolocate_pixel(image, self.currentFlight.reference_altitude, 0, 0)
+                lat, lon = geolocateLatLonFromPixel(image, self.currentFlight.reference_altitude, 0, 0)
                 image_bounds.addVertex(Point(lat, lon))
 
                 # Upper Right
-                lat, lon = geolocate_pixel(image, self.currentFlight.reference_altitude, image_width, 0)
+                lat, lon = geolocateLatLonFromPixel(image, self.currentFlight.reference_altitude, image_width, 0)
                 image_bounds.addVertex(Point(lat, lon))
 
                 # Lower Right
-                lat, lon = geolocate_pixel(image, self.currentFlight.reference_altitude, image_width, image_height)
+                lat, lon = geolocateLatLonFromPixel(image, self.currentFlight.reference_altitude, image_width, image_height)
                 image_bounds.addVertex(Point(lat, lon))
 
                 # Lower Left
-                lat, lon = geolocate_pixel(image, self.currentFlight.reference_altitude, 0, image_height)
+                lat, lon = geolocateLatLonFromPixel(image, self.currentFlight.reference_altitude, 0, image_height)
                 image_bounds.addVertex(Point(lat, lon))
 
                 marker_loc = Point(m.latitude, m.longitude)
