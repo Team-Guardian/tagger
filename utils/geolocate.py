@@ -3,11 +3,41 @@ from math import acos, asin, atan2
 import numpy
 
 
-def get_pixel_from_lat_lon(image, image_width, image_height, site_elevation, lat, lon): #TODO
-    origin_lat, origin_lon = geolocate_pixel(image, site_elevation, 0, 0)
-    bottom_right_lat, bottom_right_lon = geolocate_pixel(image, site_elevation, image_width, image_height)
-    x = ((lon - origin_lon)/(bottom_right_lon - origin_lon))*image_width
-    y = ((lat - origin_lat)/(bottom_right_lat - origin_lat))*image_height
+def get_pixel_from_lat_lon(image, image_width, image_height, site_elevation, pixel_lat, pixel_lon): #TODO: test
+
+    lat_img = radians(image.latitude)
+    lon_img = radians(image.longitude)
+
+    intrinsic_matrix = numpy.array([[3446.85229, 0, 1477.50261],
+                                   [0, 3431.11804, 1002.49563],
+                                   [0, 0, 1]], dtype=numpy.float64)
+
+    # choose a reference location inside flight area
+    lat_ref = radians(49.903867)
+    lon_ref = radians(-98.273483)
+
+    reference_ecef = geodeticToEcef(lat_ref, lon_ref, site_elevation)
+
+    aircraft_ecef = geodeticToEcef(lat_img, lon_img, site_elevation)
+    aircraft_ned = transformEcefToNed(lat_img, lon_img, reference_ecef, aircraft_ecef)
+
+    pixel_projection_ecef = geodeticToEcef(radians(pixel_lat), radians(pixel_lon), site_elevation)
+    pixel_projection_ned = transformEcefToNed(radians(pixel_lat), radians(pixel_lon), reference_ecef, pixel_projection_ecef)
+
+    rotation_camera_to_ned = createRotationCameraToNed(radians(image.pitch), radians(image.roll), radians(image.yaw))
+    rotation_ned_to_camera = numpy.linalg.inv(rotation_camera_to_ned)
+    zNedToCam = (site_elevation - image.altitude) # z-axis is pointing down
+    yNedToCam = aircraft_ned[1]
+    xNedToCam = aircraft_ned[0]
+    ned_origin_to_camera = numpy.array([[xNedToCam],
+                                        [yNedToCam],
+                                        [zNedToCam]], dtype=numpy.float64)
+
+    scaled_pixel_location = numpy.dot(numpy.dot(intrinsic_matrix, rotation_ned_to_camera),pixel_projection_ned) - numpy.dot(numpy.dot(intrinsic_matrix, rotation_ned_to_camera), ned_origin_to_camera)
+    scaling_factor = scaled_pixel_location[2]
+    x = scaled_pixel_location[0]/scaling_factor
+    y = scaled_pixel_location[1]/scaling_factor
+
     return x, y
 
 def geolocate_pixel(img, site_elevation, pu, pv):
@@ -39,7 +69,7 @@ def geolocate_pixel(img, site_elevation, pu, pv):
                               [pv],
                                [1]], dtype=numpy.float64)
 
-    zNedToCam = (site_elevation - img.altitude) # z-axis is pointing downh
+    zNedToCam = (site_elevation - img.altitude) # z-axis is pointing down
     yNedToCam = vehicleNed[1]
     xNedToCam = vehicleNed[0]
     posVectorNedToCamera = numpy.array([[xNedToCam],
