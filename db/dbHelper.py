@@ -29,8 +29,8 @@ def get_all_flights():
     return flights
 
 # Image
-def create_image(flight, filename, latitude, longitude, altitude, roll, pitch, yaw):
-    i = Image(flight=flight, filename=filename, latitude=latitude, longitude=longitude, altitude=altitude, roll=roll, pitch=pitch, yaw=yaw)
+def create_image(flight, width, height, filename, latitude, longitude, altitude, roll, pitch, yaw):
+    i = Image(flight=flight, width=width, height=height, filename=filename, latitude=latitude, longitude=longitude, altitude=altitude, roll=roll, pitch=pitch, yaw=yaw)
     i.save()
     return i
 
