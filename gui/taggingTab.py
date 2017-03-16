@@ -120,7 +120,7 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
 
     def addMarkerToUi(self, x, y, marker, opacity):
         # Create MarkerItem
-        image_width = self.getSelectedImageSize().width()
+        image_width = self.currentImage.width
         initial_zoom = self.viewer_single.zoomFactor()
         marker = MarkerItem(marker, image_width=image_width, initial_zoom=initial_zoom)
         marker.addObserver(self)
@@ -180,9 +180,9 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
         self.notifyObservers("CURRENT_IMG_CHANGED", None, self.currentImage.filename)
 
         # Display markers for this image
-        image_width = self.viewer_single.getImageSize().width()
-        image_height = self.viewer_single.getImageSize().height()
-        marker_list = self.getMarkersForImage(self.currentImage, image_width, image_height)
+        image_width = self.currentImage.width
+        image_height = self.currentImage.height
+        marker_list = self.getMarkersForImage(self.currentImage)
         reference_altitude = self.currentFlight.reference_altitude
         for marker in marker_list: #TODO
             x, y = getPixelFromLatLon(self.currentImage, image_width, image_height, reference_altitude, marker.latitude, marker.longitude)
@@ -213,12 +213,15 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
     def getCurrentFlight(self):
         return self.currentFlight
 
-    def getMarkersForImage(self, image, image_width, image_height):
+    def getMarkersForImage(self, image):
         list = []
         for m in get_all_markers():
             if m.image == image:
                 list.append(m)
             else:
+                image_width = image.width
+                image_height = image.height
+
                 image_bounds = PolygonBounds()
 
                 #The order of UL UR LR LL is important
