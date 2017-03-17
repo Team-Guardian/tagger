@@ -4,13 +4,17 @@ from observer import *
 
 # This sub-class is used to display markers for targets.
 class MarkerItem(QtWidgets.QGraphicsPixmapItem, Observable):
-    def __init__(self, marker, image_width, initial_zoom, parent=None):
+    def __init__(self, marker, current_image, initial_zoom, parent=None):
         super(MarkerItem, self).__init__(parent)
         Observable.__init__(self)
 
         self.marker = marker
         self.context_menu = QtWidgets.QMenu()
         self.delete_marker_handle = self.context_menu.addAction("Delete Marker")
+        self.go_to_parent_image_handle = None
+
+        if marker.image != current_image:
+            self.go_to_parent_image_handle = self.context_menu.addAction("Go To Parent Image")
 
         pixMap = QtGui.QPixmap('gui/star_markers/magenta.png') # Fixed for now
 
@@ -18,7 +22,7 @@ class MarkerItem(QtWidgets.QGraphicsPixmapItem, Observable):
         for index in range(initial_zoom):
             initial_zoom_level = initial_zoom_level * 0.8
 
-        pixMap = pixMap.scaledToWidth(0.025*image_width)
+        pixMap = pixMap.scaledToWidth(0.035*current_image.width)
         self.setPixmap(pixMap)
         self.setScale(initial_zoom_level)
 
@@ -33,6 +37,8 @@ class MarkerItem(QtWidgets.QGraphicsPixmapItem, Observable):
             action = self.context_menu.exec_(QtCore.QPoint(event.screenPos().x(), event.screenPos().y()))
             if action == self.delete_marker_handle:
                 self.notifyObservers("MARKER_DELETED", None, self)
+            elif action == self.go_to_parent_image_handle:
+                self.notifyObservers("MARKER_PARENT_IMAGE_CHANGE", None, self.marker.image)
 
     def getMarker(self):
         return self.marker

@@ -35,6 +35,13 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
             data.getMarker().tag.num_occurrences -= 1
             data.getMarker().delete()
 
+        elif event is "MARKER_PARENT_IMAGE_CHANGE":
+            for index in range(self.list_images.count()):
+                list_images_item = self.list_images.item(index)
+                image = list_images_item.getImage()
+                if image == data:
+                    self.list_images.setCurrentItem(list_images_item)
+
     def connectButtons(self):
         self.button_addTag.clicked.connect(self.addTag)
         self.button_editTag.clicked.connect(self.editTag)
@@ -122,7 +129,7 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
         # Create MarkerItem
         image_width = self.currentImage.width
         initial_zoom = self.viewer_single.zoomFactor()
-        marker = MarkerItem(marker, image_width=image_width, initial_zoom=initial_zoom)
+        marker = MarkerItem(marker, current_image=self.currentImage, initial_zoom=initial_zoom)
         marker.addObserver(self)
 
         # Correctly position the MarkerItem graphic on the UI
