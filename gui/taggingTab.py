@@ -24,6 +24,8 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
         self.setupUi(self)
         self.connectButtons()
 
+        self.image_list_item_dict = {}
+
         self.viewer_single.getPhotoItem().addObserver(self)
 
     def notify(self, event, id, data):
@@ -36,11 +38,8 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
             data.getMarker().delete()
 
         elif event is "MARKER_PARENT_IMAGE_CHANGE":
-            for index in range(self.list_images.count()):
-                list_images_item = self.list_images.item(index)
-                image = list_images_item.getImage()
-                if image == data:
-                    self.list_images.setCurrentItem(list_images_item)
+            if data in self.image_list_item_dict:
+                self.list_images.setCurrentItem(self.image_list_item_dict.get(data))
 
     def connectButtons(self):
         self.button_addTag.clicked.connect(self.addTag)
@@ -177,6 +176,7 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
     def addImageToUi(self, image):
         item = ImageListItem(image.filename, image)
         self.list_images.addItem(item)
+        self.image_list_item_dict[image] = item
 
     def currentImageChanged(self, current, _):
         # Clear the scene
