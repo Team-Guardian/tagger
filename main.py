@@ -34,7 +34,9 @@ class Controller(Observer):
             self.tags.append(data)
         elif event is "TAG_DELETED":
             self.tags.remove(data)
-            delete_marker(data)
+            data.delete()
+        elif event is "IMAGE_ADDED":
+            self.images.append(data)
 
     def loadFlight(self, id):
         self.currentFlight = self.flights[id]

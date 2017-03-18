@@ -171,6 +171,7 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
         paths = QtWidgets.QFileDialog.getOpenFileNames(self, "Select images", ".", "Images (*.jpg)")[0]
         for path in paths:
             image = createImageWithExif(path, self.currentFlight)
+            self.notifyObservers("IMAGE_ADDED", None, image)
             self.addImageToUi(image)
 
     def addImageToUi(self, image):
