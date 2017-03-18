@@ -20,7 +20,7 @@ class MarkerItem(QtWidgets.QGraphicsPixmapItem, Observable):
 
         initial_zoom_level = 1
         for index in range(initial_zoom):
-            initial_zoom_level = initial_zoom_level * 0.8
+            initial_zoom_level = initial_zoom_level * 0.8 # Look at photoViewer.py to see why 0.8
 
         pixMap = pixMap.scaledToWidth(0.035*current_image.width)
         self.setPixmap(pixMap)
@@ -34,7 +34,7 @@ class MarkerItem(QtWidgets.QGraphicsPixmapItem, Observable):
 
     def mousePressEvent(self, event):
         if event.button() == QtCore.Qt.RightButton:
-            action = self.context_menu.exec_(QtCore.QPoint(event.screenPos().x(), event.screenPos().y()))
+            action = self.context_menu.exec_(event.screenPos())
             if action == self.delete_marker_handle:
                 self.notifyObservers("MARKER_DELETED", None, self)
             elif action == self.go_to_parent_image_handle:

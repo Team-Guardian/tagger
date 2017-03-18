@@ -4,7 +4,6 @@ from PyQt5 import QtWidgets
 from db.dbHelper import *
 from gui.mainWindow import MainWindow
 from observer import *
-from gui.markerItem import MarkerItem
 
 
 class Controller(Observer):
@@ -34,7 +33,7 @@ class Controller(Observer):
             self.tags.append(data)
         elif event is "TAG_DELETED":
             self.tags.remove(data)
-            data.delete()
+            delete_tag(data) # This also deletes all the markers associated with this tag (Cascaded delete)
         elif event is "IMAGE_ADDED":
             self.images.append(data)
 

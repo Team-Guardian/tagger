@@ -20,8 +20,6 @@ class TagContextMenu(QtWidgets.QMenu):
             _tag, _action = _data
             if _tag is tag:
                 _action.setText(tag.type + ", " + tag.subtype)
-                self.tag_action_tuples.pop(i)
-                self.tag_action_tuples.append((tag, _action))
 
     def removeTagItem(self, tag):
         for _tag, _action in self.tag_action_tuples:

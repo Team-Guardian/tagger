@@ -31,12 +31,10 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
     def notify(self, event, id, data):
         if event is "MARKER_CREATE":
             self.addMarker(data)
-
         elif event is "MARKER_DELETED":
             self.viewer_single.getScene().removeItem(data)
             data.getMarker().tag.num_occurrences -= 1
-            data.getMarker().delete()
-
+            delete_marker(data.getMarker())
         elif event is "MARKER_PARENT_IMAGE_CHANGE":
             if data in self.image_list_item_dict:
                 self.list_images.setCurrentItem(self.image_list_item_dict.get(data))
@@ -111,7 +109,7 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
         if row >= 0:
             self.list_tags.removeRow(row)
             self.viewer_single.getPhotoItem().context_menu.removeTagItem(tag)
-            self.deleteMarkers(tag=tag)
+            self.deleteMarkersFromUi(tag=tag)
             self.notifyObservers("TAG_DELETED", None, tag)
 
     def addMarker(self, data):
@@ -144,7 +142,7 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
 
         self.viewer_single.getScene().addItem(marker)
 
-    def deleteMarkers(self, tag=None):
+    def deleteMarkersFromUi(self, tag=None):
         sceneObjects = self.viewer_single.getScene().items()
         for item in sceneObjects:
             if type(item) is MarkerItem:
@@ -152,7 +150,6 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
                     if item.getMarker().tag == tag:
                         self.viewer_single.getScene().removeItem(item)
                         item.getMarker().tag.num_occurrences -= 1
-                        delete_marker(item.getMarker())
                 else:
                     self.viewer_single.getScene().removeItem(item)
 
@@ -181,7 +178,7 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
 
     def currentImageChanged(self, current, _):
         # Clear the scene
-        self.deleteMarkers()
+        self.deleteMarkersFromUi()
 
         self.currentImage = current.getImage()
         self.openImage(self.currentImage.filename, self.viewer_single)
@@ -192,7 +189,7 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
         image_height = self.currentImage.height
         marker_list = self.getMarkersForImage(self.currentImage)
         reference_altitude = self.currentFlight.reference_altitude
-        for marker in marker_list: #TODO
+        for marker in marker_list:
             x, y = getPixelFromLatLon(self.currentImage, image_width, image_height, reference_altitude, marker.latitude, marker.longitude)
             opacity = 1.0
             if marker.image != self.currentImage:
@@ -222,36 +219,33 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
         return self.currentFlight
 
     def getMarkersForImage(self, image):
-        list = []
-        for m in get_all_markers():
-            if m.image == image:
-                list.append(m)
-            else:
-                image_width = image.width
-                image_height = image.height
+        _list = list(Marker.objects.filter(image=image)) # Convert QuerySet to a list
+        for m in Marker.objects.exclude(image=image):
+            image_width = image.width
+            image_height = image.height
 
-                image_bounds = PolygonBounds()
+            image_bounds = PolygonBounds()
 
-                #The order of UL UR LR LL is important
-                # Upper Left
-                lat, lon = geolocateLatLonFromPixel(image, self.currentFlight.reference_altitude, 0, 0)
-                image_bounds.addVertex(Point(lat, lon))
+            #The order of UL UR LR LL is important
+            # Upper Left
+            lat, lon = geolocateLatLonFromPixel(image, self.currentFlight.reference_altitude, 0, 0)
+            image_bounds.addVertex(Point(lat, lon))
 
-                # Upper Right
-                lat, lon = geolocateLatLonFromPixel(image, self.currentFlight.reference_altitude, image_width, 0)
-                image_bounds.addVertex(Point(lat, lon))
+            # Upper Right
+            lat, lon = geolocateLatLonFromPixel(image, self.currentFlight.reference_altitude, image_width, 0)
+            image_bounds.addVertex(Point(lat, lon))
 
-                # Lower Right
-                lat, lon = geolocateLatLonFromPixel(image, self.currentFlight.reference_altitude, image_width, image_height)
-                image_bounds.addVertex(Point(lat, lon))
+            # Lower Right
+            lat, lon = geolocateLatLonFromPixel(image, self.currentFlight.reference_altitude, image_width, image_height)
+            image_bounds.addVertex(Point(lat, lon))
 
-                # Lower Left
-                lat, lon = geolocateLatLonFromPixel(image, self.currentFlight.reference_altitude, 0, image_height)
-                image_bounds.addVertex(Point(lat, lon))
+            # Lower Left
+            lat, lon = geolocateLatLonFromPixel(image, self.currentFlight.reference_altitude, 0, image_height)
+            image_bounds.addVertex(Point(lat, lon))
 
-                marker_loc = Point(m.latitude, m.longitude)
+            marker_loc = Point(m.latitude, m.longitude)
 
-                if image_bounds.isPointInsideBounds(marker_loc):
-                    list.append(m)
+            if image_bounds.isPointInsideBounds(marker_loc):
+                _list.append(m)
 
-        return list
+        return _list

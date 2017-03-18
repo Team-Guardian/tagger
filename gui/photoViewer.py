@@ -65,14 +65,14 @@ class PhotoViewer(QtWidgets.QGraphicsView):
 
                 for item in marker_items:
                     if event.angleDelta().y() > 0:
-                        item.notify("SCENE_ZOOM", 0, 0.8)
+                        item.notify("SCENE_ZOOM", None, 0.8)
                     else:
-                        item.notify("SCENE_ZOOM", 0, 1.25)
+                        item.notify("SCENE_ZOOM", None, 1.25)
             elif self._zoom == 0:
                 self.fitInView()
 
                 for item in marker_items:
-                    item.notify("SCENE_RESET", 0, factor)
+                    item.notify("SCENE_RESET", None, factor)
             else:
                 self._zoom = 0
 
