@@ -47,13 +47,13 @@ class MiniMap(QtWidgets.QGraphicsView, Observer):
                     map_dims = self._map.boundingRect()
 
                     site_elevation = img.flight.reference_altitude
-                    (img_upper_left_lat, img_upper_left_lon) = utils.geolocate.geolocate_pixel(img, site_elevation, 0, 0)
-                    (img_upper_right_lat, img_upper_right_lon) = utils.geolocate.geolocate_pixel(img, site_elevation,
-                                                                                                 map_dims.width(), 0)
-                    (img_lower_right_lat, img_lower_right_lon) = utils.geolocate.geolocate_pixel(img, site_elevation,
-                                                                                                 map_dims.width(), map_dims.height())
-                    (img_lower_left_lat, img_lower_left_lon) = utils.geolocate.geolocate_pixel(img, site_elevation,
-                                                                                               0, map_dims.height())
+                    (img_upper_left_lat, img_upper_left_lon) = utils.geolocate.geolocateLatLonFromPixel(img, site_elevation, 0, 0)
+                    (img_upper_right_lat, img_upper_right_lon) = utils.geolocate.geolocateLatLonFromPixel(img, site_elevation,
+                                                                                                          map_dims.width(), 0)
+                    (img_lower_right_lat, img_lower_right_lon) = utils.geolocate.geolocateLatLonFromPixel(img, site_elevation,
+                                                                                                          map_dims.width(), map_dims.height())
+                    (img_lower_left_lat, img_lower_left_lon) = utils.geolocate.geolocateLatLonFromPixel(img, site_elevation,
+                                                                                                        0, map_dims.height())
 
                     # interpolate the location of the image on the minimap (in px)
                     self._img_contour._topLeftX = ((img_upper_left_lon - self._current_area_map.ul_lon) / (

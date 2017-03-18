@@ -67,6 +67,19 @@ def get_all_tags():
     return list
 
 # Marker
+def create_marker(tag, image, latitude, longitude):
+    m = Marker(tag=tag, image=image, latitude=latitude, longitude=longitude)
+    m.save()
+    return m
+
+def delete_marker(marker):
+    marker.delete()
+
+def get_all_markers():
+    list = []
+    for m in Marker.objects.all():
+        list.append(m)
+    return list
 
 if __name__=="__main__":
 
