@@ -32,6 +32,8 @@ class MainWindow(QtWidgets.QMainWindow, Observable):
         self.mapTab = MapTab()
         self.ui.tabWidget.addTab(self.mapTab, "Map")
 
+        # connect menu bar items to functions
+        self.ui.actionReset.triggered.connect(self.resetGui)
 
     # handles events from widgets we have registered with
     # use installEventFilter() on a widget to register
@@ -59,3 +61,9 @@ class MainWindow(QtWidgets.QMainWindow, Observable):
         else:
             for imgViewer in imageViewers:
                 imgViewer.fitInView()
+
+    def resetGui(self):
+        tabWidget = self.findChild(QtWidgets.QTabWidget) # there is only one tabWidget in our current design
+        for tabIndex in range(0, tabWidget.count() - 1): # iterate over each tab
+            currentTab = tabWidget.widget(tabIndex)
+            currentTab.resetTab()
