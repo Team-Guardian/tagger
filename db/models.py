@@ -25,6 +25,8 @@ class Flight(models.Model):
 
 class Image(models.Model):
     filename = models.CharField(max_length=255, unique=True)
+    width = models.IntegerField()
+    height = models.IntegerField()
     flight = models.ForeignKey(Flight, on_delete=models.CASCADE)
     altitude = models.FloatField(default=0.0)
     longitude = models.FloatField()

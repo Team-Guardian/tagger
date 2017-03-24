@@ -29,8 +29,8 @@ def get_all_flights():
     return flights
 
 # Image
-def create_image(flight, filename, latitude, longitude, altitude, roll, pitch, yaw):
-    i = Image(flight=flight, filename=filename, latitude=latitude, longitude=longitude, altitude=altitude, roll=roll, pitch=pitch, yaw=yaw)
+def create_image(flight, width, height, filename, latitude, longitude, altitude, roll, pitch, yaw):
+    i = Image(flight=flight, width=width, height=height, filename=filename, latitude=latitude, longitude=longitude, altitude=altitude, roll=roll, pitch=pitch, yaw=yaw)
     i.save()
     return i
 
@@ -38,10 +38,18 @@ def delete_image(image):
     image.delete()
 
 def get_all_images():
-    list = []
-    for l in Image.objects.all():
-        list.append(l)
-    return list
+    images = []
+    for i in Image.objects.all():
+        images.append(i)
+    return images
+
+def get_all_images_for_flight(flight):
+    images = []
+    result = Image.objects.filter(flight=flight)
+    if result.exists():
+        for i in result:
+            images.append(i)
+    return images
 
 # Tag
 def create_tag(type, subtype, symbol, num_occurrences=0):
@@ -59,6 +67,19 @@ def get_all_tags():
     return list
 
 # Marker
+def create_marker(tag, image, latitude, longitude):
+    m = Marker(tag=tag, image=image, latitude=latitude, longitude=longitude)
+    m.save()
+    return m
+
+def delete_marker(marker):
+    marker.delete()
+
+def get_all_markers():
+    list = []
+    for m in Marker.objects.all():
+        list.append(m)
+    return list
 
 if __name__=="__main__":
 

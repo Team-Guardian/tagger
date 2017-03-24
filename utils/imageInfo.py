@@ -3,16 +3,25 @@
 from math import degrees
 from osgeo import gdal, osr
 import pyexiv2
+from db.dbHelper import create_image
 
 
-# sets telemetry info on Image from the file's EXIF tags
-def loadExif(img):
-    path = img.filename
+# reads EXIF from file on disk and returns new Image in DB
+def createImageWithExif(path, flight):
+    if not flight:
+        raise Exception("Need a flight to load an image")
+
     exif = pyexiv2.ImageMetadata(path)
     exif.read()
+    width, height = exif.dimensions
     telemetry = exif['Exif.Photo.UserComment'].raw_value.split()
-    img.latitude, img.longitude, img.altitude = [float(x) for x in telemetry[0:3]]
-    img.pitch, img.roll, img.yaw = [degrees(float(x)) for x in telemetry[3:]]
+    # degrees, degrees, metres
+    latitude, longitude, altitude = [float(x) for x in telemetry[0:3]]
+    # store as degrees, but exif has radians
+    pitch, roll, yaw = [degrees(float(x)) for x in telemetry[3:]]
+    return create_image(filename=path, width=width, height=height, flight=flight,
+                        latitude=latitude, longitude=longitude, altitude=altitude,
+                        roll=roll, pitch=pitch, yaw=yaw)
 
 def loadGeotiff(img_path):
     raster=img_path + '.tif'

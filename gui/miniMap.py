@@ -15,6 +15,12 @@ class MiniMap(QtWidgets.QGraphicsView, Observer):
         self.setScene(self._scene)
         self._img_contour = Contour()
 
+        # construct an empty pixmap object placeholder and show it
+        # self._original_pixmap = QtGui.QPixmap(self._map.boundingRect().width(), self._map.boundingRect().height())
+        self._original_pixmap = QtGui.QPixmap(300, 190)
+        self._original_pixmap.fill(QtCore.Qt.transparent)
+        self._map.setPixmap(self._original_pixmap)
+
         # configure MiniMap to be an observer of TaggingTab
         self.window().addObserver(self)
 
@@ -41,13 +47,13 @@ class MiniMap(QtWidgets.QGraphicsView, Observer):
                     map_dims = self._map.boundingRect()
 
                     site_elevation = img.flight.reference_altitude
-                    (img_upper_left_lat, img_upper_left_lon) = utils.geolocate.geolocate_pixel(img, site_elevation, 0, 0)
-                    (img_upper_right_lat, img_upper_right_lon) = utils.geolocate.geolocate_pixel(img, site_elevation,
-                                                                                                 map_dims.width(), 0)
-                    (img_lower_right_lat, img_lower_right_lon) = utils.geolocate.geolocate_pixel(img, site_elevation,
-                                                                                                 map_dims.width(), map_dims.height())
-                    (img_lower_left_lat, img_lower_left_lon) = utils.geolocate.geolocate_pixel(img, site_elevation,
-                                                                                               0, map_dims.height())
+                    (img_upper_left_lat, img_upper_left_lon) = utils.geolocate.geolocateLatLonFromPixel(img, site_elevation, 0, 0)
+                    (img_upper_right_lat, img_upper_right_lon) = utils.geolocate.geolocateLatLonFromPixel(img, site_elevation,
+                                                                                                          map_dims.width(), 0)
+                    (img_lower_right_lat, img_lower_right_lon) = utils.geolocate.geolocateLatLonFromPixel(img, site_elevation,
+                                                                                                          map_dims.width(), map_dims.height())
+                    (img_lower_left_lat, img_lower_left_lon) = utils.geolocate.geolocateLatLonFromPixel(img, site_elevation,
+                                                                                                        0, map_dims.height())
 
                     # interpolate the location of the image on the minimap (in px)
                     self._img_contour._topLeftX = ((img_upper_left_lon - self._current_area_map.ul_lon) / (
@@ -85,8 +91,6 @@ class MiniMap(QtWidgets.QGraphicsView, Observer):
             viewrect = self.viewport().rect()
             self._map.setPixmap(self._map.pixmap().scaled(viewrect.width(), viewrect.height(), QtCore.Qt.KeepAspectRatio))
             self.centerOn(self._map.pixmap().rect().center())
-
-            return self._map.pixmap()  # optional return for when one needs to continue working with this pixmap (such as drawing on top of it)
 
     def showImageContourOnMinimap(self, contour_coords):
 
