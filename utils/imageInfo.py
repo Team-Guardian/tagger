@@ -69,7 +69,7 @@ def ReprojectCoords(coords,src_srs,tgt_srs):
         @return:        List of transformed [[x,y],...[x,y]] coordinates
     '''
     trans_coords=[]
-    transform = osr.CoordinateTransformation( src_srs, tgt_srs)
+    transform = osr.CoordinateTransformation(src_srs, tgt_srs)
     for x,y in coords:
         x,y,z = transform.TransformPoint(x,y)
         trans_coords.append([x,y])
