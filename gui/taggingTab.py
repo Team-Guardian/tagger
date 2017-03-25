@@ -103,18 +103,19 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
                         self.tag_dialog.removeIcon(tag.symbol)
                         self.tag_dialog.addIcon(icon)
 
-                        self.deleteMarkersFromUi(tag=tag)
-                        image_width = self.currentImage.width
-                        image_height = self.currentImage.height
-                        reference_altitude = self.currentFlight.reference_altitude
-                        marker_list = self.getMarkersForImage(self.currentImage)
-                        for marker in marker_list:
-                            x, y = getPixelFromLatLon(self.currentImage, image_width, image_height, reference_altitude, \
-                                                      marker.latitude, marker.longitude)
-                            opacity = 1.0
-                            if marker.image != self.currentImage:
-                                opacity = 0.5
-                            self.addMarkerToUi(x, y, marker, opacity)
+                        if self.currentImage != None:
+                            self.deleteMarkersFromUi(tag=tag)
+                            image_width = self.currentImage.width
+                            image_height = self.currentImage.height
+                            reference_altitude = self.currentFlight.reference_altitude
+                            marker_list = self.getMarkersForImage(self.currentImage)
+                            for marker in marker_list:
+                                x, y = getPixelFromLatLon(self.currentImage, image_width, image_height, reference_altitude, \
+                                                          marker.latitude, marker.longitude)
+                                opacity = 1.0
+                                if marker.image != self.currentImage:
+                                    opacity = 0.5
+                                self.addMarkerToUi(x, y, marker, opacity)
 
                     # update all columns in row with these texts
                     texts = [tag.type, tag.subtype, str(tag.num_occurrences), tag.symbol]
