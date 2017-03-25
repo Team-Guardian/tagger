@@ -173,6 +173,9 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
 
     def addImageToUi(self, image):
         item = ImageListItem(image.filename, image)
+        font = item.font()
+        font.setBold(True)
+        item.setFont(font)
         self.list_images.addItem(item)
         self.image_list_item_dict[image] = item
 
