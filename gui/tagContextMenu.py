@@ -30,4 +30,8 @@ class TagContextMenu(QtWidgets.QMenu):
         if len(self.actions()) == 1:
             self.defaultActionHandle.setVisible(True)
 
-
+    def clearTagContextMenu(self):
+        self.clear()
+        self.defaultActionHandle = self.addAction("(No tags)")
+        self.defaultActionHandle.setEnabled(False)
+        self.tag_action_tuples = []
