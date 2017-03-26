@@ -6,14 +6,15 @@ class TagContextMenu(QtWidgets.QMenu):
         super(TagContextMenu, self).__init__(parent)
 
         # add default action
-        self.defaultActionHandle = self.addAction("(No tags)")
-        self.defaultActionHandle.setEnabled(False)
+        self.noTagsActionHandle = self.addAction("(No tags)")
+        self.noTagsActionHandle.setEnabled(False)
+        self.saveActionHandle = self.addAction("Save")
         self.tag_action_tuples = []
 
     def addTagToContextMenu(self, tag):
         self.tag_action_tuples.append((tag, self.addAction(tag.type + ", " + tag.subtype)))
-        if len(self.actions()) > 1:
-            self.defaultActionHandle.setVisible(False)
+        if len(self.actions()) > 2:
+            self.noTagsActionHandle.setVisible(False)
 
     def updateTagItem(self, tag):
         for i, _data in enumerate(self.tag_action_tuples):
@@ -27,8 +28,8 @@ class TagContextMenu(QtWidgets.QMenu):
                 self.tag_action_tuples.remove((_tag, _action))
                 self.removeAction(_action)
 
-        if len(self.actions()) == 1:
-            self.defaultActionHandle.setVisible(True)
+        if len(self.actions()) == 2:
+            self.noTagsActionHandle.setVisible(True)
 
     def clearTagContextMenu(self):
         self.clear()

@@ -1,5 +1,6 @@
 from PyQt5 import QtWidgets, QtGui
 from PyQt5.QtWidgets import QDialog
+from PyQt5.QtGui import QPixmap
 
 from ui.ui_taggingTab import Ui_TaggingTab
 from tagDialog import TagDialog
@@ -42,6 +43,10 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
         elif event is "MARKER_PARENT_IMAGE_CHANGE":
             if data in self.image_list_item_dict:
                 self.list_images.setCurrentItem(self.image_list_item_dict.get(data))
+        elif event is "IMAGE_SAVE":
+            pixmap = QPixmap(self.viewer_single.grab())
+            filename = QtWidgets.QFileDialog.getSaveFileName(self, "Enter File Name")[0]
+            pixmap.save(filename, format='jpg', quality=100)
 
     def connectButtons(self):
         self.button_addTag.clicked.connect(self.addTag)
@@ -329,3 +334,4 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
 
     def enableCurrentItemChangedEvent(self):
         self.list_images.currentItemChanged.connect(self.currentImageChanged)
+
