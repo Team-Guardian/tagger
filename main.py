@@ -2,7 +2,7 @@ import sys
 from PyQt5 import QtWidgets
 
 from db.dbHelper import *
-from gui.mainWindow import MainWindow
+from gui.mainWindow import MainWindow, TAB_INDICES
 from observer import *
 
 
@@ -42,7 +42,9 @@ class Controller(Observer):
         self.loadTags()
         self.loadMap(self.currentFlight)
         self.window.taggingTab.currentFlight = self.currentFlight
+        self.window.mapTab.currentFlight = self.currentFlight
         self.loadImages()
+        self.window.ui.tabWidget.setCurrentIndex(TAB_INDICES['TAB_TAGGING'])
 
     def loadTags(self):
         self.tags = get_all_tags()
@@ -56,6 +58,7 @@ class Controller(Observer):
         self.images = get_all_images_for_flight(self.currentFlight)
         for i in self.images:
             self.window.taggingTab.addImageToUi(i)
+            self.window.mapTab.addImageToUi(i)
 
 if __name__ == '__main__':
 
