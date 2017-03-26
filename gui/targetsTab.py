@@ -7,3 +7,5 @@ class TargetsTab(QtWidgets.QWidget, Ui_TargetsTab):
         super(TargetsTab, self).__init__()
         self.setupUi(self)
 
+    def resetTab(self):
+        pass # TODO

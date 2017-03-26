@@ -7,3 +7,5 @@ class MapTab(QtWidgets.QWidget, Ui_MapTab):
         super(MapTab, self).__init__()
         self.setupUi(self)
 
+    def resetTab(self):
+        pass # TODO
