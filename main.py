@@ -25,6 +25,7 @@ class Controller(Observer):
 
     def notify(self, event, id, data):
         if event is "FLIGHT_LOAD":
+            self.window.resetGui()
             self.loadFlight(id)
         elif event is "FLIGHT_CREATED":
             self.flights[id] = data

@@ -60,3 +60,6 @@ class MapTab(QtWidgets.QWidget, Ui_MapTab):
 
     def getCurrentFlight(self):
         return self.currentFlight
+
+    def resetTab(self):
+        pass # TODO

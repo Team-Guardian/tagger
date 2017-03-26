@@ -51,3 +51,6 @@ class SetupTab(QtWidgets.QWidget, Ui_SetupTab, Observable):
         file_info = QtCore.QFileInfo(filepath[0])
         filename = file_info.baseName()
         self.line_areaMap.setText(filename)
+
+    def resetTab(self):
+        pass # TODO
