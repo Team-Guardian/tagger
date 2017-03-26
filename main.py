@@ -45,12 +45,22 @@ class Controller(Observer):
             self.window.taggingTab.addImageToUi(new_image)
 
     def loadFlight(self, id):
+        self.previousFlight = self.currentFlight
         self.currentFlight = self.flights[id]
-        self.imageWatcher.startWatching(self.currentFlight, self.window.setupTab.line_watchDirectory.text())
+
+        self.imageWatcher.startWatching(self.currentFlight, self.window.setupTab.line_watchDirectory.text()) \
+            if not self.imageWatcher.isRunning \
+            else self.imageWatcher.event_handler.changeTargetFlight(self.currentFlight)
+
         self.loadTags()
         self.loadMap(self.currentFlight)
         self.window.taggingTab.currentFlight = self.currentFlight
         self.loadImages()
+
+    def isFlightChanged(self, prev_flight, curr_flight):
+        if prev_flight is not None:
+            return prev_flight.pk == curr_flight.pk
+        return False
 
     def loadTags(self):
         self.tags = get_all_tags()
@@ -62,8 +72,10 @@ class Controller(Observer):
 
     def loadImages(self):
         self.images = get_all_images_for_flight(self.currentFlight)
+        self.window.taggingTab.clearImagesFromUi()
         for i in self.images:
             self.window.taggingTab.addImageToUi(i)
+
 
 
 if __name__ == '__main__':
