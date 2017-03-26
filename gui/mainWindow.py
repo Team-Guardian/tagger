@@ -63,6 +63,6 @@ class MainWindow(QtWidgets.QMainWindow, Observable):
                 imgViewer.fitInView()
 
     def resetGui(self):
-        for tabIndex in range(0, self.ui.tabWidget.count() - 1): # iterate over each tab
+        for tabIndex in range(self.ui.tabWidget.count()): # iterate over each tab
             currentTab = self.ui.tabWidget.widget(tabIndex)
             currentTab.resetTab()
