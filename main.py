@@ -29,6 +29,7 @@ class Controller(Observer):
             self.loadFlight(id)
         elif event is "FLIGHT_CREATED":
             self.flights[id] = data
+            self.window.setupTab.addFlightToUi(data)
             self.loadFlight(id)
         elif event is "TAG_CREATED":
             self.tags.append(data)
