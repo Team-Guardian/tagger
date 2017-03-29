@@ -5,7 +5,7 @@ import os
 from observer import Observable as GuiObservable
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
-from utils.imageInfo import createImageWithExif
+from utils.imageInfo import createImageWithExif, GetFileNameFromFullPath
 
 class Watcher:
     def __init__(self):
@@ -14,6 +14,7 @@ class Watcher:
         self.image_watcher_thread = None
         self.event_handler = FileCreatedEventHandler(self.observer)
         self.isRunning = False
+        self.stopCommand = False;
 
     def startWatching(self, flight, watched_dir):
         self.event_handler.startEventHandler(flight, watched_dir)
@@ -24,8 +25,15 @@ class Watcher:
         self.image_watcher_thread.start()
         self.isRunning = True
 
+    def stopAndReset(self):
+        self.stopCommand = True
+        if self.observer.is_alive():
+            self.observer.stop()
+            self.observer.join()
+            self.observer = Observer()
+
     def run(self):
-            while True:
+            while not self.stopCommand:
                 time.sleep(500) # check directory twice a second
 
 
@@ -48,13 +56,10 @@ class FileCreatedEventHandler(FileSystemEventHandler, GuiObservable):
 
     def on_created(self, event):
         path = event.src_path
-        def _getFileNameFromFullPath(path):
-            head, tail = ntpath.split(path)
-            return tail
 
-        fileName = _getFileNameFromFullPath(path)
+        fileName = GetFileNameFromFullPath(path)
 
-        if any(fileName.endswith(end) for end in ['.jpg', '.jpeg', '.JPG', '.JPEG']):
+        if any(fileName.endswith(end) for end in ['.jpg', '.jpegs', '.JPG', '.JPEG']):
             self.processImage(fileName)
             self.observer.unschedule_all()
 

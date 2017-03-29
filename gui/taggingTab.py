@@ -179,9 +179,6 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
         self.list_images.addItem(item)
         self.image_list_item_dict[image] = item
 
-    def clearImagesFromUi(self):
-        self.list_images.clear()
-
     def currentImageChanged(self, current, _):
         # Clear the scene
         self.deleteMarkersFromUi()

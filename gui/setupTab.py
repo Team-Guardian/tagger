@@ -14,23 +14,18 @@ class SetupTab(QtWidgets.QWidget, Ui_SetupTab, Observable):
         Observable.__init__(self)
 
         self.setupUi(self)
-        self.connectAndInitializeButtons()
+        self.connectButtons()
         self.edit_flightDate.setDate(QDate.currentDate())
 
-    def connectAndInitializeButtons(self):
+    def connectButtons(self):
         self.button_loadFlight.clicked.connect(self.loadFlight)
         self.button_createFlight.clicked.connect(self.createFlight)
         self.button_selectAreaMap.clicked.connect(self.selectAreaMap)
         self.button_browseWatchDirectory.clicked.connect(self.selectWatchDirectory)
 
-        # load and create buttons should not be enabled until a watch directory is specified
-        self.button_loadFlight.setDisabled(True)
-        self.button_createFlight.setDisabled(True)
-
-    def enableLoadAndCreateFlightButtons(self):
-        self.button_loadFlight.setEnabled(True)
-        self.button_createFlight.setEnabled(True)
-
+    def enableSelectingAndCreatingFlights(self):
+        self.group_createNewFlight.setEnabled(True)
+        self.group_openExistingFlight.setEnabled(True)
 
     def addFlightToUi(self, flight):
         self.combo_flights.addItem(flight.location + " " + str(flight.date))
@@ -65,7 +60,9 @@ class SetupTab(QtWidgets.QWidget, Ui_SetupTab, Observable):
     def selectWatchDirectory(self):
         filepath = QtWidgets.QFileDialog.getExistingDirectory(self, "Select Directory to Watch", "../vision-system/")
         self.line_watchDirectory.setText(filepath)
-        self.enableLoadAndCreateFlightButtons()
+        self.enableSelectingAndCreatingFlights()
 
     def resetTab(self):
-        pass # TODO
+        self.group_createNewFlight.setEnabled(False)
+        self.group_openExistingFlight.setEnabled(False)
+        self.line_watchDirectory.setText("")

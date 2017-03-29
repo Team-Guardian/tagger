@@ -16,6 +16,7 @@ TAB_INDICES = {'TAB_SETUP': 0, 'TAB_TAGGING': 1, 'TAB_TARGETS': 2, 'TAB_MAP': 3}
 class MainWindow(QtWidgets.QMainWindow, Observable):
     def __init__(self):
         super(MainWindow, self).__init__()
+        Observable.__init__(self)
 
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
@@ -75,6 +76,10 @@ class MainWindow(QtWidgets.QMainWindow, Observable):
                 imgViewer.fitInView()
 
     def resetGui(self):
+        self.notifyObservers("RESET", None, None)
+
+    def resetTabs(self):
         for tabIndex in range(self.ui.tabWidget.count()): # iterate over each tab
             currentTab = self.ui.tabWidget.widget(tabIndex)
             currentTab.resetTab()
+        self.ui.tabWidget.setCurrentIndex(TAB_INDICES['TAB_SETUP'])

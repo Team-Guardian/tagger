@@ -20,7 +20,7 @@ def createImageWithExif(path, flight):
     latitude, longitude, altitude = [float(x) for x in telemetry[0:3]]
     # store as degrees, but exif has radians
     pitch, roll, yaw = [degrees(float(x)) for x in telemetry[3:]]
-    return create_image(filename=path, width=width, height=height, flight=flight,
+    return create_image(filename=GetFileNameFromFullPath(path), width=width, height=height, flight=flight,
                         latitude=latitude, longitude=longitude, altitude=altitude,
                         roll=roll, pitch=pitch, yaw=yaw)
 
@@ -84,3 +84,8 @@ def ReprojectCoords(coords,src_srs,tgt_srs):
         x,y,z = transform.TransformPoint(x,y)
         trans_coords.append([x,y])
     return trans_coords
+
+
+def GetFileNameFromFullPath(path):
+    head, tail = ntpath.split(path)
+    return tail
