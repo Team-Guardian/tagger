@@ -53,6 +53,9 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
 
     def addTag(self):
         self.tag_dialog.setWindowTitle("Create tag")
+        self.tag_dialog.tagType.setText('')
+        self.tag_dialog.subtype.setText('')
+        self.tag_dialog.icons.setCurrentIndex(0)
         if self.tag_dialog.exec_() == QDialog.Accepted:
             if len(self.tag_dialog.subtype.text()) > 0:
                 tagType = self.tag_dialog.tagType.text()
@@ -88,6 +91,7 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
             self.tag_dialog.setWindowTitle("Edit tag")
             self.tag_dialog.tagType.setText(tagType)
             self.tag_dialog.subtype.setText(subtype)
+            self.tag_dialog.addIcon(icon) # Show the current symbol in the list
             index = self.tag_dialog.icons.findText(icon)
             self.tag_dialog.icons.setCurrentIndex(index)
             if self.tag_dialog.exec_() == QDialog.Accepted:
@@ -101,7 +105,6 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
                     # If the icon has been changed, update the icons in the drop-down menu and all markers
                     if icon != tag.symbol:
                         self.tag_dialog.removeIcon(tag.symbol)
-                        self.tag_dialog.addIcon(icon)
 
                         if self.currentImage != None:
                             self.deleteMarkersFromUi(tag=tag)
@@ -116,6 +119,8 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
                                 if marker.image != self.currentImage:
                                     opacity = 0.5
                                 self.addMarkerToUi(x, y, marker, opacity)
+                    else:
+                        self.tag_dialog.removeIcon(icon) # Remove the current symbol if it hasn't been changed
 
                     # update all columns in row with these texts
                     texts = [tag.type, tag.subtype, str(tag.num_occurrences), tag.symbol]
@@ -125,6 +130,8 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
                     self.viewer_single.getPhotoItem().context_menu.updateTagItem(tag)
 
                     self.notifyObservers("TAG_EDITED", None, tag)
+            else:
+                self.tag_dialog.removeIcon(icon) # Remove the current symbol if it hasn't been changed
 
     def removeTag(self):
         row = self.list_tags.currentRow()

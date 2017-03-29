@@ -5,6 +5,7 @@ import os
 
 
 iconDirectory = 'gui/star_markers/'
+_placeholder_marker_name = '_placeholder_'
 
 class TagDialog(QDialog):
     def __init__(self, parent=None):
@@ -33,13 +34,15 @@ class TagDialog(QDialog):
         self.buttons.rejected.connect(self.reject)
 
     def addIcon(self, icon):
-        self.used_marker_icon_list.remove(icon)
-        self.icons.addItem(QIcon(iconDirectory + icon), icon)
+        if icon != _placeholder_marker_name:
+            self.used_marker_icon_list.remove(icon)
+            self.icons.addItem(QIcon(iconDirectory + icon), icon)
 
     def removeIcon(self, icon):
-        for index in range(self.icons.count()):
-            if self.icons.itemText(index) == icon:
-                self.icons.removeItem(index)
+        if icon != _placeholder_marker_name:
+            for index in range(self.icons.count()):
+                if self.icons.itemText(index) == icon:
+                    self.icons.removeItem(index)
 
-        self.used_marker_icon_list.append(icon)
+            self.used_marker_icon_list.append(icon)
 
