@@ -59,7 +59,7 @@ class FileCreatedEventHandler(FileSystemEventHandler, GuiObservable):
 
         fileName = GetFileNameFromFullPath(path)
 
-        if any(fileName.endswith(end) for end in ['.jpg', '.jpegs', '.JPG', '.JPEG']):
+        if any(fileName.endswith(end) for end in ['.jpg', '.jpeg', '.JPG', '.JPEG']):
             self.processImage(fileName)
             self.observer.unschedule_all()
 
