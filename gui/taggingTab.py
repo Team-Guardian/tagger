@@ -57,7 +57,7 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
         self.tag_dialog.subtype.setText('')
         self.tag_dialog.icons.setCurrentIndex(0)
         if self.tag_dialog.exec_() == QDialog.Accepted:
-            if len(self.tag_dialog.subtype.text()) > 0:
+            if len(self.tag_dialog.tagType.text()) > 0 and len(self.tag_dialog.subtype.text()) > 0:
                 tagType = self.tag_dialog.tagType.text()
                 subtype = self.tag_dialog.subtype.text()
                 count = "0"
@@ -95,7 +95,7 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
             index = self.tag_dialog.icons.findText(icon)
             self.tag_dialog.icons.setCurrentIndex(index)
             if self.tag_dialog.exec_() == QDialog.Accepted:
-                if len(self.tag_dialog.subtype.text()) > 0:
+                if len(self.tag_dialog.tagType.text()) > 0 and len(self.tag_dialog.subtype.text()) > 0:
                     tag.type = self.tag_dialog.tagType.text()
                     tag.subtype = self.tag_dialog.subtype.text()
                     tag.num_occurrences = -1

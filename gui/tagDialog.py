@@ -4,8 +4,8 @@ from PyQt5.QtGui import QIcon, QPixmap
 import os
 
 
-iconDirectory = 'gui/star_markers/'
-_placeholder_marker_name = '_placeholder_'
+ICON_DIRECTORY = 'gui/star_markers/'
+PLACEHOLDER_MARKER_NAME = '_placeholder_'
 
 class TagDialog(QDialog):
     def __init__(self, parent=None):
@@ -19,13 +19,13 @@ class TagDialog(QDialog):
 
         self.used_marker_icon_list = []
         self.marker_icon_list = []
-        for file in os.listdir(iconDirectory):
-            if file.endswith('.png'):
-                self.marker_icon_list.append(file)
+        for fName in os.listdir(ICON_DIRECTORY):
+            if fName.endswith('.png'):
+                self.marker_icon_list.append(fName)
 
         self.icons = QtWidgets.QComboBox()
-        for file in self.marker_icon_list:
-            self.icons.addItem(QIcon(iconDirectory + file), file[:-4])
+        for fName in self.marker_icon_list:
+            self.icons.addItem(QIcon(ICON_DIRECTORY + fName), fName[:-4])
         self.form.addRow(QtWidgets.QLabel("Icon"), self.icons)
 
         self.buttons = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
@@ -34,12 +34,12 @@ class TagDialog(QDialog):
         self.buttons.rejected.connect(self.reject)
 
     def addIcon(self, icon):
-        if icon != _placeholder_marker_name:
+        if icon != PLACEHOLDER_MARKER_NAME:
             self.used_marker_icon_list.remove(icon)
-            self.icons.addItem(QIcon(iconDirectory + icon), icon)
+            self.icons.addItem(QIcon(ICON_DIRECTORY + icon), icon)
 
     def removeIcon(self, icon):
-        if icon != _placeholder_marker_name:
+        if icon != PLACEHOLDER_MARKER_NAME:
             for index in range(self.icons.count()):
                 if self.icons.itemText(index) == icon:
                     self.icons.removeItem(index)
