@@ -7,8 +7,8 @@ django.setup()
 from db.models import * # Must go after django.setup()
 
 # AreaMap
-def create_areamap(name, filename, ul_lat, ul_lon, lr_lat, lr_lon):
-    am = AreaMap(name=name, filename=filename, ul_lat=ul_lat, ul_lon=ul_lon, lr_lat=lr_lat, lr_lon=lr_lon)
+def create_areamap(name, filename, ul_lat, ul_lon, ll_lat, ll_lon, lr_lat, lr_lon, ur_lat, ur_lon):
+    am = AreaMap(name=name, filename=filename, ul_lat=ul_lat, ul_lon=ul_lon, ll_lat=ll_lat, ll_lon=ll_lon, lr_lat=lr_lat, lr_lon=lr_lon, ur_lat=ur_lat, ur_lon=ur_lon)
     am.save()
     return am
 
@@ -29,8 +29,8 @@ def get_all_flights():
     return flights
 
 # Image
-def create_image(flight, filename, latitude, longitude, altitude, roll, pitch, yaw):
-    i = Image(flight=flight, filename=filename, latitude=latitude, longitude=longitude, altitude=altitude, roll=roll, pitch=pitch, yaw=yaw)
+def create_image(flight, width, height, filename, latitude, longitude, altitude, roll, pitch, yaw):
+    i = Image(flight=flight, width=width, height=height, filename=filename, latitude=latitude, longitude=longitude, altitude=altitude, roll=roll, pitch=pitch, yaw=yaw)
     i.save()
     return i
 
@@ -67,6 +67,19 @@ def get_all_tags():
     return list
 
 # Marker
+def create_marker(tag, image, latitude, longitude):
+    m = Marker(tag=tag, image=image, latitude=latitude, longitude=longitude)
+    m.save()
+    return m
+
+def delete_marker(marker):
+    marker.delete()
+
+def get_all_markers():
+    list = []
+    for m in Marker.objects.all():
+        list.append(m)
+    return list
 
 if __name__=="__main__":
 

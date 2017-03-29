@@ -2,7 +2,7 @@ import sys
 from PyQt5 import QtWidgets
 
 from db.dbHelper import *
-from gui.mainWindow import MainWindow
+from gui.mainWindow import MainWindow, TAB_INDICES
 from observer import *
 from watcher import Watcher
 
@@ -15,7 +15,6 @@ class Controller(Observer):
         self.imageWatcher = Watcher()
         self.tags = []
         self.images = []
-        self.markers = []
 
         self.window = MainWindow()
         self.window.show()
@@ -27,18 +26,22 @@ class Controller(Observer):
         for flight in self.flights.values():
             self.window.setupTab.addFlightToUi(flight)
 
-
     def notify(self, event, id, data):
         if event is "FLIGHT_LOAD":
+            self.window.resetGui()
             self.loadFlight(id)
         elif event is "FLIGHT_CREATED":
             self.flights[id] = data
+            self.window.setupTab.addFlightToUi(data)
             self.loadFlight(id)
         elif event is "TAG_CREATED":
             self.tags.append(data)
         elif event is "TAG_DELETED":
             self.tags.remove(data)
             data.delete()
+            delete_tag(data) # This also deletes all the markers associated with this tag (Cascaded delete)
+        elif event is "IMAGE_ADDED":
+            self.images.append(data)
         elif event is "IMAGE_RECEIVED":
             new_image = data
             self.images.append(new_image)
@@ -55,7 +58,9 @@ class Controller(Observer):
         self.loadTags()
         self.loadMap(self.currentFlight)
         self.window.taggingTab.currentFlight = self.currentFlight
+        self.window.mapTab.currentFlight = self.currentFlight
         self.loadImages()
+        self.window.ui.tabWidget.setCurrentIndex(TAB_INDICES['TAB_TAGGING'])
 
     def isFlightChanged(self, prev_flight, curr_flight):
         if prev_flight is not None:
@@ -75,7 +80,7 @@ class Controller(Observer):
         self.window.taggingTab.clearImagesFromUi()
         for i in self.images:
             self.window.taggingTab.addImageToUi(i)
-
+            self.window.mapTab.addImageToUi(i)
 
 
 if __name__ == '__main__':

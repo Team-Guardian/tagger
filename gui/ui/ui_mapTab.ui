@@ -28,21 +28,21 @@
         <number>0</number>
        </property>
        <item>
-        <widget class="QLineEdit" name="lineEdit_3">
+        <widget class="QLineEdit" name="line_latitude">
          <property name="placeholderText">
           <string>latitude</string>
          </property>
         </widget>
        </item>
        <item>
-        <widget class="QLineEdit" name="lineEdit_2">
+        <widget class="QLineEdit" name="line_longitude">
          <property name="placeholderText">
           <string>longitude</string>
          </property>
         </widget>
        </item>
        <item>
-        <widget class="QPushButton" name="pushButton_8">
+        <widget class="QPushButton" name="button_search">
          <property name="text">
           <string>Search</string>
          </property>
