@@ -8,8 +8,12 @@ class AreaMap(models.Model):
     filename = models.CharField(max_length=100, unique=True)
     ul_lat = models.FloatField()
     ul_lon = models.FloatField()
+    ll_lat = models.FloatField()
+    ll_lon = models.FloatField()
     lr_lat = models.FloatField()
     lr_lon = models.FloatField()
+    ur_lat = models.FloatField()
+    ur_lon = models.FloatField()
 
 class Flight(models.Model):
     location = models.CharField(max_length=30)
@@ -21,6 +25,8 @@ class Flight(models.Model):
 
 class Image(models.Model):
     filename = models.CharField(max_length=255, unique=True)
+    width = models.IntegerField()
+    height = models.IntegerField()
     flight = models.ForeignKey(Flight, on_delete=models.CASCADE)
     altitude = models.FloatField(default=0.0)
     longitude = models.FloatField()

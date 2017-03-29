@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'gui/ui_mainWindow.ui'
+# Form implementation generated from reading ui file 'ui_mainWindow.ui'
 #
 # Created by: PyQt5 UI code generator 5.5.1
 #
@@ -23,16 +23,19 @@ class Ui_MainWindow(object):
         self.menubar = QtWidgets.QMenuBar(MainWindow)
         self.menubar.setGeometry(QtCore.QRect(0, 0, 1600, 27))
         self.menubar.setObjectName("menubar")
-        self.menuTest = QtWidgets.QMenu(self.menubar)
-        self.menuTest.setObjectName("menuTest")
+        self.menuFile = QtWidgets.QMenu(self.menubar)
+        self.menuFile.setObjectName("menuFile")
         MainWindow.setMenuBar(self.menubar)
         self.statusbar = QtWidgets.QStatusBar(MainWindow)
         self.statusbar.setObjectName("statusbar")
         MainWindow.setStatusBar(self.statusbar)
-        self.actionQuit = QtWidgets.QAction(MainWindow)
-        self.actionQuit.setObjectName("actionQuit")
-        self.menuTest.addAction(self.actionQuit)
-        self.menubar.addAction(self.menuTest.menuAction())
+        self.actionExit = QtWidgets.QAction(MainWindow)
+        self.actionExit.setObjectName("actionExit")
+        self.actionReset = QtWidgets.QAction(MainWindow)
+        self.actionReset.setObjectName("actionReset")
+        self.menuFile.addAction(self.actionReset)
+        self.menuFile.addAction(self.actionExit)
+        self.menubar.addAction(self.menuFile.menuAction())
 
         self.retranslateUi(MainWindow)
         self.tabWidget.setCurrentIndex(-1)
@@ -41,6 +44,7 @@ class Ui_MainWindow(object):
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
         MainWindow.setWindowTitle(_translate("MainWindow", "Team Guardian Image Tagger"))
-        self.menuTest.setTitle(_translate("MainWindow", "File"))
-        self.actionQuit.setText(_translate("MainWindow", "Exit"))
+        self.menuFile.setTitle(_translate("MainWindow", "File"))
+        self.actionExit.setText(_translate("MainWindow", "Exit"))
+        self.actionReset.setText(_translate("MainWindow", "Reset"))
 

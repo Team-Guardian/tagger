@@ -39,8 +39,11 @@ class SetupTab(QtWidgets.QWidget, Ui_SetupTab, Observable):
         if AreaMap.objects.filter(name=area_map).exists():
             am = AreaMap.objects.filter(name=area_map).last()
         else:
-            ul_lat, ul_lon, lr_lat, lr_lon = loadGeotiff('./area_maps/area_map')
-            am = create_areamap(area_map, area_map + '.png', ul_lat, ul_lon, lr_lat, lr_lon)
+            corners_geo = loadGeotiff('./area_maps/' + area_map)
+            am = create_areamap(area_map, area_map + '.png', corners_geo[0][1], corners_geo[0][0],
+                                                             corners_geo[1][1], corners_geo[1][0],
+                                                             corners_geo[2][1], corners_geo[2][0],
+                                                             corners_geo[3][1], corners_geo[3][0])
 
         f = create_flight(location, elevation, intrinsic_matrix + '.xml', date, am)
         self.notifyObservers("FLIGHT_CREATED", f.img_path, f)
