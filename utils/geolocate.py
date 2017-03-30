@@ -2,6 +2,91 @@ from math import cos, sin, sqrt, radians, degrees
 from math import acos, asin, atan2
 import numpy
 
+from observer import *
+
+class Geolocator(Observer):
+    def __init__(self):
+        super(Geolocator, self).__init__()
+
+        # # Initialize variables that will be changed once an image becomes available
+        self._intrinsic_matrix = numpy.array([[3446.85229, 0, 1477.50261],
+                                              [0, 3431.11804, 1002.49563],
+                                              [0, 0, 1]], dtype=numpy.float64)
+        # self._current_image = None
+        # self._lat_img = None
+        # self._lon_img = None
+        # self._roll_img = None
+        # self._pitch_img = None
+        # self._yaw_img = None
+        # self._altitude = None
+        # self._site_elevation = None
+        # self._scaling_factor = None
+        #
+        # # Current flight will update once a flight is selected
+        # self._current_flight = None
+        #
+        # # Initialize empty matrices
+        # self._reference_ecef = None
+        # self._aircraft_ecef = None
+        # self._aircraft_ned = None
+        # self._rotation_camera_to_ned = None
+        # self._rotation_ned_to_camera = None
+        # self._origin_of_ned_to_camera = None
+
+
+        # Select a reference point for geolocation operations
+        self._lat_ref = radians(49.903867) # TODO: generalize
+        self._lon_ref = radians(-98.273483)
+
+    # Running the update methods for the first time will create local variables
+    def updateCurrentImageParameters(self, image):
+        if image is not None:
+            self._current_image = image
+            self._lat_img = radians(image.latitude)
+            self._lon_img = radians(image.longitude)
+            self._roll_img = radians(image.roll)
+            self._pitch_img = radians(image.pitch)
+            self._yaw_img = radians(image.yaw)
+            self._altitude = image.altitude
+
+            # Update common matrices with recent changes
+            self.updateMatrices()
+
+    def setCurrentFlightAndSiteElevation(self, flight=None):
+        if flight is not None:
+            self._current_flight = flight
+            self.setSiteElevation(flight.reference_altitude)
+            self.updateMatrices()
+        else:
+            print "Error! Invalid flight passed, current flight and site elevation were not changed"
+
+    def setSiteElevation(self, site_elevation):
+        self._site_elevation = site_elevation
+
+    def updateMatrices(self):
+        self._reference_ecef = geodeticToEcef(self._lat_ref, self._lon_ref, self._site_elevation)
+        self._aircraft_ecef = geodeticToEcef(self._lat_img, self._lon_img, self._site_elevation)
+        self._aircraft_ned = transformEcefToNed(self._lat_img, self._lon_img, self._reference_ecef, self._aircraft_ecef)
+        self._origin_of_ned_to_camera = numpy.array([[self._site_elevation - self._altitude],
+                                                     [self._aircraft_ned[0]],
+                                                     [self._aircraft_ned[1]]], dtype=numpy.float64)
+        self._rotation_camera_to_ned = createRotationCameraToNed(self._pitch_img, self._roll_img, self._yaw_img)
+        self._rotation_ned_to_camera = numpy.linalg.inv(self._rotation_camera_to_ned)
+
+    def getPixelFromLatLon(self, pixel_lat, pixel_lon):
+        pixel_projection_ecef = geodeticToEcef(radians(pixel_lat), radians(pixel_lon), self._site_elevation)
+        pixel_projection_ned = transformEcefToNed(radians(pixel_lat), radians(pixel_lon), self._reference_ecef,
+                                                  pixel_projection_ecef)
+        scaled_pixel_location = numpy.dot(numpy.dot(self._intrinsic_matrix, self._rotation_ned_to_camera), pixel_projection_ned) - \
+                                numpy.dot(numpy.dot(self._intrinsic_matrix, self._rotation_ned_to_camera), self._origin_of_ned_to_camera)
+        scaling_factor = scaled_pixel_location[2]
+        x_position = scaled_pixel_location[0] / scaling_factor
+        y_position = scaled_pixel_location[1] / scaling_factor
+
+        return x_position, y_position
+
+    def getLatLonFromPixel(self):
+        pass
 
 def getPixelFromLatLon(image, image_width, image_height, site_elevation, pixel_lat, pixel_lon): #TODO: test
 
