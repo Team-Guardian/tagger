@@ -12,6 +12,7 @@ from gui.imageListItem import ImageListItem
 from gui.tagTableItem import TagTableItem
 from markerItem import MarkerItem
 
+TAG_TABLE_INDICES = {'TYPE': 0, 'SUBTYPE': 1, 'COUNT': 2, 'SYMBOL': 3}
 
 class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
     def __init__(self):
@@ -34,6 +35,8 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
         elif event is "MARKER_DELETED":
             self.viewer_single.getScene().removeItem(data)
             data.getMarker().tag.num_occurrences -= 1
+            data.getMarker().tag.save()
+            self.updateTagMarkerCountInUi(data.getMarker().tag)
             delete_marker(data.getMarker())
         elif event is "MARKER_PARENT_IMAGE_CHANGE":
             if data in self.image_list_item_dict:
@@ -56,9 +59,8 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
             if len(dialog.subtype.text()) > 0:
                 tagType = dialog.tagType.text()
                 subtype = dialog.subtype.text()
-                count = "0"
                 icon = dialog.icons.currentText()
-                t = create_tag(type=tagType, subtype=subtype, symbol=icon, num_occurrences=int(count))
+                t = create_tag(type=tagType, subtype=subtype, symbol=icon)
                 self.addTagToUi(t)
                 self.notifyObservers("TAG_CREATED", None, t)
 
@@ -79,7 +81,6 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
             tag = self.list_tags.item(row, 0).getTag()
             tagType = tag.type
             subtype = tag.subtype
-            count = "0"
             icon = tag.symbol
             dialog = TagDialog(title="Edit tag")
             dialog.tagType.setText(tagType)
@@ -90,7 +91,6 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
                 if len(dialog.subtype.text()) > 0:
                     tag.type = dialog.tagType.text()
                     tag.subtype = dialog.subtype.text()
-                    tag.num_occurrences = -1
                     tag.symbol = dialog.icons.currentText()
                     tag.save()
 
@@ -119,6 +119,11 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
         lat, lon = geolocateLatLonFromPixel(self.currentImage, self.currentFlight.reference_altitude, pu, pv)
         m = create_marker(tag=tag, image=self.currentImage, latitude=lat, longitude=lon)
         m.tag.num_occurrences += 1
+        m.tag.save()
+
+        # update the marker count in the table
+        self.updateTagMarkerCountInUi(tag)
+
         self.addMarkerToUi(pu, pv, m, 1.0) # 1.0 means fully opaque for markers created in current image
         self.notifyObservers("MARKER_CREATED", None, m)
 
@@ -142,6 +147,12 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
 
         self.viewer_single.getScene().addItem(marker)
 
+    def updateTagMarkerCountInUi(self, tag):
+        for rowIndex in range(self.list_tags.rowCount()):
+            tableTag = self.list_tags.item(rowIndex, TAG_TABLE_INDICES['COUNT']).getTag()
+            if tableTag == tag:
+                self.list_tags.setItem(rowIndex, TAG_TABLE_INDICES['COUNT'], TagTableItem(str(tag.num_occurrences), tag))
+
     def deleteMarkersFromUi(self, tag=None):
         sceneObjects = self.viewer_single.getScene().items()
         for item in sceneObjects:
@@ -150,6 +161,7 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
                     if item.getMarker().tag == tag:
                         self.viewer_single.getScene().removeItem(item)
                         item.getMarker().tag.num_occurrences -= 1
+                        item.getMarker().tag.save()
                 else:
                     self.viewer_single.getScene().removeItem(item)
 
