@@ -59,9 +59,8 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
             if len(dialog.subtype.text()) > 0:
                 tagType = dialog.tagType.text()
                 subtype = dialog.subtype.text()
-                count = 0
                 icon = dialog.icons.currentText()
-                t = create_tag(type=tagType, subtype=subtype, symbol=icon, num_occurrences=int(count))
+                t = create_tag(type=tagType, subtype=subtype, symbol=icon)
                 self.addTagToUi(t)
                 self.notifyObservers("TAG_CREATED", None, t)
 
@@ -82,7 +81,6 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
             tag = self.list_tags.item(row, 0).getTag()
             tagType = tag.type
             subtype = tag.subtype
-            count = tag.num_occurrences
             icon = tag.symbol
             dialog = TagDialog(title="Edit tag")
             dialog.tagType.setText(tagType)
@@ -93,7 +91,6 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
                 if len(dialog.subtype.text()) > 0:
                     tag.type = dialog.tagType.text()
                     tag.subtype = dialog.subtype.text()
-                    tag.num_occurrences = count
                     tag.symbol = dialog.icons.currentText()
                     tag.save()
 
