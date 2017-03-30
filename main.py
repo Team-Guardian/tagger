@@ -39,14 +39,16 @@ class Controller(Observer):
         elif event is "IMAGE_ADDED":
             self.images.append(data)
 
-    def loadFlight(self, id):
+    def loadFlight(self, id): # TODO: this function does more than the name implies
         self.currentFlight = self.flights[id]
         self.loadTags()
         self.loadMap(self.currentFlight)
         self.window.taggingTab.currentFlight = self.currentFlight
         self.window.mapTab.currentFlight = self.currentFlight
         self.loadImages()
+        self.window.taggingTab.disableCurrentImageChangedEvent()
         self.window.ui.tabWidget.setCurrentIndex(TAB_INDICES['TAB_TAGGING'])
+        self.window.taggingTab.enableCurrentItemChangedEvent()
 
     def loadTags(self):
         self.tags = get_all_tags()

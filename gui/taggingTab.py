@@ -256,9 +256,9 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
     def resetTab(self):
         # clear all images and references to the objects
         self.image_list_item_dict = {}
-        self.list_images.currentItemChanged.disconnect(self.currentImageChanged) # disconnect signal to avoid triggering an event
+        self.disableCurrentImageChangedEvent() # disconnect signal to avoid triggering an event
         self.list_images.clear()
-        self.list_images.currentItemChanged.connect(self.currentImageChanged)
+        self.enableCurrentItemChangedEvent() # re-enable the event
 
         # clear all tags
         self.list_tags.setRowCount(0) # discards all rows and data stored in them
@@ -272,3 +272,9 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
 
         # clear the photo viewer
         self.viewer_single.setPhoto(None)
+
+    def disableCurrentImageChangedEvent(self):
+        self.list_images.currentItemChanged.disconnect(self.currentImageChanged)
+
+    def enableCurrentItemChangedEvent(self):
+        self.list_images.currentItemChanged.connect(self.currentImageChanged)
