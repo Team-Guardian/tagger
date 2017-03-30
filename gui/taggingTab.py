@@ -264,6 +264,9 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
         self.list_tags.setRowCount(0) # discards all rows and data stored in them
         self.viewer_single.getPhotoItem().context_menu.clearTagContextMenu() # clear tags from the context menu
 
+        # clear all markers
+        self.deleteMarkersFromUi()
+
         # clear area map
         self.minimap.clearMinimap()
 

@@ -117,6 +117,9 @@ class MiniMap(QtWidgets.QGraphicsView, Observer):
         self._scene.addItem(line_item4)
 
     def clearMinimap(self):
+        for item in self._scene.items(): # clear the bounding box
+            if type(item) == QtWidgets.QGraphicsLineItem:
+                self._scene.removeItem(item)
         self._original_pixmap = QtGui.QPixmap(300, 190)
         self._original_pixmap.fill(QtCore.Qt.transparent)
         self._map.setPixmap(self._original_pixmap)
