@@ -2,6 +2,9 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 
 import utils.geolocate
 from contour import Contour
+from utils.geolocator import Geolocator
+from observer import *
+from db.models import *
 
 class MiniMap(QtWidgets.QGraphicsView):
     def __init__(self, parent):

@@ -54,6 +54,7 @@ class Controller(Observer):
     def loadFlight(self, id): # TODO: this function does more than the name implies
         self.currentFlight = self.flights[id]
         self.imageWatcher.startWatching(self.currentFlight, self.window.setupTab.line_watchDirectory.text())
+        self.updateGeolocatorWithFlightInformation(self.currentFlight)
         self.loadTags()
         self.loadMap(self.currentFlight)
         self.window.taggingTab.currentFlight = self.currentFlight
@@ -78,6 +79,9 @@ class Controller(Observer):
 
     def resetWatcher(self):
         self.imageWatcher.stopAndReset()
+
+    def updateGeolocatorWithFlightInformation(self, flight):
+        self.window.geolocator.setCurrentFlightAndSiteElevation(flight)
 
 if __name__ == '__main__':
 

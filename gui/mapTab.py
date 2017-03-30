@@ -2,7 +2,6 @@ from PyQt5 import QtWidgets, QtGui
 from ui.ui_mapTab import Ui_MapTab
 from gui.imageListItem import ImageListItem
 from utils.geographicUtilities import Point, PolygonBounds
-from utils.geolocate import geolocateLatLonFromPixel
 
 
 class MapTab(QtWidgets.QWidget, Ui_MapTab):
@@ -21,6 +20,7 @@ class MapTab(QtWidgets.QWidget, Ui_MapTab):
 
     def currentImageChanged(self, current, _):
         self.currentImage = current.getImage()
+        self.window().geolocator.updateCurrentImageParameters(self.currentImage)
         self.openImage(self.currentImage.filename, self.viewer_map)
 
     def openImage(self, path, viewer):
@@ -48,10 +48,10 @@ class MapTab(QtWidgets.QWidget, Ui_MapTab):
             item = self.list_allImages.item(i)
             img = item.getImage()
             bounds = PolygonBounds()
-            bounds.addVertex(Point(*geolocateLatLonFromPixel(img, self.currentFlight.reference_altitude, 0, 0)))
-            bounds.addVertex(Point(*geolocateLatLonFromPixel(img, self.currentFlight.reference_altitude, img.width, 0)))
-            bounds.addVertex(Point(*geolocateLatLonFromPixel(img, self.currentFlight.reference_altitude, img.width, img.height)))
-            bounds.addVertex(Point(*geolocateLatLonFromPixel(img, self.currentFlight.reference_altitude, 0, img.height)))
+            bounds.addVertex(Point(*self.window().geolocator.getLatLonFromPixel(0, 0)))
+            bounds.addVertex(Point(*self.window().geolocator.getLatLonFromPixel(img.width, 0)))
+            bounds.addVertex(Point(*self.window().geolocator.getLatLonFromPixel(img.width, img.height)))
+            bounds.addVertex(Point(*self.window().geolocator.getLatLonFromPixel(0, img.height)))
             if bounds.isPointInsideBounds(p):
                 item.setHidden(False)
 
