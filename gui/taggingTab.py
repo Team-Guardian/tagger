@@ -1,6 +1,7 @@
 from PyQt5 import QtWidgets, QtGui
 from PyQt5.QtWidgets import QDialog
 from PyQt5.QtGui import QPixmap
+from PyQt5.QtCore import QRect
 
 from ui.ui_taggingTab import Ui_TaggingTab
 from tagDialog import TagDialog
@@ -43,10 +44,6 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
         elif event is "MARKER_PARENT_IMAGE_CHANGE":
             if data in self.image_list_item_dict:
                 self.list_images.setCurrentItem(self.image_list_item_dict.get(data))
-        elif event is "IMAGE_SAVE":
-            pixmap = QPixmap(self.viewer_single.grab())
-            filename = QtWidgets.QFileDialog.getSaveFileName(self, "Enter File Name")[0]
-            pixmap.save(filename, format='jpg', quality=100)
 
     def connectButtons(self):
         self.button_addTag.clicked.connect(self.addTag)
@@ -335,3 +332,20 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
     def enableCurrentItemChangedEvent(self):
         self.list_images.currentItemChanged.connect(self.currentImageChanged)
 
+    def saveImage(self):
+        scene_width = self.viewer_single.viewport().rect().width()
+        scene_height = self.viewer_single.viewport().rect().height()
+        imageTopLeftPixel = self.viewer_single.mapToScene(0, 0) # Currently displayed top left pixel
+        imageBottomRightPixel = self.viewer_single.mapToScene(scene_width, scene_height) # Currently displayed bottom right pixel
+        if self.currentImage != None:
+            pixmap = QPixmap(self.currentImage.filename)
+            filename = QtWidgets.QFileDialog.getSaveFileName(self, "Enter File Name", ".", "Images (*.jpg)")[0]
+            if self.viewer_single.zoomFactor() == 0: # This means that the image is fully zoomed out
+                pixmap.save(filename, format='jpg', quality=100)
+            else:
+                save_image_width = imageBottomRightPixel.x() - imageTopLeftPixel.x()
+                save_image_height = imageBottomRightPixel.y() - imageTopLeftPixel.y()
+                cropping_rect = QRect(imageTopLeftPixel.x(), imageTopLeftPixel.y(), \
+                                      save_image_width, save_image_height)
+                cropped_pixmap = pixmap.copy(cropping_rect)
+                cropped_pixmap.save(filename, format='jpg', quality=100)
