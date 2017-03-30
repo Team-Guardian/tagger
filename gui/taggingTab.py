@@ -339,13 +339,21 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
         imageBottomRightPixel = self.viewer_single.mapToScene(scene_width, scene_height) # Currently displayed bottom right pixel
         if self.currentImage != None:
             pixmap = QPixmap(self.currentImage.filename)
-            filename = QtWidgets.QFileDialog.getSaveFileName(self, "Enter File Name", ".", "Images (*.jpg)")[0]
-            if self.viewer_single.zoomFactor() == 0: # This means that the image is fully zoomed out
-                pixmap.save(filename, format='jpg', quality=100)
-            else:
-                save_image_width = imageBottomRightPixel.x() - imageTopLeftPixel.x()
-                save_image_height = imageBottomRightPixel.y() - imageTopLeftPixel.y()
-                cropping_rect = QRect(imageTopLeftPixel.x(), imageTopLeftPixel.y(), \
-                                      save_image_width, save_image_height)
-                cropped_pixmap = pixmap.copy(cropping_rect)
-                cropped_pixmap.save(filename, format='jpg', quality=100)
+            fileSaveDialog = QtWidgets.QFileDialog()
+            fileSaveDialog.setWindowTitle('Save Image')
+            fileSaveDialog.setAcceptMode(QtWidgets.QFileDialog.AcceptSave)
+            fileSaveDialog.setNameFilter('Images (*.jpg)')
+            fileSaveDialog.setDefaultSuffix('.jpg')
+            if fileSaveDialog.exec_() == QtWidgets.QFileDialog.Accepted:
+                fName = fileSaveDialog.selectedFiles()[0]
+                if self.viewer_single.zoomFactor() == 0: # This means that the image is fully zoomed out
+                    pixmap.save(fName, format='jpg', quality=100)
+                else:
+                    save_image_width = imageBottomRightPixel.x() - imageTopLeftPixel.x()
+                    save_image_height = imageBottomRightPixel.y() - imageTopLeftPixel.y()
+                    cropping_rect = QRect(imageTopLeftPixel.x(), imageTopLeftPixel.y(), \
+                                          save_image_width, save_image_height)
+                    cropped_pixmap = pixmap.copy(cropping_rect)
+                    cropped_pixmap.save(fName, format='jpg', quality=100)
+
+

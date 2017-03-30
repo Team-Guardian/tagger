@@ -41,10 +41,10 @@ class MainWindow(QtWidgets.QMainWindow, Observable):
         # connect menu bar items to functions
         self.ui.actionReset.triggered.connect(self.resetGui)
         self.ui.actionSaveImage.triggered.connect(self.saveImage)
-        self.ui.actionSaveImage.setShortcut(QKeySequence('Ctrl+S'))
+        self.ui.actionSaveImage.setShortcut(QKeySequence.Save)
         self.ui.actionSaveImage.setDisabled(True)
-        self.saveImageShortcut = QShortcut(QKeySequence("Ctrl+S"), self)
-        self.saveImageShortcut.activated.connect(self.saveImage)
+        # self.saveImageShortcut = QShortcut(QKeySequence("Ctrl+S"), self)
+        # self.saveImageShortcut.activated.connect(self.saveImage)
 
         self.ui.tabWidget.currentChanged.connect(self.tabChangeHandler)
 
