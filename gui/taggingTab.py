@@ -14,6 +14,7 @@ from gui.imageListItem import ImageListItem
 from gui.tagTableItem import TagTableItem
 from markerItem import MarkerItem
 
+from utils.imageInfo import FLIGHT_DIRECTORY
 TAG_TABLE_INDICES = {'TYPE': 0, 'SUBTYPE': 1, 'COUNT': 2, 'SYMBOL': 3}
 
 class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
@@ -338,7 +339,8 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
         imageTopLeftPixel = self.viewer_single.mapToScene(0, 0) # Currently displayed top left pixel
         imageBottomRightPixel = self.viewer_single.mapToScene(scene_width, scene_height) # Currently displayed bottom right pixel
         if self.currentImage != None:
-            pixmap = QPixmap(self.currentImage.filename)
+            image_path = FLIGHT_DIRECTORY + '{}/{}'.format(self.currentFlight.img_path, self.currentImage.filename)
+            pixmap = QPixmap(image_path)
             fileSaveDialog = QtWidgets.QFileDialog()
             fileSaveDialog.setWindowTitle('Save Image')
             fileSaveDialog.setAcceptMode(QtWidgets.QFileDialog.AcceptSave)
@@ -355,5 +357,4 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
                                           save_image_width, save_image_height)
                     cropped_pixmap = pixmap.copy(cropping_rect)
                     cropped_pixmap.save(fName, format='jpg', quality=100)
-
 
