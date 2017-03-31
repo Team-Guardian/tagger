@@ -189,7 +189,7 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
 
     def addImageToUi(self, image):
         item = ImageListItem(image.filename, image)
-        if image.is_reviewed != True:
+        if not image.is_reviewed:
             font = item.font()
             font.setBold(True)
             item.setFont(font)
