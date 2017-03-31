@@ -237,34 +237,33 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
         image = self.currentImage
         _list = list(Marker.objects.filter(image=image)) # Convert QuerySet to a list
 
-        for m in Marker.objects.exclude(image=image):
-            if m.image.flight == self.currentFlight:
-                image_width = image.width
-                image_height = image.height
+        for m in Marker.objects.filter(image__flight=self.currentFlight).exclude(image=image):
+            image_width = image.width
+            image_height = image.height
 
-                image_bounds = PolygonBounds()
+            image_bounds = PolygonBounds()
 
-                #The order of UL UR LR LL is important
-                # Upper Left
-                lat, lon = geolocateLatLonFromPixel(image, self.currentFlight.reference_altitude, 0, 0)
-                image_bounds.addVertex(Point(lat, lon))
+            #The order of UL UR LR LL is important
+            # Upper Left
+            lat, lon = geolocateLatLonFromPixel(image, self.currentFlight.reference_altitude, 0, 0)
+            image_bounds.addVertex(Point(lat, lon))
 
-                # Upper Right
-                lat, lon = geolocateLatLonFromPixel(image, self.currentFlight.reference_altitude, image_width, 0)
-                image_bounds.addVertex(Point(lat, lon))
+            # Upper Right
+            lat, lon = geolocateLatLonFromPixel(image, self.currentFlight.reference_altitude, image_width, 0)
+            image_bounds.addVertex(Point(lat, lon))
 
-                # Lower Right
-                lat, lon = geolocateLatLonFromPixel(image, self.currentFlight.reference_altitude, image_width, image_height)
-                image_bounds.addVertex(Point(lat, lon))
+            # Lower Right
+            lat, lon = geolocateLatLonFromPixel(image, self.currentFlight.reference_altitude, image_width, image_height)
+            image_bounds.addVertex(Point(lat, lon))
 
-                # Lower Left
-                lat, lon = geolocateLatLonFromPixel(image, self.currentFlight.reference_altitude, 0, image_height)
-                image_bounds.addVertex(Point(lat, lon))
+            # Lower Left
+            lat, lon = geolocateLatLonFromPixel(image, self.currentFlight.reference_altitude, 0, image_height)
+            image_bounds.addVertex(Point(lat, lon))
 
-                marker_loc = Point(m.latitude, m.longitude)
+            marker_loc = Point(m.latitude, m.longitude)
 
-                if image_bounds.isPointInsideBounds(marker_loc):
-                    _list.append(m)
+            if image_bounds.isPointInsideBounds(marker_loc):
+                _list.append(m)
 
         return _list
 

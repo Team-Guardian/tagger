@@ -45,10 +45,9 @@ class Controller(Observer):
         self.loadMap(self.currentFlight)
         self.window.taggingTab.currentFlight = self.currentFlight
         self.window.mapTab.currentFlight = self.currentFlight
-        self.loadImages()
-        self.window.taggingTab.disableCurrentImageChangedEvent()
         self.window.ui.tabWidget.setCurrentIndex(TAB_INDICES['TAB_TAGGING'])
-        self.window.taggingTab.enableCurrentItemChangedEvent()
+        self.loadImages() # Keep this sequentially after the setCurrentTab call. This is a workaround for a \
+                          # Qt bug: https://goo.gl/gWXA9Q
 
     def loadTags(self):
         self.tags = get_all_tags()
