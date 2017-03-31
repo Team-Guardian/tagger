@@ -51,9 +51,6 @@ def get_all_images_for_flight(flight):
             images.append(i)
     return images
 
-def check_if_image_exists(img_filename):
-    return Image.objects.filter(filename=img_filename).exists()
-
 # Tag
 def create_tag(type, subtype, symbol, num_occurrences=0):
     t = Tag(type=type, subtype=subtype, symbol=symbol, num_occurrences=num_occurrences)
