@@ -2,7 +2,7 @@ import sys
 from PyQt5 import QtWidgets
 
 from db.dbHelper import *
-from gui.mainWindow import MainWindow
+from gui.mainWindow import MainWindow, TAB_INDICES
 from observer import *
 
 
@@ -25,9 +25,11 @@ class Controller(Observer):
 
     def notify(self, event, id, data):
         if event is "FLIGHT_LOAD":
+            self.window.resetGui()
             self.loadFlight(id)
         elif event is "FLIGHT_CREATED":
             self.flights[id] = data
+            self.window.setupTab.addFlightToUi(data)
             self.loadFlight(id)
         elif event is "TAG_CREATED":
             self.tags.append(data)
@@ -37,12 +39,15 @@ class Controller(Observer):
         elif event is "IMAGE_ADDED":
             self.images.append(data)
 
-    def loadFlight(self, id):
+    def loadFlight(self, id): # TODO: this function does more than the name implies
         self.currentFlight = self.flights[id]
         self.loadTags()
         self.loadMap(self.currentFlight)
         self.window.taggingTab.currentFlight = self.currentFlight
-        self.loadImages()
+        self.window.mapTab.currentFlight = self.currentFlight
+        self.window.ui.tabWidget.setCurrentIndex(TAB_INDICES['TAB_TAGGING'])
+        self.loadImages() # Keep this sequentially after the setCurrentTab call. This is a workaround for a \
+                          # Qt bug: https://goo.gl/gWXA9Q
 
     def loadTags(self):
         self.tags = get_all_tags()
@@ -56,6 +61,7 @@ class Controller(Observer):
         self.images = get_all_images_for_flight(self.currentFlight)
         for i in self.images:
             self.window.taggingTab.addImageToUi(i)
+            self.window.mapTab.addImageToUi(i)
 
 if __name__ == '__main__':
 

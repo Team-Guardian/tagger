@@ -12,6 +12,7 @@ from gui.imageListItem import ImageListItem
 from gui.tagTableItem import TagTableItem
 from markerItem import MarkerItem
 
+TAG_TABLE_INDICES = {'TYPE': 0, 'SUBTYPE': 1, 'COUNT': 2, 'SYMBOL': 3}
 
 class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
     def __init__(self):
@@ -35,6 +36,8 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
         elif event is "MARKER_DELETED":
             self.viewer_single.getScene().removeItem(data)
             data.getMarker().tag.num_occurrences -= 1
+            data.getMarker().tag.save()
+            self.updateTagMarkerCountInUi(data.getMarker().tag)
             delete_marker(data.getMarker())
         elif event is "MARKER_PARENT_IMAGE_CHANGE":
             if data in self.image_list_item_dict:
@@ -86,7 +89,6 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
             tag = self.list_tags.item(row, 0).getTag()
             tagType = tag.type
             subtype = tag.subtype
-            count = "0"
             icon = tag.symbol
             self.tag_dialog.setWindowTitle("Edit tag")
             self.tag_dialog.tagType.setText(tagType)
@@ -150,6 +152,11 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
         lat, lon = geolocateLatLonFromPixel(self.currentImage, self.currentFlight.reference_altitude, pu, pv)
         m = create_marker(tag=tag, image=self.currentImage, latitude=lat, longitude=lon)
         m.tag.num_occurrences += 1
+        m.tag.save()
+
+        # update the marker count in the table
+        self.updateTagMarkerCountInUi(tag)
+
         self.addMarkerToUi(pu, pv, m, 1.0) # 1.0 means fully opaque for markers created in current image
         self.notifyObservers("MARKER_CREATED", None, m)
 
@@ -173,6 +180,12 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
 
         self.viewer_single.getScene().addItem(marker)
 
+    def updateTagMarkerCountInUi(self, tag):
+        for rowIndex in range(self.list_tags.rowCount()):
+            tableTag = self.list_tags.item(rowIndex, TAG_TABLE_INDICES['COUNT']).getTag()
+            if tableTag == tag:
+                self.list_tags.setItem(rowIndex, TAG_TABLE_INDICES['COUNT'], TagTableItem(str(tag.num_occurrences), tag))
+
     def deleteMarkersFromUi(self, tag=None):
         sceneObjects = self.viewer_single.getScene().items()
         for item in sceneObjects:
@@ -181,6 +194,7 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
                     if item.getMarker().tag == tag:
                         self.viewer_single.getScene().removeItem(item)
                         item.getMarker().tag.num_occurrences -= 1
+                        item.getMarker().tag.save()
                 else:
                     self.viewer_single.getScene().removeItem(item)
 
@@ -190,10 +204,14 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
             font = item.font()
             font.setBold(not font.bold())
             item.setFont(font)
+            item.getImage().is_reviewed = False
 
             # image was marked as reviewed
             if not font.bold():
+                item.getImage().is_reviewed = True
                 self.nextImage()
+
+            item.getImage().save()
 
     def addImage(self):
         paths = QtWidgets.QFileDialog.getOpenFileNames(self, "Select images", ".", "Images (*.jpg)")[0]
@@ -204,9 +222,10 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
 
     def addImageToUi(self, image):
         item = ImageListItem(image.filename, image)
-        font = item.font()
-        font.setBold(True)
-        item.setFont(font)
+        if not image.is_reviewed:
+            font = item.font()
+            font.setBold(True)
+            item.setFont(font)
         self.list_images.addItem(item)
         self.image_list_item_dict[image] = item
 
@@ -221,7 +240,7 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
         # Display markers for this image
         image_width = self.currentImage.width
         image_height = self.currentImage.height
-        marker_list = self.getMarkersForImage(self.currentImage)
+        marker_list = self.getMarkersForImage()
         reference_altitude = self.currentFlight.reference_altitude
         for marker in marker_list:
             x, y = getPixelFromLatLon(self.currentImage, image_width, image_height, reference_altitude, marker.latitude, marker.longitude)
@@ -252,9 +271,11 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
     def getCurrentFlight(self):
         return self.currentFlight
 
-    def getMarkersForImage(self, image):
+    def getMarkersForImage(self):
+        image = self.currentImage
         _list = list(Marker.objects.filter(image=image)) # Convert QuerySet to a list
-        for m in Marker.objects.exclude(image=image):
+
+        for m in Marker.objects.filter(image__flight=self.currentFlight).exclude(image=image):
             image_width = image.width
             image_height = image.height
 
@@ -283,3 +304,29 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
                 _list.append(m)
 
         return _list
+
+    def resetTab(self):
+        # clear all images and references to the objects
+        self.image_list_item_dict = {}
+        self.disableCurrentImageChangedEvent() # disconnect signal to avoid triggering an event
+        self.list_images.clear()
+        self.enableCurrentItemChangedEvent() # re-enable the event
+
+        # clear all tags
+        self.list_tags.setRowCount(0) # discards all rows and data stored in them
+        self.viewer_single.getPhotoItem().context_menu.clearTagContextMenu() # clear tags from the context menu
+
+        # clear all markers
+        self.deleteMarkersFromUi()
+
+        # clear area map
+        self.minimap.clearMinimap()
+
+        # clear the photo viewer
+        self.viewer_single.setPhoto(None)
+
+    def disableCurrentImageChangedEvent(self):
+        self.list_images.currentItemChanged.disconnect(self.currentImageChanged)
+
+    def enableCurrentItemChangedEvent(self):
+        self.list_images.currentItemChanged.connect(self.currentImageChanged)
