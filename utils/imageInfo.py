@@ -3,25 +3,59 @@
 from math import degrees
 from osgeo import gdal, osr
 import pyexiv2
+import ntpath
+import os
 from db.dbHelper import create_image
 
+FLIGHT_DIRECTORY = "./flights/"
 
-# reads EXIF from file on disk and returns new Image in DB
-def createImageWithExif(path, flight):
+# reads an image from path, ensures it not duplicating an existing image
+# reads exif information, creates db entry, moves file to flight directory
+def processNewImage(path, flight):
     if not flight:
-        raise Exception("Need a flight to load an image")
+        raise Exception("Need a flight to process an image")
 
-    exif = pyexiv2.ImageMetadata(path)
+    sourceDirectory, imgFilename = GetDirectoryAndFilenameFromFullPath(path)
+    imageData = getExifDataFromImage(path)
+    try:
+        image = create_image(filename=imgFilename, width=imageData['width'], height=imageData['height'],
+                        flight=flight,latitude=imageData['latitude'],
+                        longitude=imageData['longitude'], altitude=imageData['altitude'],
+                        roll=imageData['roll'], pitch=imageData['pitch'], yaw=imageData['yaw'])
+    except Exception as e:
+        raise e
+
+    destinationDirectory = FLIGHT_DIRECTORY + "{}".format(flight.img_path)
+    ensureDirectoryExists(destinationDirectory)
+    moveImage(sourceDirectory, destinationDirectory, imgFilename)
+
+    return image
+
+def ensureDirectoryExists(dir):
+    if not os.path.exists(dir):
+        os.makedirs(dir)
+
+def moveImage(from_dir, to_dir, img_filename):
+    old_path = '{}/{}'.format(from_dir, img_filename)
+    new_path = '{}/{}'.format(to_dir, img_filename)
+    os.rename(old_path, new_path)
+
+def getExifDataFromImage(path_to_image):
+    imageData = {}
+    
+    exif = pyexiv2.ImageMetadata(path_to_image)
     exif.read()
-    width, height = exif.dimensions
+    
+    imageData['width'], imageData['height'] = exif.dimensions
     telemetry = exif['Exif.Photo.UserComment'].raw_value.split()
+    
     # degrees, degrees, metres
-    latitude, longitude, altitude = [float(x) for x in telemetry[0:3]]
+    imageData['latitude'], imageData['longitude'], imageData['altitude'] = [float(x) for x in telemetry[0:3]]
+
     # store as degrees, but exif has radians
-    pitch, roll, yaw = [degrees(float(x)) for x in telemetry[3:]]
-    return create_image(filename=path, width=width, height=height, flight=flight,
-                        latitude=latitude, longitude=longitude, altitude=altitude,
-                        roll=roll, pitch=pitch, yaw=yaw)
+    imageData['pitch'], imageData['roll'], imageData['yaw'] = [degrees(float(x)) for x in telemetry[3:]]
+
+    return imageData
 
 def loadGeotiff(img_path):
     raster=img_path + '.tif'
@@ -83,3 +117,7 @@ def ReprojectCoords(coords,src_srs,tgt_srs):
         x,y,z = transform.TransformPoint(x,y)
         trans_coords.append([x,y])
     return trans_coords
+
+
+def GetDirectoryAndFilenameFromFullPath(path):
+    return ntpath.split(path)

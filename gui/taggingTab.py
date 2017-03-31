@@ -5,7 +5,7 @@ from ui.ui_taggingTab import Ui_TaggingTab
 from tagDialog import TagDialog
 from db.dbHelper import *
 from observer import *
-from utils.imageInfo import createImageWithExif
+from utils.imageInfo import processNewImage
 from utils.geolocate import geolocateLatLonFromPixel, getPixelFromLatLon
 from utils.geographicUtilities import *
 from gui.imageListItem import ImageListItem
@@ -216,9 +216,8 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
     def addImage(self):
         paths = QtWidgets.QFileDialog.getOpenFileNames(self, "Select images", ".", "Images (*.jpg)")[0]
         for path in paths:
-            image = createImageWithExif(path, self.currentFlight)
+            image = processNewImage(path, self.currentFlight)
             self.notifyObservers("IMAGE_ADDED", None, image)
-            self.addImageToUi(image)
 
     def addImageToUi(self, image):
         item = ImageListItem(image.filename, image)
@@ -234,7 +233,7 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
         self.deleteMarkersFromUi()
 
         self.currentImage = current.getImage()
-        self.openImage(self.currentImage.filename, self.viewer_single)
+        self.openImage('./flights/{}/{}'.format(self.currentFlight.img_path, self.currentImage.filename), self.viewer_single)
         self.notifyObservers("CURRENT_IMG_CHANGED", None, self.currentImage.filename)
 
         # Display markers for this image
