@@ -5,7 +5,7 @@ from osgeo import gdal, osr
 import pyexiv2
 import ntpath
 import os
-from db.dbHelper import create_image, check_if_image_exists
+from db.dbHelper import create_image
 
 FLIGHT_DIRECTORY = "./flights/"
 
