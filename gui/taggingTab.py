@@ -171,10 +171,14 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
             font = item.font()
             font.setBold(not font.bold())
             item.setFont(font)
+            item.getImage().is_reviewed = False
 
             # image was marked as reviewed
             if not font.bold():
+                item.getImage().is_reviewed = True
                 self.nextImage()
+
+            item.getImage().save()
 
     def addImage(self):
         paths = QtWidgets.QFileDialog.getOpenFileNames(self, "Select images", ".", "Images (*.jpg)")[0]
@@ -185,9 +189,10 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
 
     def addImageToUi(self, image):
         item = ImageListItem(image.filename, image)
-        font = item.font()
-        font.setBold(True)
-        item.setFont(font)
+        if not image.is_reviewed:
+            font = item.font()
+            font.setBold(True)
+            item.setFont(font)
         self.list_images.addItem(item)
         self.image_list_item_dict[image] = item
 
