@@ -202,7 +202,7 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
         # Display markers for this image
         image_width = self.currentImage.width
         image_height = self.currentImage.height
-        marker_list = self.getMarkersForImage(self.currentImage)
+        marker_list = self.getMarkersForImage()
         reference_altitude = self.currentFlight.reference_altitude
         for marker in marker_list:
             x, y = getPixelFromLatLon(self.currentImage, image_width, image_height, reference_altitude, marker.latitude, marker.longitude)
@@ -233,9 +233,11 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
     def getCurrentFlight(self):
         return self.currentFlight
 
-    def getMarkersForImage(self, image):
+    def getMarkersForImage(self):
+        image = self.currentImage
         _list = list(Marker.objects.filter(image=image)) # Convert QuerySet to a list
-        for m in Marker.objects.exclude(image=image):
+
+        for m in Marker.objects.filter(image__flight=self.currentFlight).exclude(image=image):
             image_width = image.width
             image_height = image.height
 
