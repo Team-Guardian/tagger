@@ -15,7 +15,6 @@ class Watcher:
         self.event_handler = None
         self.image_watcher_thread = None
         self.event_handler = FileCreatedEventHandler(self.observer)
-        self.isRunning = False
         self.stopCommand = False;
 
     def startWatching(self, flight, watched_dir):
@@ -25,7 +24,6 @@ class Watcher:
         self.image_watcher_thread = threading.Thread(target=self.run, args=())
         self.image_watcher_thread.daemon = True
         self.image_watcher_thread.start()
-        self.isRunning = True
 
     def stopAndReset(self):
         self.stopCommand = True
@@ -47,14 +45,12 @@ class FileCreatedEventHandler(FileSystemEventHandler, GuiObservable):
         self.watched_dir = None
         self.flight = None
 
-
     def startEventHandler(self, flight, watched_dir):
         self.watched_dir = watched_dir
         self.flight = flight
 
     def changeTargetFlight(self, new_flight):
         self.flight = new_flight
-
 
     def on_created(self, event):
         path = event.src_path
@@ -64,4 +60,3 @@ class FileCreatedEventHandler(FileSystemEventHandler, GuiObservable):
         if any(fileName.endswith(end) for end in ['.jpg', '.jpeg', '.JPG', '.JPEG']):
             i = processNewImage(path, self.flight)
             self.notifyObservers('IMAGE_ADDED', None, i)
-            self.observer.unschedule_all()
