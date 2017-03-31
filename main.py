@@ -47,8 +47,6 @@ class Controller(Observer):
             self.tags.remove(data)
             delete_tag(data) # This also deletes all the markers associated with this tag (Cascaded delete)
         elif event is "IMAGE_ADDED":
-            self.images.append(data)
-        elif event is "IMAGE_RECEIVED":
             new_image = data
             self.images.append(new_image)
             self.window.taggingTab.addImageToUi(new_image)

@@ -5,7 +5,9 @@ import os
 from observer import Observable as GuiObservable
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
-from utils.imageInfo import createImageWithExif, GetFileNameFromFullPath
+from utils.imageInfo import processNewImage, GetDirectoryAndFilenameFromFullPath
+
+STOPPING_CONDITION_CHECK_INTERVAL = 500
 
 class Watcher:
     def __init__(self):
@@ -34,7 +36,7 @@ class Watcher:
 
     def run(self):
             while not self.stopCommand:
-                time.sleep(500) # check directory twice a second
+                time.sleep(STOPPING_CONDITION_CHECK_INTERVAL) # check for stopping condition twice per second
 
 
 class FileCreatedEventHandler(FileSystemEventHandler, GuiObservable):
@@ -57,27 +59,9 @@ class FileCreatedEventHandler(FileSystemEventHandler, GuiObservable):
     def on_created(self, event):
         path = event.src_path
 
-        fileName = GetFileNameFromFullPath(path)
+        directory, fileName = GetDirectoryAndFilenameFromFullPath(path)
 
         if any(fileName.endswith(end) for end in ['.jpg', '.jpeg', '.JPG', '.JPEG']):
-            self.processImage(fileName)
+            i = processNewImage(path, self.flight)
+            self.notifyObservers('IMAGE_ADDED', None, i)
             self.observer.unschedule_all()
-
-    def processImage(self, img_filename):
-        self.ensureFlightImageDirectoryExists()
-        self.moveImageToFlightDirectory(self.watched_dir, './flights/{}'.format(self.flight.img_path), img_filename)
-        i = createImageWithExif(self.createPathToImage(self.flight, img_filename), self.flight)
-        self.notifyObservers('IMAGE_RECEIVED', None, i)
-
-    def ensureFlightImageDirectoryExists(self):
-        flight_directory = './flights/{}'.format(self.flight.img_path)
-        if not os.path.exists(flight_directory):
-            os.makedirs(flight_directory)
-
-    def createPathToImage(self, flight, img_filename):
-        return './flights/{}/{}'.format(flight.img_path, img_filename)
-
-    def moveImageToFlightDirectory(self, from_dir, to_dir, img_filename):
-        old_path = '{}/{}'.format(from_dir, img_filename)
-        new_path = '{}/{}'.format(to_dir, img_filename)
-        os.rename(old_path, new_path)

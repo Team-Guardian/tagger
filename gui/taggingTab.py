@@ -5,7 +5,7 @@ from ui.ui_taggingTab import Ui_TaggingTab
 from tagDialog import TagDialog
 from db.dbHelper import *
 from observer import *
-from utils.imageInfo import createImageWithExif
+from utils.imageInfo import processNewImage
 from utils.geolocate import geolocateLatLonFromPixel, getPixelFromLatLon
 from utils.geographicUtilities import *
 from gui.imageListItem import ImageListItem
@@ -167,9 +167,8 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
     def addImage(self):
         paths = QtWidgets.QFileDialog.getOpenFileNames(self, "Select images", ".", "Images (*.jpg)")[0]
         for path in paths:
-            image = createImageWithExif(path, self.currentFlight)
+            image = processNewImage(path, self.currentFlight)
             self.notifyObservers("IMAGE_ADDED", None, image)
-            self.addImageToUi(image)
 
     def addImageToUi(self, image):
         item = ImageListItem(image.filename, image)
