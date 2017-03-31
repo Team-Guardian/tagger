@@ -19,7 +19,7 @@ class Contour(QtWidgets.QGraphicsPolygonItem):
         self.createNewPolygon()
 
     def eraseOldPolygon(self):
-        self._polygon = QtGui.QPolygonF() # TODO
+        self._polygon.clear()
 
     def createNewPolygon(self):
         self._polygon.append(self._topLeft)
