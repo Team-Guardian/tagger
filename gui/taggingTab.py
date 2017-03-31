@@ -26,6 +26,7 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
         self.connectButtons()
 
         self.image_list_item_dict = {}
+        self.tag_dialog = TagDialog()
 
         self.viewer_single.getPhotoItem().addObserver(self)
 
@@ -54,13 +55,17 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
         self.button_addImage.clicked.connect(self.addImage)
 
     def addTag(self):
-        dialog = TagDialog(title="Create tag")
-        if dialog.exec_() == QDialog.Accepted:
-            if len(dialog.subtype.text()) > 0:
-                tagType = dialog.tagType.text()
-                subtype = dialog.subtype.text()
-                icon = dialog.icons.currentText()
-                t = create_tag(type=tagType, subtype=subtype, symbol=icon)
+        self.tag_dialog.setWindowTitle("Create tag")
+        self.tag_dialog.tagType.setText('')
+        self.tag_dialog.subtype.setText('')
+        self.tag_dialog.icons.setCurrentIndex(0)
+        if self.tag_dialog.exec_() == QDialog.Accepted:
+            if len(self.tag_dialog.tagType.text()) > 0 and len(self.tag_dialog.subtype.text()) > 0:
+                tagType = self.tag_dialog.tagType.text()
+                subtype = self.tag_dialog.subtype.text()
+                count = "0"
+                icon = self.tag_dialog.icons.currentText()
+                t = create_tag(type=tagType, subtype=subtype, symbol=icon, num_occurrences=int(count))
                 self.addTagToUi(t)
                 self.notifyObservers("TAG_CREATED", None, t)
 
@@ -75,6 +80,9 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
         # add tag to context menu
         self.viewer_single.getPhotoItem().context_menu.addTagToContextMenu(tag)
 
+        # Update the drop-down menu for adding/editing tags
+        self.tag_dialog.removeIcon(tag.symbol)
+
     def editTag(self):
         row = self.list_tags.currentRow()
         if row >= 0:
@@ -82,17 +90,39 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
             tagType = tag.type
             subtype = tag.subtype
             icon = tag.symbol
-            dialog = TagDialog(title="Edit tag")
-            dialog.tagType.setText(tagType)
-            dialog.subtype.setText(subtype)
-            index = dialog.icons.findText(icon)
-            dialog.icons.setCurrentIndex(index)
-            if dialog.exec_() == QDialog.Accepted:
-                if len(dialog.subtype.text()) > 0:
-                    tag.type = dialog.tagType.text()
-                    tag.subtype = dialog.subtype.text()
-                    tag.symbol = dialog.icons.currentText()
+            self.tag_dialog.setWindowTitle("Edit tag")
+            self.tag_dialog.tagType.setText(tagType)
+            self.tag_dialog.subtype.setText(subtype)
+            self.tag_dialog.addIcon(icon) # Show the current symbol in the list
+            index = self.tag_dialog.icons.findText(icon)
+            self.tag_dialog.icons.setCurrentIndex(index)
+            if self.tag_dialog.exec_() == QDialog.Accepted:
+                if len(self.tag_dialog.tagType.text()) > 0 and len(self.tag_dialog.subtype.text()) > 0:
+                    tag.type = self.tag_dialog.tagType.text()
+                    tag.subtype = self.tag_dialog.subtype.text()
+                    tag.num_occurrences = -1
+                    tag.symbol = self.tag_dialog.icons.currentText()
                     tag.save()
+
+                    # If the icon has been changed, update the icons in the drop-down menu and all markers
+                    if icon != tag.symbol:
+                        self.tag_dialog.removeIcon(tag.symbol)
+
+                        if self.currentImage != None:
+                            self.deleteMarkersFromUi(tag=tag)
+                            image_width = self.currentImage.width
+                            image_height = self.currentImage.height
+                            reference_altitude = self.currentFlight.reference_altitude
+                            marker_list = self.getMarkersForImage(self.currentImage)
+                            for marker in marker_list:
+                                x, y = getPixelFromLatLon(self.currentImage, image_width, image_height, reference_altitude, \
+                                                          marker.latitude, marker.longitude)
+                                opacity = 1.0
+                                if marker.image != self.currentImage:
+                                    opacity = 0.5
+                                self.addMarkerToUi(x, y, marker, opacity)
+                    else:
+                        self.tag_dialog.removeIcon(icon) # Remove the current symbol if it hasn't been changed
 
                     # update all columns in row with these texts
                     texts = [tag.type, tag.subtype, str(tag.num_occurrences), tag.symbol]
@@ -102,6 +132,8 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
                     self.viewer_single.getPhotoItem().context_menu.updateTagItem(tag)
 
                     self.notifyObservers("TAG_EDITED", None, tag)
+            else:
+                self.tag_dialog.removeIcon(icon) # Remove the current symbol if it hasn't been changed
 
     def removeTag(self):
         row = self.list_tags.currentRow()
@@ -110,6 +142,7 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
             self.list_tags.removeRow(row)
             self.viewer_single.getPhotoItem().context_menu.removeTagItem(tag)
             self.deleteMarkersFromUi(tag=tag)
+            self.tag_dialog.addIcon(tag.symbol)
             self.notifyObservers("TAG_DELETED", None, tag)
 
     def addMarker(self, data):

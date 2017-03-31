@@ -1,5 +1,6 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
 from observer import *
+from tagDialog import ICON_DIRECTORY
 
 
 # This sub-class is used to display markers for targets.
@@ -16,7 +17,7 @@ class MarkerItem(QtWidgets.QGraphicsPixmapItem, Observable):
         if marker.image != current_image:
             self.go_to_parent_image_handle = self.context_menu.addAction("Go To Parent Image")
 
-        pixMap = QtGui.QPixmap('gui/star_markers/magenta.png') # Fixed for now
+        pixMap = QtGui.QPixmap(ICON_DIRECTORY + marker.tag.symbol)
 
         initial_zoom_level = 1
         for index in range(initial_zoom):
