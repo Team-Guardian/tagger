@@ -1,6 +1,8 @@
 # StackOverflow post used to receive mouseMove events - http://stackoverflow.com/questions/28080257/how-does-qgraphicsview-receive-mouse-move-events
 
 from PyQt5 import QtWidgets, QtCore
+from PyQt5.QtWidgets import QShortcut
+from PyQt5.QtGui import QKeySequence
 
 from gui.ui.ui_mainWindow import Ui_MainWindow
 from mapTab import MapTab
@@ -24,8 +26,8 @@ class MainWindow(QtWidgets.QMainWindow, Observable):
         self.setupTab = SetupTab()
         self.ui.tabWidget.addTab(self.setupTab, "Setup")
 
-
         self.taggingTab = TaggingTab()
+        self.taggingTab.addObserver(self)
         self.taggingTab.viewer_single.viewport().installEventFilter(self)
         self.ui.tabWidget.addTab(self.taggingTab, "Tagging")
 
@@ -38,6 +40,18 @@ class MainWindow(QtWidgets.QMainWindow, Observable):
 
         # connect menu bar items to functions
         self.ui.actionReset.triggered.connect(self.resetGui)
+        self.ui.actionSaveImage.triggered.connect(self.saveImage)
+        self.ui.actionSaveImage.setShortcut(QKeySequence.Save)
+        self.ui.actionSaveImage.setShortcutContext(QtCore.Qt.WidgetShortcut)
+        self.ui.actionSaveImage.setDisabled(True)
+        self.saveImageShortcut = QShortcut(QKeySequence("Ctrl+S"), self)
+        self.saveImageShortcut.activated.connect(self.saveImage)
+
+        self.ui.tabWidget.currentChanged.connect(self.tabChangeHandler)
+
+    def notify(self, event, id, data):
+        if event is "CURRENT_IMG_CHANGED":
+            self.ui.actionSaveImage.setEnabled(True)
 
     # handles events from widgets we have registered with
     # use installEventFilter() on a widget to register
@@ -75,6 +89,14 @@ class MainWindow(QtWidgets.QMainWindow, Observable):
             for imgViewer in imageViewers:
                 imgViewer.fitInView()
 
+    def tabChangeHandler(self):
+        currentTabIndex = self.ui.tabWidget.currentIndex()
+        if currentTabIndex != TAB_INDICES['TAB_TAGGING']:
+            self.ui.actionSaveImage.setDisabled(True)
+        else:
+            if self.taggingTab.currentImage != None:
+                self.ui.actionSaveImage.setEnabled(True)
+
     def resetGui(self):
         self.notifyObservers("RESET", None, None)
 
@@ -83,3 +105,7 @@ class MainWindow(QtWidgets.QMainWindow, Observable):
             currentTab = self.ui.tabWidget.widget(tabIndex)
             currentTab.resetTab()
         self.ui.tabWidget.setCurrentIndex(TAB_INDICES['TAB_SETUP'])
+
+    def saveImage(self):
+        if self.ui.tabWidget.currentIndex() == TAB_INDICES['TAB_TAGGING']:
+            self.taggingTab.saveImage()
