@@ -9,11 +9,12 @@ class MiniMap(QtWidgets.QGraphicsView, Observer):
     def __init__(self, parent):
         super(MiniMap, self).__init__(parent)
 
-        # initialize objects
+        # Initialize Minimap and scene objects
         self._scene = QtWidgets.QGraphicsScene(self)
         self._map = QtWidgets.QGraphicsPixmapItem()
-        self._scene.addItem(self._map)
-        self.setScene(self._scene)
+        # Create the contour for the currently displayed image
+        self._minimap_contour = QtWidgets.QGraphicsPolygonItem()
+        self._img_contour = Contour(self._minimap_contour)
 
         # construct an empty pixmap object placeholder and show it
         # self._original_pixmap = QtGui.QPixmap(self._map.boundingRect().width(), self._map.boundingRect().height())
@@ -28,9 +29,9 @@ class MiniMap(QtWidgets.QGraphicsView, Observer):
         self._current_area_map = None
         self._current_flight = None
 
-        # Create the contour for the currently displayed image
-        self._minimap_contour = QtWidgets.QGraphicsPolygonItem()
-        self._img_contour = Contour(self._minimap_contour)
+        # Populate the scene with items and show
+        self.addItemsToScene()
+        self.setScene(self._scene)
 
     # show the original minimap after flight has been selected
     def setMinimap(self, flight):
@@ -50,8 +51,6 @@ class MiniMap(QtWidgets.QGraphicsView, Observer):
                     img = Image.objects.filter(filename=data).last()
                     self.findImageCornerPixelCoordinates(img)
                     self._img_contour.updatePolygon()
-                    self.removeOldContour()
-                    self.addNewContourToMinimap()
                 else:
                     print "Error! Selected image does not exist in the database"
                     return
@@ -89,15 +88,15 @@ class MiniMap(QtWidgets.QGraphicsView, Observer):
         self._img_contour._bottomLeft.setY(((img_lower_left_lat - self._current_area_map.ul_lat) /
                                 (self._current_area_map.lr_lat - self._current_area_map.ul_lat)) * map_dims.height())
 
-
-    def addNewContourToMinimap(self):
-        self._scene.addItem(self._img_contour)
-
-    def removeOldContour(self):
+    def removeContour(self):
         scene_objects = self._scene.items()
         for item in scene_objects:
-            if type(item) is QtWidgets.QGraphicsPolygonItem:
+            if type(item) is Contour:
                 self._scene.removeItem(item)
+
+    def addItemsToScene(self):
+        self._scene.addItem(self._map)
+        self._scene.addItem(self._img_contour)
 
     def restoreOriginalPixmap(self):
         self._map.setPixmap(self._original_pixmap)

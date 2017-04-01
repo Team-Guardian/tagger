@@ -14,12 +14,12 @@ class Contour(QtWidgets.QGraphicsPolygonItem):
         # Create a polygon object that will change depending on the selected image
         self._polygon = QtGui.QPolygonF()
 
-        # Create polygon style
+        # Set polygon style
+        self.stylePolygon()
 
     def updatePolygon(self):
         self.eraseOldPolygon()
         self.createNewPolygon()
-        self.stylePolygon()
 
     def eraseOldPolygon(self):
         self._polygon.clear()
