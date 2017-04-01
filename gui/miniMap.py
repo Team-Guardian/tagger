@@ -14,7 +14,6 @@ class MiniMap(QtWidgets.QGraphicsView, Observer):
         self._map = QtWidgets.QGraphicsPixmapItem()
         self._scene.addItem(self._map)
         self.setScene(self._scene)
-        self._img_contour = Contour()
 
         # construct an empty pixmap object placeholder and show it
         # self._original_pixmap = QtGui.QPixmap(self._map.boundingRect().width(), self._map.boundingRect().height())
@@ -28,6 +27,10 @@ class MiniMap(QtWidgets.QGraphicsView, Observer):
         # create null objects
         self._current_area_map = None
         self._current_flight = None
+
+        # Create the contour for the currently displayed image
+        self._minimap_contour = QtWidgets.QGraphicsPolygonItem()
+        self._img_contour = Contour(self._minimap_contour)
 
     # show the original minimap after flight has been selected
     def setMinimap(self, flight):
@@ -88,7 +91,7 @@ class MiniMap(QtWidgets.QGraphicsView, Observer):
 
 
     def addNewContourToMinimap(self):
-        self._scene.addPolygon(self._img_contour._polygon)
+        self._scene.addItem(self._img_contour)
 
     def removeOldContour(self):
         scene_objects = self._scene.items()
