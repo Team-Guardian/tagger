@@ -33,7 +33,14 @@ class Contour(QtWidgets.QGraphicsPolygonItem):
         self.setPolygon(self._polygon)
 
     def setPolygonStyle(self):
-        pen = QtGui.QPen()
-        pen.setColor(QtCore.Qt.red)
-        pen.setWidth(2)
-        self.setPen(pen)
+        # Configure pen
+        contour_pen = QtGui.QPen()
+        contour_pen.setColor(QtCore.Qt.red)
+        contour_pen.setWidth(2)
+        self.setPen(contour_pen)
+
+        # Configure brush
+        contour_brush = QtGui.QBrush()
+        contour_brush.setColor(QtCore.Qt.red)
+        contour_brush.setStyle(QtCore.Qt.Dense3Pattern)
+        self.setBrush(contour_brush)
