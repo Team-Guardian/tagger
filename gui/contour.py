@@ -1,6 +1,6 @@
 from PyQt5 import QtCore, QtWidgets, QtGui
 
-# utility class to hold and access current image corner coordinates in a
+# utility class to hold and access current image corner coordinates in pixel frame
 class Contour(QtWidgets.QGraphicsPolygonItem):
     def __init__(self, parent):
         super(Contour, self).__init__(parent)
@@ -15,16 +15,16 @@ class Contour(QtWidgets.QGraphicsPolygonItem):
         self._polygon = QtGui.QPolygonF()
 
         # Set polygon style
-        self.stylePolygon()
+        self.setPolygonStyle()
 
     def updatePolygon(self):
-        self.eraseOldPolygon()
-        self.createNewPolygon()
+        self.deleteOldPointsFromPolygon()
+        self.addNewPointsToPolygon()
 
-    def eraseOldPolygon(self):
+    def deleteOldPointsFromPolygon(self):
         self._polygon.clear()
 
-    def createNewPolygon(self):
+    def addNewPointsToPolygon(self):
         self._polygon.append(self._topLeft)
         self._polygon.append(self._topRight)
         self._polygon.append(self._bottomRight)
@@ -32,7 +32,7 @@ class Contour(QtWidgets.QGraphicsPolygonItem):
         self._polygon.append(self._topLeft) # Close the polygon
         self.setPolygon(self._polygon)
 
-    def stylePolygon(self):
+    def setPolygonStyle(self):
         pen = QtGui.QPen()
         pen.setColor(QtCore.Qt.red)
         pen.setWidth(2)
