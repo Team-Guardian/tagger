@@ -63,7 +63,7 @@ class MiniMap(QtWidgets.QGraphicsView):
         self._img_contour._topLeft.setX(((img_upper_left_lon - current_area_map.ul_lon) /
                                 (current_area_map.lr_lon - current_area_map.ul_lon)) * map_dims.width())
         self._img_contour._topLeft.setY(((img_upper_left_lat - current_area_map.ul_lat) /
-                                (current_area_map.lr_lat - current_area_map.ul_lat)) * map_dims.height())
+                                (current_area_map.lr_setPhotolat - current_area_map.ul_lat)) * map_dims.height())
 
         self._img_contour._topRight.setX(((img_upper_right_lon - current_area_map.ul_lon) /
                                 (current_area_map.lr_lon - current_area_map.ul_lon)) * map_dims.width())
