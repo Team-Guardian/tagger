@@ -17,6 +17,12 @@ class MapTab(QtWidgets.QWidget, Ui_MapTab):
         # Current image will be set based on the user selecting an image from the list
         self.current_image = None
 
+        # Parent QGraphicsPolygonItem to create contour classes
+        self.parent_polygon = QtWidgets.QGraphicsPolygonItem()
+
+        # Create a list to hold contour objects for all listed images
+        self.image_list_contour_and_item_dict = {}
+
         # Sets a transparent pixmap to initialize the size of the PhotoViewer
         self.createAndSetPlaceholderAreaPixmap()
 
@@ -51,11 +57,21 @@ class MapTab(QtWidgets.QWidget, Ui_MapTab):
     # Images list manipulation and interaction functions
     def addImageToUi(self, image):
         item = ImageListItem(image.filename, image)
+        if not image.is_reviewed:
+            font = item.font()
+            font.setBold(True)
+            item.setFont(font)
         self.list_allImages.addItem(item)
+
+        contour = self.createImageContour(image)
+        self.image_list_contour_and_item_dict[image] = [item, contour]
+
+        self.updateAndShowContoursOnAreamap(contour)
 
     def currentImageChanged(self, current, _):
         self.current_image = current.getImage()
 
+    # Class utility functions
     def search(self):
         if len(self.line_latitude.text()) == 0 and len(self.line_longitude.text()) == 0:
             # unhide all
@@ -85,10 +101,62 @@ class MapTab(QtWidgets.QWidget, Ui_MapTab):
             if bounds.isPointInsideBounds(p):
                 item.setHidden(False)
 
+    def createImageContour(self, image):
+        contour = Contour(self.parent_polygon)
+
+        map_dims = self.viewer_map._photo.boundingRect()
+
+        current_area_map = self.current_flight.area_map
+
+        site_elevation = image.flight.reference_altitude
+        (img_upper_left_lat, img_upper_left_lon) = geolocateLatLonFromPixel(image, site_elevation, 0, 0)
+        (img_upper_right_lat, img_upper_right_lon) = geolocateLatLonFromPixel(image, site_elevation,
+                                                                              image.width, 0)
+        (img_lower_right_lat, img_lower_right_lon) = geolocateLatLonFromPixel(image, site_elevation,
+                                                                              image.width,
+                                                                              image.height)
+        (img_lower_left_lat, img_lower_left_lon) = geolocateLatLonFromPixel(image, site_elevation,
+                                                                                            0, image.height)
+
+        # interpolate the location of the image on the minimap (in px)
+        contour._topLeft.setX(((img_upper_left_lon - current_area_map.ul_lon) /
+                                (current_area_map.lr_lon - current_area_map.ul_lon)) * map_dims.width())
+        contour._topLeft.setY(((img_upper_left_lat - current_area_map.ul_lat) /
+                                (current_area_map.lr_lat - current_area_map.ul_lat)) * map_dims.height())
+
+        contour._topRight.setX(((img_upper_right_lon - current_area_map.ul_lon) /
+                                (current_area_map.lr_lon - current_area_map.ul_lon)) * map_dims.width())
+        contour._topRight.setY(((img_upper_right_lat - current_area_map.ul_lat) /
+                                (current_area_map.lr_lat - current_area_map.ul_lat)) * map_dims.height())
+
+        contour._bottomRight.setX(((img_lower_right_lon - current_area_map.ul_lon) /
+                                (current_area_map.lr_lon - current_area_map.ul_lon)) * map_dims.width())
+        contour._bottomRight.setY(((img_lower_right_lat - current_area_map.ul_lat) /
+                                (current_area_map.lr_lat - current_area_map.ul_lat)) * map_dims.height())
+
+        contour._bottomLeft.setX(((img_lower_left_lon - current_area_map.ul_lon) /
+                                (current_area_map.lr_lon - current_area_map.ul_lon)) * map_dims.width())
+        contour._bottomLeft.setY(((img_lower_left_lat - current_area_map.ul_lat) /
+                                (current_area_map.lr_lat - current_area_map.ul_lat)) * map_dims.height())
+
+        return contour
+
+    def updateAndShowContoursOnAreamap(self, contour):
+        contour.updatePolygon()
+        self.addContourToScene(contour)
+
     # Clear and reset routines
     def clearScene(self):
         for item in self.viewer_map._scene.items():
             self.viewer_map._scene.removeItem(item)
+
+    def removeContoursFromScene(self):
+        for item in  self.viewer_map._scene.items():
+            if type(item) is Contour:
+                self.viewer_map._scene.removeItem(item)
+
+    def addContourToScene(self, contour):
+        self.viewer_map._scene.addItem(contour)
 
     def resetTab(self):
         self.clearScene()
