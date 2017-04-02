@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'ui_mainWindow.ui'
+# Form implementation generated from reading ui file 'gui/ui/ui_mainWindow.ui'
 #
-# Created by: PyQt5 UI code generator 5.5.1
+# Created by: PyQt5 UI code generator 5.7.1
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -21,7 +21,7 @@ class Ui_MainWindow(object):
         self.gridLayout_4.addWidget(self.tabWidget, 0, 0, 1, 1)
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtWidgets.QMenuBar(MainWindow)
-        self.menubar.setGeometry(QtCore.QRect(0, 0, 1600, 27))
+        self.menubar.setGeometry(QtCore.QRect(0, 0, 1600, 25))
         self.menubar.setObjectName("menubar")
         self.menuFile = QtWidgets.QMenu(self.menubar)
         self.menuFile.setObjectName("menuFile")
@@ -33,6 +33,10 @@ class Ui_MainWindow(object):
         self.actionExit.setObjectName("actionExit")
         self.actionReset = QtWidgets.QAction(MainWindow)
         self.actionReset.setObjectName("actionReset")
+        self.actionSaveImage = QtWidgets.QAction(MainWindow)
+        self.actionSaveImage.setObjectName("actionSaveImage")
+        self.menuFile.addAction(self.actionSaveImage)
+        self.menuFile.addSeparator()
         self.menuFile.addAction(self.actionReset)
         self.menuFile.addAction(self.actionExit)
         self.menubar.addAction(self.menuFile.menuAction())
@@ -47,4 +51,5 @@ class Ui_MainWindow(object):
         self.menuFile.setTitle(_translate("MainWindow", "File"))
         self.actionExit.setText(_translate("MainWindow", "Exit"))
         self.actionReset.setText(_translate("MainWindow", "Reset"))
+        self.actionSaveImage.setText(_translate("MainWindow", "Save Image"))
 

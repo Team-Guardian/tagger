@@ -1,17 +1,20 @@
 from PyQt5 import QtWidgets, QtGui
 from PyQt5.QtWidgets import QDialog
+from PyQt5.QtGui import QPixmap
+from PyQt5.QtCore import QRect
 
 from ui.ui_taggingTab import Ui_TaggingTab
 from tagDialog import TagDialog
 from db.dbHelper import *
 from observer import *
-from utils.imageInfo import createImageWithExif
+from utils.imageInfo import processNewImage
 from utils.geolocate import geolocateLatLonFromPixel, getPixelFromLatLon
 from utils.geographicUtilities import *
 from gui.imageListItem import ImageListItem
 from gui.tagTableItem import TagTableItem
 from markerItem import MarkerItem
 
+from utils.imageInfo import FLIGHT_DIRECTORY
 TAG_TABLE_INDICES = {'TYPE': 0, 'SUBTYPE': 1, 'COUNT': 2, 'SYMBOL': 3}
 
 class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
@@ -26,6 +29,7 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
         self.connectButtons()
 
         self.image_list_item_dict = {}
+        self.tag_dialog = TagDialog()
 
         self.viewer_single.getPhotoItem().addObserver(self)
 
@@ -54,13 +58,17 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
         self.button_addImage.clicked.connect(self.addImage)
 
     def addTag(self):
-        dialog = TagDialog(title="Create tag")
-        if dialog.exec_() == QDialog.Accepted:
-            if len(dialog.subtype.text()) > 0:
-                tagType = dialog.tagType.text()
-                subtype = dialog.subtype.text()
-                icon = dialog.icons.currentText()
-                t = create_tag(type=tagType, subtype=subtype, symbol=icon)
+        self.tag_dialog.setWindowTitle("Create tag")
+        self.tag_dialog.tagType.setText('')
+        self.tag_dialog.subtype.setText('')
+        self.tag_dialog.icons.setCurrentIndex(0)
+        if self.tag_dialog.exec_() == QDialog.Accepted:
+            if len(self.tag_dialog.tagType.text()) > 0 and len(self.tag_dialog.subtype.text()) > 0:
+                tagType = self.tag_dialog.tagType.text()
+                subtype = self.tag_dialog.subtype.text()
+                count = "0"
+                icon = self.tag_dialog.icons.currentText()
+                t = create_tag(type=tagType, subtype=subtype, symbol=icon, num_occurrences=int(count))
                 self.addTagToUi(t)
                 self.notifyObservers("TAG_CREATED", None, t)
 
@@ -75,6 +83,9 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
         # add tag to context menu
         self.viewer_single.getPhotoItem().context_menu.addTagToContextMenu(tag)
 
+        # Update the drop-down menu for adding/editing tags
+        self.tag_dialog.removeIcon(tag.symbol)
+
     def editTag(self):
         row = self.list_tags.currentRow()
         if row >= 0:
@@ -82,17 +93,39 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
             tagType = tag.type
             subtype = tag.subtype
             icon = tag.symbol
-            dialog = TagDialog(title="Edit tag")
-            dialog.tagType.setText(tagType)
-            dialog.subtype.setText(subtype)
-            index = dialog.icons.findText(icon)
-            dialog.icons.setCurrentIndex(index)
-            if dialog.exec_() == QDialog.Accepted:
-                if len(dialog.subtype.text()) > 0:
-                    tag.type = dialog.tagType.text()
-                    tag.subtype = dialog.subtype.text()
-                    tag.symbol = dialog.icons.currentText()
+            self.tag_dialog.setWindowTitle("Edit tag")
+            self.tag_dialog.tagType.setText(tagType)
+            self.tag_dialog.subtype.setText(subtype)
+            self.tag_dialog.addIcon(icon) # Show the current symbol in the list
+            index = self.tag_dialog.icons.findText(icon)
+            self.tag_dialog.icons.setCurrentIndex(index)
+            if self.tag_dialog.exec_() == QDialog.Accepted:
+                if len(self.tag_dialog.tagType.text()) > 0 and len(self.tag_dialog.subtype.text()) > 0:
+                    tag.type = self.tag_dialog.tagType.text()
+                    tag.subtype = self.tag_dialog.subtype.text()
+                    tag.num_occurrences = -1
+                    tag.symbol = self.tag_dialog.icons.currentText()
                     tag.save()
+
+                    # If the icon has been changed, update the icons in the drop-down menu and all markers
+                    if icon != tag.symbol:
+                        self.tag_dialog.removeIcon(tag.symbol)
+
+                        if self.currentImage != None:
+                            self.deleteMarkersFromUi(tag=tag)
+                            image_width = self.currentImage.width
+                            image_height = self.currentImage.height
+                            reference_altitude = self.currentFlight.reference_altitude
+                            marker_list = self.getMarkersForImage(self.currentImage)
+                            for marker in marker_list:
+                                x, y = getPixelFromLatLon(self.currentImage, image_width, image_height, reference_altitude, \
+                                                          marker.latitude, marker.longitude)
+                                opacity = 1.0
+                                if marker.image != self.currentImage:
+                                    opacity = 0.5
+                                self.addMarkerToUi(x, y, marker, opacity)
+                    else:
+                        self.tag_dialog.removeIcon(icon) # Remove the current symbol if it hasn't been changed
 
                     # update all columns in row with these texts
                     texts = [tag.type, tag.subtype, str(tag.num_occurrences), tag.symbol]
@@ -102,6 +135,8 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
                     self.viewer_single.getPhotoItem().context_menu.updateTagItem(tag)
 
                     self.notifyObservers("TAG_EDITED", None, tag)
+            else:
+                self.tag_dialog.removeIcon(icon) # Remove the current symbol if it hasn't been changed
 
     def removeTag(self):
         row = self.list_tags.currentRow()
@@ -110,6 +145,7 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
             self.list_tags.removeRow(row)
             self.viewer_single.getPhotoItem().context_menu.removeTagItem(tag)
             self.deleteMarkersFromUi(tag=tag)
+            self.tag_dialog.addIcon(tag.symbol)
             self.notifyObservers("TAG_DELETED", None, tag)
 
     def addMarker(self, data):
@@ -171,23 +207,27 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
             font = item.font()
             font.setBold(not font.bold())
             item.setFont(font)
+            item.getImage().is_reviewed = False
 
             # image was marked as reviewed
             if not font.bold():
+                item.getImage().is_reviewed = True
                 self.nextImage()
+
+            item.getImage().save()
 
     def addImage(self):
         paths = QtWidgets.QFileDialog.getOpenFileNames(self, "Select images", ".", "Images (*.jpg)")[0]
         for path in paths:
-            image = createImageWithExif(path, self.currentFlight)
+            image = processNewImage(path, self.currentFlight)
             self.notifyObservers("IMAGE_ADDED", None, image)
-            self.addImageToUi(image)
 
     def addImageToUi(self, image):
         item = ImageListItem(image.filename, image)
-        font = item.font()
-        font.setBold(True)
-        item.setFont(font)
+        if not image.is_reviewed:
+            font = item.font()
+            font.setBold(True)
+            item.setFont(font)
         self.list_images.addItem(item)
         self.image_list_item_dict[image] = item
 
@@ -196,13 +236,14 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
         self.deleteMarkersFromUi()
 
         self.currentImage = current.getImage()
-        self.openImage(self.currentImage.filename, self.viewer_single)
+
         self.minimap.updateContourOnImageChange(self.currentImage)
+        self.openImage('./flights/{}/{}'.format(self.currentFlight.img_path, self.currentImage.filename), self.viewer_single)
 
         # Display markers for this image
         image_width = self.currentImage.width
         image_height = self.currentImage.height
-        marker_list = self.getMarkersForImage(self.currentImage)
+        marker_list = self.getMarkersForImage()
         reference_altitude = self.currentFlight.reference_altitude
         for marker in marker_list:
             x, y = getPixelFromLatLon(self.currentImage, image_width, image_height, reference_altitude, marker.latitude, marker.longitude)
@@ -233,9 +274,11 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
     def getCurrentFlight(self):
         return self.currentFlight
 
-    def getMarkersForImage(self, image):
+    def getMarkersForImage(self):
+        image = self.currentImage
         _list = list(Marker.objects.filter(image=image)) # Convert QuerySet to a list
-        for m in Marker.objects.exclude(image=image):
+
+        for m in Marker.objects.filter(image__flight=self.currentFlight).exclude(image=image):
             image_width = image.width
             image_height = image.height
 
@@ -290,3 +333,29 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
 
     def enableCurrentItemChangedEvent(self):
         self.list_images.currentItemChanged.connect(self.currentImageChanged)
+
+    def saveImage(self):
+        scene_width = self.viewer_single.viewport().rect().width()
+        scene_height = self.viewer_single.viewport().rect().height()
+        imageTopLeftPixel = self.viewer_single.mapToScene(0, 0) # Currently displayed top left pixel
+        imageBottomRightPixel = self.viewer_single.mapToScene(scene_width, scene_height) # Currently displayed bottom right pixel
+        if self.currentImage != None:
+            image_path = FLIGHT_DIRECTORY + '{}/{}'.format(self.currentFlight.img_path, self.currentImage.filename)
+            pixmap = QPixmap(image_path)
+            fileSaveDialog = QtWidgets.QFileDialog()
+            fileSaveDialog.setWindowTitle('Save Image')
+            fileSaveDialog.setAcceptMode(QtWidgets.QFileDialog.AcceptSave)
+            fileSaveDialog.setNameFilter('Images (*.jpg)')
+            fileSaveDialog.setDefaultSuffix('.jpg')
+            if fileSaveDialog.exec_() == QtWidgets.QFileDialog.Accepted:
+                fName = fileSaveDialog.selectedFiles()[0]
+                if self.viewer_single.zoomFactor() == 0: # This means that the image is fully zoomed out
+                    pixmap.save(fName, format='jpg', quality=100)
+                else:
+                    save_image_width = imageBottomRightPixel.x() - imageTopLeftPixel.x()
+                    save_image_height = imageBottomRightPixel.y() - imageTopLeftPixel.y()
+                    cropping_rect = QRect(imageTopLeftPixel.x(), imageTopLeftPixel.y(), \
+                                          save_image_width, save_image_height)
+                    cropped_pixmap = pixmap.copy(cropping_rect)
+                    cropped_pixmap.save(fName, format='jpg', quality=100)
+
