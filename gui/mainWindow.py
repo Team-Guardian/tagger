@@ -23,7 +23,6 @@ class MainWindow(QtWidgets.QMainWindow, Observable):
         self.setupTab = SetupTab()
         self.ui.tabWidget.addTab(self.setupTab, "Setup")
 
-
         self.taggingTab = TaggingTab()
         self.taggingTab.viewer_single.viewport().installEventFilter(self)
         self.ui.tabWidget.addTab(self.taggingTab, "Tagging")
@@ -73,6 +72,10 @@ class MainWindow(QtWidgets.QMainWindow, Observable):
         else:
             for imgViewer in imageViewers:
                 imgViewer.fitInView()
+
+    def cycleThroughTabsOnInit(self):
+        for tab, index in TAB_INDICES.iteritems():
+            self.ui.tabWidget.setCurrentIndex(index)
 
     def resetGui(self):
         for tabIndex in range(self.ui.tabWidget.count()): # iterate over each tab
