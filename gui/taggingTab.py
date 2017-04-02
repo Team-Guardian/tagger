@@ -236,8 +236,9 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
         self.deleteMarkersFromUi()
 
         self.currentImage = current.getImage()
+
+        self.minimap.updateContourOnImageChange(self.currentImage)
         self.openImage('./flights/{}/{}'.format(self.currentFlight.img_path, self.currentImage.filename), self.viewer_single)
-        self.notifyObservers("CURRENT_IMG_CHANGED", None, self.currentImage.filename)
 
         # Display markers for this image
         image_width = self.currentImage.width
@@ -321,8 +322,8 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
         # clear all markers
         self.deleteMarkersFromUi()
 
-        # clear area map
-        self.minimap.clearMinimap()
+        # reset area map
+        self.minimap.reset()
 
         # clear the photo viewer
         self.viewer_single.setPhoto(None)

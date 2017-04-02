@@ -1,140 +1,119 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
 
 import utils.geolocate
-from observer import *
-from db.models import *
+from contour import Contour
 
-class MiniMap(QtWidgets.QGraphicsView, Observer):
+class MiniMap(QtWidgets.QGraphicsView):
     def __init__(self, parent):
         super(MiniMap, self).__init__(parent)
 
-        # initialize objects
+        # Initialize Minimap and scene objects
         self._scene = QtWidgets.QGraphicsScene(self)
         self._map = QtWidgets.QGraphicsPixmapItem()
-        self._scene.addItem(self._map)
-        self.setScene(self._scene)
-        self._img_contour = Contour()
+        
+        # Create the contour for the currently displayed image
+        self._minimap_contour = QtWidgets.QGraphicsPolygonItem()
 
         # construct an empty pixmap object placeholder and show it
-        # self._original_pixmap = QtGui.QPixmap(self._map.boundingRect().width(), self._map.boundingRect().height())
-        self._original_pixmap = QtGui.QPixmap(300, 190)
-        self._original_pixmap.fill(QtCore.Qt.transparent)
-        self._map.setPixmap(self._original_pixmap)
-
-        # configure MiniMap to be an observer of TaggingTab
-        self.window().addObserver(self)
+        self.createAndSetPlaceholderPixmap()
 
         # create null objects
-        self._current_area_map = None
         self._current_flight = None
+
+        self.addMapToScene()
+        self.setScene(self._scene)
 
     # show the original minimap after flight has been selected
     def setMinimap(self, flight):
+        self.clearScene()
         self._current_flight = flight
-        self._current_area_map = flight.area_map
+        self.loadAndSetFlightAreaPixmap()
 
-        self._map_full_filepath = "./area_maps/" + flight.area_map.filename
-        self._original_pixmap = QtGui.QPixmap(self._map_full_filepath)
-        self._map.setPixmap(self._original_pixmap)
+        # initialize contour
+        self._img_contour = Contour(self._minimap_contour)
+
         self.fitInView()
+        self.addMapToScene()
 
-    def notify(self, event, id, data):
-        if event is "CURRENT_IMG_CHANGED":
-            if self._current_area_map is not None:
-                # try to retrieve full image object from DB
-                if Image.objects.filter(filename=data).exists():
-                    img = Image.objects.filter(filename=data).last()
-                    map_dims = self._map.boundingRect()
+    def updateContourOnImageChange(self, image):
+        if self._current_flight.area_map is not None:
+            self.removeContourFromScene()
+            self.findImageCornerPixelCoordinates(image)
+            self._img_contour.updatePolygon()
+            self.addContourToScene()
+        else:
+            print "This flight does not have an associated areamap."
 
-                    site_elevation = img.flight.reference_altitude
-                    (img_upper_left_lat, img_upper_left_lon) = utils.geolocate.geolocateLatLonFromPixel(img, site_elevation, 0, 0)
-                    (img_upper_right_lat, img_upper_right_lon) = utils.geolocate.geolocateLatLonFromPixel(img, site_elevation,
-                                                                                                          map_dims.width(), 0)
-                    (img_lower_right_lat, img_lower_right_lon) = utils.geolocate.geolocateLatLonFromPixel(img, site_elevation,
-                                                                                                          map_dims.width(), map_dims.height())
-                    (img_lower_left_lat, img_lower_left_lon) = utils.geolocate.geolocateLatLonFromPixel(img, site_elevation,
-                                                                                                        0, map_dims.height())
+    def findImageCornerPixelCoordinates(self, img):
+        map_dims = self._map.boundingRect()
 
-                    # interpolate the location of the image on the minimap (in px)
-                    self._img_contour._topLeftX = ((img_upper_left_lon - self._current_area_map.ul_lon) / (
-                    self._current_area_map.lr_lon - self._current_area_map.ul_lon)) * map_dims.width()
-                    self._img_contour._topLeftY = ((img_upper_left_lat - self._current_area_map.ul_lat) / (
-                    self._current_area_map.lr_lat - self._current_area_map.ul_lat)) * map_dims.height()
+        current_area_map = self._current_flight.area_map
 
-                    self._img_contour._topRightX = ((img_upper_right_lon - self._current_area_map.ul_lon) / (
-                    self._current_area_map.lr_lon - self._current_area_map.ul_lon)) * map_dims.width()
-                    self._img_contour._topRightY = ((img_upper_right_lat - self._current_area_map.ul_lat) / (
-                    self._current_area_map.lr_lat - self._current_area_map.ul_lat)) * map_dims.height()
+        site_elevation = img.flight.reference_altitude
+        (img_upper_left_lat, img_upper_left_lon) = utils.geolocate.geolocateLatLonFromPixel(img, site_elevation, 0, 0)
+        (img_upper_right_lat, img_upper_right_lon) = utils.geolocate.geolocateLatLonFromPixel(img, site_elevation,
+                                                                                              img.width, 0)
+        (img_lower_right_lat, img_lower_right_lon) = utils.geolocate.geolocateLatLonFromPixel(img, site_elevation,
+                                                                                              img.width,
+                                                                                              img.height)
+        (img_lower_left_lat, img_lower_left_lon) = utils.geolocate.geolocateLatLonFromPixel(img, site_elevation,
+                                                                                            0, img.height)
 
-                    self._img_contour._bottomRightX = ((img_lower_right_lon - self._current_area_map.ul_lon) / (
-                    self._current_area_map.lr_lon - self._current_area_map.ul_lon)) * map_dims.width()
-                    self._img_contour._bottomRightY = ((img_lower_right_lat - self._current_area_map.ul_lat) / (
-                    self._current_area_map.lr_lat - self._current_area_map.ul_lat)) * map_dims.height()
+        # interpolate the location of the image on the minimap (in px)
+        self._img_contour._topLeft.setX(((img_upper_left_lon - current_area_map.ul_lon) /
+                                (current_area_map.lr_lon - current_area_map.ul_lon)) * map_dims.width())
+        self._img_contour._topLeft.setY(((img_upper_left_lat - current_area_map.ul_lat) /
+                                (current_area_map.lr_lat - current_area_map.ul_lat)) * map_dims.height())
 
-                    self._img_contour._bottomLeftX = ((img_lower_left_lon - self._current_area_map.ul_lon) / (
-                    self._current_area_map.lr_lon - self._current_area_map.ul_lon)) * map_dims.width()
-                    self._img_contour._bottomLeftY = ((img_lower_left_lat - self._current_area_map.ul_lat) / (
-                    self._current_area_map.lr_lat - self._current_area_map.ul_lat)) * map_dims.height()
+        self._img_contour._topRight.setX(((img_upper_right_lon - current_area_map.ul_lon) /
+                                (current_area_map.lr_lon - current_area_map.ul_lon)) * map_dims.width())
+        self._img_contour._topRight.setY(((img_upper_right_lat - current_area_map.ul_lat) /
+                                (current_area_map.lr_lat - current_area_map.ul_lat)) * map_dims.height())
 
-                    self.showImageContourOnMinimap(self._img_contour)
-                else:
-                    print "Error! Selected image does not exist in the database"
-                    return
+        self._img_contour._bottomRight.setX(((img_lower_right_lon - current_area_map.ul_lon) /
+                                (current_area_map.lr_lon - current_area_map.ul_lon)) * map_dims.width())
+        self._img_contour._bottomRight.setY(((img_lower_right_lat - current_area_map.ul_lat) /
+                                (current_area_map.lr_lat - current_area_map.ul_lat)) * map_dims.height())
 
-    def restoreOriginalPixmap(self):
-        self._map.setPixmap(self._original_pixmap)
-        self.fitInView()
+        self._img_contour._bottomLeft.setX(((img_lower_left_lon - current_area_map.ul_lon) /
+                                (current_area_map.lr_lon - current_area_map.ul_lon)) * map_dims.width())
+        self._img_contour._bottomLeft.setY(((img_lower_left_lat - current_area_map.ul_lat) /
+                                (current_area_map.lr_lat - current_area_map.ul_lat)) * map_dims.height())
+
+    def addMapToScene(self):
+        self._scene.addItem(self._map)
+
+    def addContourToScene(self):
+        self._scene.addItem(self._img_contour)
+
+    def removeContourFromScene(self):
+        for item in  self._scene.items():
+            if type(item) is Contour:
+                self._scene.removeItem(item)
+
+    def clearScene(self):
+        for item in  self._scene.items():
+            self._scene.removeItem(item)
 
     def fitInView(self):
         rect = QtCore.QRectF(self._map.pixmap().rect())
         if not rect.isNull():
             viewrect = self.viewport().rect()
             self._map.setPixmap(self._map.pixmap().scaled(viewrect.width(), viewrect.height(), QtCore.Qt.KeepAspectRatio))
-            self.centerOn(self._map.pixmap().rect().center())
+            self.centerOn(self.viewport().rect().center())
 
-    def showImageContourOnMinimap(self, contour_coords):
+    def createAndSetPlaceholderPixmap(self):
+        self._map.setPixmap(self.generatePlaceholderPixmap())
 
-        line_item1 = QtWidgets.QGraphicsLineItem(contour_coords._topLeftX, contour_coords._topLeftY,
-                                                 contour_coords._topRightX, contour_coords._topRightY)
-        line_item2 = QtWidgets.QGraphicsLineItem(contour_coords._topRightX, contour_coords._topRightY,
-                                                 contour_coords._bottomRightX, contour_coords._bottomRightY)
-        line_item3 = QtWidgets.QGraphicsLineItem(contour_coords._bottomRightX, contour_coords._bottomRightY,
-                                                 contour_coords._bottomLeftX, contour_coords._bottomLeftY)
-        line_item4 = QtWidgets.QGraphicsLineItem(contour_coords._bottomLeftX, contour_coords._bottomLeftY,
-                                                 contour_coords._topLeftX, contour_coords._topLeftY)
+    def generatePlaceholderPixmap(self):
+        placeholder_pixmap = QtGui.QPixmap(300, 190)
+        placeholder_pixmap.fill(QtCore.Qt.transparent)
+        return placeholder_pixmap
 
-        pen = QtGui.QPen()
-        pen.setColor(QtCore.Qt.red)
-        pen.setWidth(2)
-        line_item1.setPen(pen)
-        line_item2.setPen(pen)
-        line_item3.setPen(pen)
-        line_item4.setPen(pen)
+    def loadAndSetFlightAreaPixmap(self):
+        map_full_filepath = "./area_maps/{}".format(self._current_flight.area_map.filename)
+        self._map.setPixmap(QtGui.QPixmap(map_full_filepath))
 
-        self._scene.addItem(line_item1)
-        self._scene.addItem(line_item2)
-        self._scene.addItem(line_item3)
-        self._scene.addItem(line_item4)
-
-    def clearMinimap(self):
-        for item in self._scene.items(): # clear the bounding box
-            if type(item) == QtWidgets.QGraphicsLineItem:
-                self._scene.removeItem(item)
-        self._original_pixmap = QtGui.QPixmap(300, 190)
-        self._original_pixmap.fill(QtCore.Qt.transparent)
-        self._map.setPixmap(self._original_pixmap)
-
-# utility class to hold and access current image corner coordinates in a
-class Contour():
-    def __init__(self):
-        self._topLeftX = 0
-        self._topLeftY = 0
-
-        self._topRightX = 0
-        self._topRightY = 0
-
-        self._bottomRightX = 0
-        self._bottomRightY = 0
-
-        self._bottomLeftX = 0
-        self._bottomLeftY = 0
+    def reset(self):
+        self.clearScene()
+        self.createAndSetPlaceholderPixmap()
