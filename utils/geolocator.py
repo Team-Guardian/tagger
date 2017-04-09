@@ -30,7 +30,7 @@ class Geolocator:
         self._aircraft_ned = None
         self._rotation_camera_to_ned = None
         self._rotation_ned_to_camera = None
-        self._origin_of_ned_to_camera = None
+        self._vector_in_ned_from_ned_origin_to_camera = None
 
 
         # Select a reference point for geolocation operations
@@ -68,7 +68,7 @@ class Geolocator:
         self._aircraft_ecef = convertGeodeticToEcef(self._lat_img, self._lon_img, self._site_elevation)
         self._aircraft_ned = homogenousTransformFromEcefToNed(self._lat_img, self._lon_img, self._reference_ecef, self._aircraft_ecef)
 
-        self._origin_of_ned_to_camera = np.array([[self._aircraft_ned[0]],
+        self._vector_in_ned_from_ned_origin_to_camera = np.array([[self._aircraft_ned[0]],
                                                   [self._aircraft_ned[1]],
                                                   [self._site_elevation - self._altitude]], dtype=np.float64)
 
@@ -80,7 +80,7 @@ class Geolocator:
         pixel_projection_ned = homogenousTransformFromEcefToNed(radians(pixel_lat), radians(pixel_lon), self._reference_ecef,
                                                   pixel_projection_ecef)
         scaled_pixel_location = np.dot(np.dot(self._intrinsic_matrix, self._rotation_ned_to_camera), pixel_projection_ned) - \
-                                np.dot(np.dot(self._intrinsic_matrix, self._rotation_ned_to_camera), self._origin_of_ned_to_camera)
+                                np.dot(np.dot(self._intrinsic_matrix, self._rotation_ned_to_camera), self._vector_in_ned_from_ned_origin_to_camera)
         scaling_factor = scaled_pixel_location[2]
         x_pixel_coordinate = scaled_pixel_location[0] / scaling_factor
         y_pixel_coordinate = scaled_pixel_location[1] / scaling_factor
@@ -93,10 +93,10 @@ class Geolocator:
                                 [1]], dtype=np.float64)
 
         ray_orientation = np.dot((np.dot(self._rotation_camera_to_ned, self._intrinsic_matrix_inverse)), image_point)
-        scaling_factor = np.divide(( 0.0 - self._origin_of_ned_to_camera[2] ), ray_orientation[2])
+        scaling_factor = np.divide(( 0.0 - self._vector_in_ned_from_ned_origin_to_camera[2] ), ray_orientation[2])
 
-        x_ned_coord = self._origin_of_ned_to_camera[0] + scaling_factor*ray_orientation[0]
-        y_ned_coord = self._origin_of_ned_to_camera[1] + scaling_factor*ray_orientation[1]
+        x_ned_coord = self._vector_in_ned_from_ned_origin_to_camera[0] + scaling_factor*ray_orientation[0]
+        y_ned_coord = self._vector_in_ned_from_ned_origin_to_camera[1] + scaling_factor*ray_orientation[1]
 
         pixel_coords_in_ned = np.array([[x_ned_coord],
                                            [y_ned_coord],
