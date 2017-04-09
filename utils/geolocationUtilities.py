@@ -136,20 +136,6 @@ def transformNedToEcef(lat, lon, ecefRef, vectorWrtNed):
 
     return vectorWrtEcef
 
-
-#
-# [Insert descriptive comment here]
-#
-def createTransformationCameraToNed(vehicleNed, posVectorCameraToNed, rotationCameraToNed):
-    cameraPositionWrtRefNed = numpy.dot(rotationCameraToNed, posVectorCameraToNed)
-
-    # if Zm = 0, then we can safely discard the third column of the rotation matrix
-    reducedRotationNedToCamera = rotationNedToCamera[:, [0, 1]]
-    transformCameraToNed = numpy.concatenate((reducedRotationNedToCamera, nedOriginPosWrtCamera), axis=1)
-
-    return transformCameraToNed
-
-
 def createRotationCameraToNed(pitch, roll, yaw):
     # transformation between body frame and navigation frame
     rotationNedToBody = numpy.array([
@@ -167,7 +153,6 @@ def createRotationCameraToNed(pitch, roll, yaw):
 
     # rotation between camera frame - mapping (NED) frame
     rotationNedToCamera = numpy.dot(rotationNedToBody, rotationBodyToCamera)
-    rotationCameraToNed = numpy.linalg.inv(
-        rotationNedToCamera)  # Important! - when code is verified, just rewrite the matrix at the definition command
+    rotationCameraToNed = numpy.linalg.inv(rotationNedToCamera)  # Important! - when code is verified, just rewrite the matrix at the definition command
 
     return rotationCameraToNed

@@ -1,8 +1,6 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
 
-import utils.geolocate
 from contour import Contour
-from utils.geolocator import Geolocator
 from observer import *
 from db.models import *
 
@@ -53,14 +51,10 @@ class MiniMap(QtWidgets.QGraphicsView):
         current_area_map = self._current_flight.area_map
 
         site_elevation = img.flight.reference_altitude
-        (img_upper_left_lat, img_upper_left_lon) = utils.geolocate.geolocateLatLonFromPixel(img, site_elevation, 0, 0)
-        (img_upper_right_lat, img_upper_right_lon) = utils.geolocate.geolocateLatLonFromPixel(img, site_elevation,
-                                                                                              img.width, 0)
-        (img_lower_right_lat, img_lower_right_lon) = utils.geolocate.geolocateLatLonFromPixel(img, site_elevation,
-                                                                                              img.width,
-                                                                                              img.height)
-        (img_lower_left_lat, img_lower_left_lon) = utils.geolocate.geolocateLatLonFromPixel(img, site_elevation,
-                                                                                            0, img.height)
+        (img_upper_left_lat, img_upper_left_lon) = self.window().taggingTab.geolocator.getLatLonFromPixel(0, 0)
+        (img_upper_right_lat, img_upper_right_lon) = self.window().taggingTab.geolocator.getLatLonFromPixel(img.width, 0)
+        (img_lower_right_lat, img_lower_right_lon) = self.window().taggingTab.geolocator.getLatLonFromPixel(img.width, img.height)
+        (img_lower_left_lat, img_lower_left_lon) = self.window().taggingTab.geolocator.getLatLonFromPixel(0, img.height)
 
         # interpolate the location of the image on the minimap (in px)
         self._img_contour._topLeft.setX(((img_upper_left_lon - current_area_map.ul_lon) /

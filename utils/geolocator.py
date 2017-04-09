@@ -36,25 +36,26 @@ class Geolocator:
         self._lat_ref = radians(49.903867) # TODO: generalize
         self._lon_ref = radians(-98.273483)
 
+    def setCurrentImage(self, image):
+        self._current_image = image
+        self.updateCurrentImageParameters(image)
+
     # Running the update methods for the first time will create local variables
     def updateCurrentImageParameters(self, image):
-        if image is not None:
-            self._current_image = image
-            self._lat_img = radians(image.latitude)
-            self._lon_img = radians(image.longitude)
-            self._roll_img = radians(image.roll)
-            self._pitch_img = radians(image.pitch)
-            self._yaw_img = radians(image.yaw)
-            self._altitude = image.altitude
+        self._lat_img = radians(image.latitude)
+        self._lon_img = radians(image.longitude)
+        self._roll_img = radians(image.roll)
+        self._pitch_img = radians(image.pitch)
+        self._yaw_img = radians(image.yaw)
+        self._altitude = image.altitude
 
-            # Update common matrices with recent changes
-            self.updateMatrices()
+        # Update common matrices with recent changes
+        self.updateMatrices()
 
     def setCurrentFlightAndSiteElevation(self, flight=None):
         if flight is not None:
             self._current_flight = flight
             self.setSiteElevation(flight.reference_altitude)
-            self.updateMatrices()
         else:
             print "Error! Invalid flight passed, current flight and site elevation were not changed"
 
@@ -65,9 +66,9 @@ class Geolocator:
         self._reference_ecef = geodeticToEcef(self._lat_ref, self._lon_ref, self._site_elevation)
         self._aircraft_ecef = geodeticToEcef(self._lat_img, self._lon_img, self._site_elevation)
         self._aircraft_ned = transformEcefToNed(self._lat_img, self._lon_img, self._reference_ecef, self._aircraft_ecef)
-        self._origin_of_ned_to_camera = numpy.array([[self._site_elevation - self._altitude],
-                                                     [self._aircraft_ned[0]],
-                                                     [self._aircraft_ned[1]]], dtype=numpy.float64)
+        self._origin_of_ned_to_camera = numpy.array([[self._aircraft_ned[0]],
+                                                     [self._aircraft_ned[1]],
+                                                     [self._site_elevation - self._altitude]], dtype=numpy.float64)
         self._rotation_camera_to_ned = createRotationCameraToNed(self._pitch_img, self._roll_img, self._yaw_img)
         self._rotation_ned_to_camera = numpy.linalg.inv(self._rotation_camera_to_ned)
 
