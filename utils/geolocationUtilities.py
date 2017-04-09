@@ -1,19 +1,8 @@
 from math import cos, sin, sqrt, acos, asin, atan2
-import numpy
-
-#
-# Location-specific ECEF reference that serves as unique NED origin
-#
-def selectEcefRef(latRef, lonRef, altRef):
-    ecefRef = geodeticToEcef(latRef, lonRef, altRef)
-
-    return ecefRef
+import numpy as np
 
 
-#
-# A pair of functions to go between geodetic coordinates and ECEF
-#
-def geodeticToEcef(lat, lon, elevation):
+def convertGeodeticToEcef(lat, lon, elevation):
     # semi-major earth axis [m]
     a = 6378137.0
     # semi-minor earth axis [m]
@@ -35,19 +24,19 @@ def geodeticToEcef(lat, lon, elevation):
     # equivalency: 1 - e2 = b^2/a^2
     # Ze = (N * (1 - e2) + alt) * sin(lat)
     # column vector
-    # vehicleEcef = numpy.array([[Xe], [Ye], [Ze]])
+    # vehicleEcef = np.array([[Xe], [Ye], [Ze]])
 
     # Earth Centered Earth Fixed ground coordinates directly below the aircraft
     # use site elevation as ground altitude
     Xe = (N + elevation) * cos(lat) * cos(lon)
     Ye = (N + elevation) * cos(lat) * sin(lon)
     Ze = (N * (1 - e2) + elevation) * sin(lat)
-    ecefCoords = numpy.array([[Xe], [Ye], [Ze]])
+    ecefCoords = np.array([[Xe], [Ye], [Ze]])
 
     return ecefCoords
 
 
-def ecefToGeodetic(ecef):
+def convertEcefToGeodetic(ecef):
     # WGS-84 ellipsoid parameters
     a = 6378137
     f = 1 / 298.257223563
@@ -97,9 +86,9 @@ def ecefToGeodetic(ecef):
     if z < 0:
         lat = -lat
 
-    geodeticCoords = numpy.array([[lat],
-                                  [atan2(ecef[1], ecef[0])],
-                                  [f + m * p / 2]], dtype=numpy.float64)
+    geodeticCoords = np.array([[lat],
+                               [atan2(ecef[1], ecef[0])],
+                               [f + m * p / 2]], dtype=np.float64)
 
     return geodeticCoords
 
@@ -107,52 +96,50 @@ def ecefToGeodetic(ecef):
 #
 # A pair of transformation functions to go between ECEF and NED
 #
-def transformEcefToNed(lat, lon, ecefRef, vectorWrtEcef):
+def homogenousTransformFromEcefToNed(lat, lon, ecef_ref_vector, vector_in_ecef_from_ecef_origin_to_point):
     # Todo: Add error detection mechanism if input vector 'vectorWrtEcef' is not 3x1
 
-    vectorWrtEcefFromEcefRefToVehicle = vectorWrtEcef - ecefRef
+    vector_in_ecef_from_ecef_ref_to_body = vector_in_ecef_from_ecef_origin_to_point - ecef_ref_vector
 
-    rotationEcefToNed = numpy.array([
-        [-sin(lat) * cos(lon), -sin(lat) * sin(lon), cos(lat)],
-        [-sin(lon), cos(lon), 0],
-        [-cos(lat) * cos(lon), -cos(lat) * sin(lon), -sin(lat)]
+    rotation_ecef_to_ned = np.array([
+        [-sin(lat)*cos(lon), -sin(lat)*sin(lon),  cos(lat)],
+        [-sin(lon),                    cos(lon),         0],
+        [-cos(lat)*cos(lon), -cos(lat)*sin(lon), -sin(lat)]
     ])
 
-    vectorWrtNed = numpy.dot(rotationEcefToNed, vectorWrtEcefFromEcefRefToVehicle)
+    vector_from_ned_origin_to_point = np.dot(rotation_ecef_to_ned, vector_in_ecef_from_ecef_ref_to_body)
 
-    return vectorWrtNed
+    return vector_from_ned_origin_to_point
 
 
-def transformNedToEcef(lat, lon, ecefRef, vectorWrtNed):
-    # the order of operations is reversed compared to "transformEcefToNed"
-    rotationNedToEcef = numpy.array([
-        [-sin(lat) * cos(lon), -sin(lon), -cos(lat) * cos(lon)],
-        [-sin(lat) * sin(lon), cos(lon), -cos(lat) * sin(lon)],
-        [cos(lat), 0, -sin(lat)]
+def homogenousTransformFromNedToEcef(lat, lon, ecef_ref_vector, vector_from_ned_origin_to_point):
+
+    rotation_ned_to_ecef = np.array([
+        [-sin(lat)*cos(lon), -sin(lon), -cos(lat)*cos(lon)],
+        [-sin(lat)*sin(lon),  cos(lon), -cos(lat)*sin(lon)],
+        [cos(lat),                   0,          -sin(lat)]
     ])
 
-    rotatedVectorWrtNed = numpy.dot(rotationNedToEcef, vectorWrtNed)
-    vectorWrtEcef = rotatedVectorWrtNed + ecefRef
+    vector_in_ecef_from_ecef_ref_to_point = np.dot(rotation_ned_to_ecef, vector_from_ned_origin_to_point)
+    vector_in_ecef_from_ecef_origin_to_point = vector_in_ecef_from_ecef_ref_to_point + ecef_ref_vector
 
-    return vectorWrtEcef
+    return vector_in_ecef_from_ecef_origin_to_point
 
 def createRotationCameraToNed(pitch, roll, yaw):
     # transformation between body frame and navigation frame
-    rotationNedToBody = numpy.array([
-        [cos(pitch) * cos(yaw), cos(pitch) * sin(yaw), -sin(pitch)],
-        [-cos(roll) * sin(yaw) + sin(roll) * sin(pitch) * cos(yaw),
-         cos(roll) * cos(yaw) + sin(roll) * sin(pitch) * sin(yaw), sin(roll) * cos(pitch)],
-        [sin(roll) * sin(yaw) + cos(roll) * sin(pitch) * cos(yaw),
-         -sin(roll) * cos(yaw) + cos(roll) * sin(pitch) * sin(yaw), cos(roll) * cos(pitch)]
+    rotation_ned_to_body = np.array([
+        [                                cos(pitch)*cos(yaw),                                 cos(pitch)*sin(yaw),          -sin(pitch)],
+        [-cos(roll)*sin(yaw) + sin(roll)*sin(pitch)*cos(yaw),  cos(roll)*cos(yaw) + sin(roll)*sin(pitch)*sin(yaw), sin(roll)*cos(pitch)],
+        [ sin(roll)*sin(yaw) + cos(roll)*sin(pitch)*cos(yaw), -sin(roll)*cos(yaw) + cos(roll)*sin(pitch)*sin(yaw), cos(roll)*cos(pitch)]
     ])
 
     # camera orientation (parallel to aircraft z axis)
-    rotationBodyToCamera = numpy.array([[0, 1, 0],
+    rotation_body_to_camera = np.array([[0, 1, 0],
                                         [-1, 0, 0],
-                                        [0, 0, 1]], dtype=numpy.float64)
+                                        [0, 0, 1]], dtype=np.float64)
 
     # rotation between camera frame - mapping (NED) frame
-    rotationNedToCamera = numpy.dot(rotationNedToBody, rotationBodyToCamera)
-    rotationCameraToNed = numpy.linalg.inv(rotationNedToCamera)  # Important! - when code is verified, just rewrite the matrix at the definition command
+    rotation_ned_to_camera = np.dot(rotation_ned_to_body, rotation_body_to_camera)
+    rotation_camera_to_ned = np.linalg.inv(rotation_ned_to_camera)  # Important! - when code is verified, just rewrite the matrix at the definition command
 
-    return rotationCameraToNed
+    return rotation_camera_to_ned
