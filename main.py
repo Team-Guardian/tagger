@@ -82,6 +82,7 @@ class Controller(Observer):
 
     def updateGeolocatorCurrentFlight(self, flight):
         self.window.taggingTab.geolocator.setCurrentFlightAndSiteElevation(flight)
+        self.window.mapTab.geolocator.setCurrentFlightAndSiteElevation(flight)
 
 if __name__ == '__main__':
 
