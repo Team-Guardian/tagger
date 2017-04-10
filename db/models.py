@@ -18,7 +18,7 @@ class AreaMap(models.Model):
 class Flight(models.Model):
     location = models.CharField(max_length=30)
     reference_altitude = models.IntegerField()
-    date = models.DateField(auto_now=True)
+    date = models.DateField()
     img_path = models.CharField(max_length=100, default='')
     area_map = models.ForeignKey(AreaMap, on_delete=models.SET_NULL, blank=True, null=True)
     intrinsic_matrix = models.CharField(max_length=100, default='')

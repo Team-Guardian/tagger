@@ -1,6 +1,6 @@
 # Man pages references: http://doc.qt.io/qt-4.8/qfiledialog.html#getOpenFileName
 
-from PyQt5 import QtWidgets, QtCore, QtGui
+from PyQt5 import QtWidgets, QtCore
 from PyQt5.QtCore import QDate
 from ui.ui_setupTab import Ui_SetupTab
 from observer import Observable
@@ -36,7 +36,8 @@ class SetupTab(QtWidgets.QWidget, Ui_SetupTab, Observable):
     def createFlight(self):
         location = self.line_locationName.text()
         elevation = float(self.line_siteElevation.text())
-        date = self.edit_flightDate.text()
+        date_string = self.edit_flightDate.text()
+        date = datetime.datetime.strptime(date_string, '%Y-%m-%d').date()
         area_map = self.line_areaMap.text()
 
         if AreaMap.objects.filter(name=area_map).exists():
