@@ -72,7 +72,7 @@ class MainWindow(QtWidgets.QMainWindow, Observable):
                     site_elevation = self.mapTab.getCurrentFlight().reference_altitude
 
             if image:
-                lat, lon = geolocateLatLonFromPixel(image, site_elevation, point.y(), point.x())
+                lat, lon = geolocateLatLonFromPixel(image, site_elevation, point.x(), point.y())
                 self.ui.statusbar.showMessage('x: %4d, y: %4d, lat: %-3.6f, lon: %-3.6f, alt (MSL): %3.1f, alt (AGL): %3.1f, pitch: %2.3f, roll: %2.3f, yaw: %2.3f' % \
                                           (round(point.x()), round(point.y()), lat, lon, image.altitude, image.altitude - site_elevation, image.pitch, image.roll, image.yaw))
 
