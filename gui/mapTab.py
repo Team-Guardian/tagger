@@ -21,7 +21,7 @@ class MapTab(QtWidgets.QWidget, Ui_MapTab):
 
     def currentImageChanged(self, current, _):
         self.currentImage = current.getImage()
-        self.openImage(self.currentImage.filename, self.viewer_map)
+        self.openImage('./flights/{}/{}'.format(self.currentFlight.img_path, self.currentImage.filename), self.viewer_map)
 
     def openImage(self, path, viewer):
         viewer.setPhoto(QtGui.QPixmap(path))
