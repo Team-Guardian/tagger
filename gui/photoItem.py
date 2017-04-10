@@ -1,5 +1,6 @@
 from PyQt5 import QtCore, QtWidgets
 from tagContextMenu import TagContextMenu
+from mapContextMenu import MapContextMenu
 from observer import *
 
 TAB_INDICES = {'TAB_SETUP': 0, 'TAB_TAGGING': 1, 'TAB_TARGETS': 2, 'TAB_MAP': 3}
@@ -13,6 +14,7 @@ class PhotoItem(QtWidgets.QGraphicsPixmapItem, Observable):
         Observable.__init__(self)
 
         self.tag_context_menu = TagContextMenu()
+        self.map_context_menu = MapContextMenu()
 
     def mousePressEvent(self, event):
         if event.button() == QtCore.Qt.LeftButton:
@@ -25,4 +27,9 @@ class PhotoItem(QtWidgets.QGraphicsPixmapItem, Observable):
                     if current_action == _action:
                         self.notifyObservers("MARKER_CREATE", None, [event, _tag])
             elif current_tab_index == TAB_INDICES['TAB_MAP']:
-                current_action = self.tag_context_menu.exec_(event.screenPos())
+                current_action = self.map_context_menu.exec_(event.screenPos())
+                self.map_context_menu.pixel_x_invocation_coord = event.screenPos().x()
+                self.map_context_menu.pixel_y_invocation_coord = event.screenPos().y()
+                for _message, _action in self.map_context_menu.map_action_tuples:
+                    if current_action == _action:
+                        self.notifyObservers(_message, None, None)

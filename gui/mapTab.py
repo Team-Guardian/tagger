@@ -3,17 +3,31 @@ from ui.ui_mapTab import Ui_MapTab
 from gui.imageListItem import ImageListItem
 from utils.geographicUtilities import Point, PolygonBounds
 from utils.geolocate import geolocateLatLonFromPixel
+from observer import *
 
 
-class MapTab(QtWidgets.QWidget, Ui_MapTab):
+class MapTab(QtWidgets.QWidget, Ui_MapTab, Observer):
     def __init__(self):
         super(MapTab, self).__init__()
+        Observer.__init__(self)
+
         self.setupUi(self)
         self.currentFlight = None
         self.currentImage = None
 
         self.button_search.clicked.connect(self.search)
         self.list_allImages.currentItemChanged.connect(self.currentImageChanged)
+
+        self.viewer_map.getPhotoItem().addObserver(self)
+
+    def notify(self, event, id, data):
+        if event is "FIND_IMAGES":
+            pass
+        elif event is "COPY_LAT_LON":
+            point_pixel_x_coord = self.viewer_map.getPhotoItem().map_context_menu.pixel_x_invocation_coord
+            point_pixel_y_coord = self.viewer_map.getPhotoItem().map_context_menu.pixel_y_invocation_coord
+            lat, lon = geolocateLatLonFromPixel(self.currentImage, self.currentFlight.reference_altitude, point_pixel_x_coord, point_pixel_y_coord)
+            QtWidgets.QApplication.clipboard().setText('{}, {}'.format(lat, lon))
 
     def addImageToUi(self, image):
         item = ImageListItem(image.filename, image)
@@ -54,6 +68,9 @@ class MapTab(QtWidgets.QWidget, Ui_MapTab):
             bounds.addVertex(Point(*geolocateLatLonFromPixel(img, self.currentFlight.reference_altitude, 0, img.height)))
             if bounds.isPointInsideBounds(p):
                 item.setHidden(False)
+
+    def copyPointLatLonToClipboard(self):
+        pass
 
     def getCurrentImage(self):
         return self.currentImage
