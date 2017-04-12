@@ -37,7 +37,10 @@ class MapTab(QtWidgets.QWidget, Ui_MapTab, Observer):
         elif event is "RESET_FILTERS":
             self.line_latitude.setText('')
             self.line_longitude.setText('')
-            self.search()
+            # unhide all
+            for i in range(self.list_allImages.count()):
+                self.list_allImages.item(i).setHidden(False)
+            return
 
     def addImageToUi(self, image):
         item = ImageListItem(image.filename, image)
