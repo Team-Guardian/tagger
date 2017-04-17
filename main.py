@@ -69,6 +69,7 @@ class Controller(Observer):
 
     def loadMap(self, flight):
         self.window.taggingTab.minimap.setMinimap(flight)
+        self.window.mapTab.setMap(flight)
 
     def loadImages(self):
         self.images = get_all_images_for_flight(self.currentFlight)
