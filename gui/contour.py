@@ -45,6 +45,22 @@ class Contour(QtWidgets.QGraphicsPolygonItem):
         contour_brush.setStyle(QtCore.Qt.Dense3Pattern)
         self.setBrush(contour_brush)
 
+    def highlightPolygon(self):
+        current_pen = self.pen()
+        current_brush = self.brush()
+        current_brush.setColor(QtCore.Qt.darkGreen)
+        current_pen.setColor(QtCore.Qt.darkGreen)
+        self.setBrush(current_brush)
+        self.setPen(current_pen)
+
+    def removePolygonHighlight(self):
+        current_pen = self.pen()
+        current_brush = self.brush()
+        current_brush.setColor(QtCore.Qt.red)
+        current_pen.setColor(QtCore.Qt.red)
+        self.setBrush(current_brush)
+        self.setPen(current_pen)
+
     def clearPolygonPoints(self):
         self._topLeft = QtCore.QPointF()
         self._topRight = QtCore.QPointF()

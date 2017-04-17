@@ -89,14 +89,22 @@ class MapTab(QtWidgets.QWidget, Ui_MapTab, Observer):
             item.setFont(font)
         self.list_allImages.addItem(item)
 
+        # create a new contour for current image
         contour = self.createImageContour(image)
+        # pair contour and corresponding image in a dict
         self.image_list_contour_and_item_dict[image] = [item, contour]
 
         self.updateAndShowContoursOnAreamap(contour)
 
     def currentImageChanged(self, current, _):
-        self.currentImage = current.getImage()
-        self.openImage('./flights/{}/{}'.format(self.currentFlight.img_path, self.currentImage.filename), self.viewer_map)
+        # restore original contour color to the image that is no longer selected
+        self.removeOldContourHighlight()
+
+        # update currentImage with selected item
+        self.current_image = current.getImage()
+
+        # highlight the corresponding contour with a different color
+        self.highlightCurrentImageContour()
 
     # Class utility functions
     def search(self):
@@ -174,6 +182,17 @@ class MapTab(QtWidgets.QWidget, Ui_MapTab, Observer):
     def updateAndShowContoursOnAreamap(self, contour):
         contour.updatePolygon()
         self.addContourToScene(contour)
+
+    def removeOldContourHighlight(self):
+        if self.current_image is not None:
+            # extract the contour from dictionary (don't care about the current item)
+            _, current_contour = self.image_list_contour_and_item_dict[self.current_image]
+            current_contour.removePolygonHighlight()
+
+    def highlightCurrentImageContour(self):
+        if self.current_image is not None:
+            _, current_contour = self.image_list_contour_and_item_dict[self.current_image]
+            current_contour.highlightPolygon()
 
     # Clear and reset routines
     def clearScene(self):
