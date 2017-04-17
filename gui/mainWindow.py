@@ -57,24 +57,26 @@ class MainWindow(QtWidgets.QMainWindow, Observable):
     # use installEventFilter() on a widget to register
     def eventFilter(self, source, event):
         if event.type() == QtCore.QEvent.MouseMove and event.buttons() == QtCore.Qt.NoButton:
-            point = None
-            image = None
-            site_elevation = None
             if source is self.taggingTab.viewer_single.viewport():
                 if not self.taggingTab.viewer_single.isImageNull():
                     point = self.taggingTab.viewer_single.mapToScene(event.pos())
                     image = self.taggingTab.getCurrentImage()
                     site_elevation = self.taggingTab.getCurrentFlight().reference_altitude
+                    if image:
+                        lat, lon = geolocateLatLonFromPixel(image, site_elevation, point.x(), point.y())
+                        self.ui.statusbar.showMessage(
+                            'x: %4d, y: %4d, lat: %-3.6f, lon: %-3.6f, alt (MSL): %3.1f, alt (AGL): %3.1f, pitch: %2.3f, roll: %2.3f, yaw: %2.3f' % \
+                            (round(point.x()), round(point.y()), lat, lon, image.altitude,
+                             image.altitude - site_elevation, image.pitch, image.roll, image.yaw))
             elif source is self.mapTab.viewer_map.viewport():
                 if not self.mapTab.viewer_map.isImageNull():
                     point = self.mapTab.viewer_map.mapToScene(event.pos())
                     image = self.mapTab.getCurrentImage()
-                    site_elevation = self.mapTab.getCurrentFlight().reference_altitude
-
-            if image:
-                lat, lon = geolocateLatLonFromPixel(image, site_elevation, point.y(), point.x())
-                self.ui.statusbar.showMessage('x: %4d, y: %4d, lat: %-3.6f, lon: %-3.6f, alt (MSL): %3.1f, alt (AGL): %3.1f, pitch: %2.3f, roll: %2.3f, yaw: %2.3f' % \
-                                          (round(point.x()), round(point.y()), lat, lon, image.altitude, image.altitude - site_elevation, image.pitch, image.roll, image.yaw))
+                    if image is not None:
+                        lat, lon = self.mapTab.geolocatePoint(point.x(), point.y())
+                        site_elevation = self.mapTab.getCurrentFlight().reference_altitude
+                        self.ui.statusbar.showMessage('x: %4d, y: %4d, lat: %-3.6f, lon: %-3.6f, alt (MSL): %3.1f, alt (AGL): %3.1f, pitch: %2.3f, roll: %2.3f, yaw: %2.3f' % \
+                                              (round(point.x()), round(point.y()), lat, lon, image.altitude, image.altitude - site_elevation, image.pitch, image.roll, image.yaw))
 
         return QtWidgets.QWidget.eventFilter(self, source, event)
 

@@ -38,11 +38,9 @@ class MapTab(QtWidgets.QWidget, Ui_MapTab, Observer):
         if event is "FIND_IMAGES":
             point_pixel_x_coord = self.viewer_map.getPhotoItem().map_context_menu.pixel_x_invocation_coord
             point_pixel_y_coord = self.viewer_map.getPhotoItem().map_context_menu.pixel_y_invocation_coord
-            point_lat, point_lon = geolocateLatLonFromPixel(self.currentImage, self.currentFlight.reference_altitude,
-                                                point_pixel_x_coord, point_pixel_y_coord)
-            self.line_latitude.setText('{}'.format(point_lat))
-            self.line_longitude.setText('{}'.format(point_lon))
-            self.search()
+            point_lat, point_lon = self.geolocatePoint(point_pixel_x_coord, point_pixel_y_coord)
+            self.findImagesContainingPoint(point_lat, point_lon)
+
         elif event is "COPY_LAT_LON":
             point_pixel_x_coord = self.viewer_map.getPhotoItem().map_context_menu.pixel_x_invocation_coord
             point_pixel_y_coord = self.viewer_map.getPhotoItem().map_context_menu.pixel_y_invocation_coord
@@ -55,6 +53,16 @@ class MapTab(QtWidgets.QWidget, Ui_MapTab, Observer):
             for i in range(self.list_allImages.count()):
                 self.list_allImages.item(i).setHidden(False)
             return
+
+    def geolocatePoint(self, x, y):
+        map_width, map_height = self.viewer_map._photo.boundingRect().getRect()[2:]
+        lat, lon = geolocateLatLonFromPixel(self.current_flight.area_map, map_width, map_height, x, y)
+        return lat, lon
+
+    def findImagesContainingPoint(self, lat, lon):
+        self.line_latitude.setText('{}'.format(lat))
+        self.line_longitude.setText('{}'.format(lon))
+        self.search()
 
     # Tab setup functions
     def setMap(self, flight):

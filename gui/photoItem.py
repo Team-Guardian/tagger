@@ -30,6 +30,5 @@ class PhotoItem(QtWidgets.QGraphicsPixmapItem, Observable):
                 current_action = self.map_context_menu.exec_(event.screenPos())
                 self.map_context_menu.pixel_x_invocation_coord = event.screenPos().x()
                 self.map_context_menu.pixel_y_invocation_coord = event.screenPos().y()
-                for _message, _action in self.map_context_menu.map_action_tuples:
-                    if current_action == _action:
-                        self.notifyObservers(_message, None, None)
+                message = self.map_context_menu.map_action_dict[current_action]
+                self.notifyObservers(message, None, None)
