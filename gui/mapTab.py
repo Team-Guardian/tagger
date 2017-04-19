@@ -44,12 +44,13 @@ class MapTab(QtWidgets.QWidget, Ui_MapTab, Observer):
         elif event is "COPY_LAT_LON":
             point_pixel_x_coord = self.viewer_map.getPhotoItem().map_context_menu.pixel_x_invocation_coord
             point_pixel_y_coord = self.viewer_map.getPhotoItem().map_context_menu.pixel_y_invocation_coord
-            lat, lon = geolocateLatLonFromPixel(self.currentImage, self.currentFlight.reference_altitude, point_pixel_x_coord, point_pixel_y_coord)
-            QtWidgets.QApplication.clipboard().setText('{}, {}'.format(lat, lon))
+            point_lat, point_lon = self.geolocatePoint(point_pixel_x_coord, point_pixel_y_coord)
+            self.copyPointLatLonToClipboard(point_lat, point_lon)
+
         elif event is "RESET_FILTERS":
             self.line_latitude.setText('')
             self.line_longitude.setText('')
-            # unhide all
+            # unhide all images
             for i in range(self.list_allImages.count()):
                 self.list_allImages.item(i).setHidden(False)
             return
@@ -144,8 +145,8 @@ class MapTab(QtWidgets.QWidget, Ui_MapTab, Observer):
             if bounds.isPointInsideBounds(p):
                 item.setHidden(False)
 
-    def copyPointLatLonToClipboard(self):
-        pass
+    def copyPointLatLonToClipboard(self, lat, lon):
+        QtWidgets.QApplication.clipboard().setText('{}, {}'.format(lat, lon))
 
     def createImageContour(self, image):
         contour = Contour(self.parent_polygon)

@@ -106,11 +106,12 @@ def geolocateLatLonFromPixel(img, site_elevation, pu, pv):
 def geolocateLatLonFromPixel(img, site_elevation, x, y):
     return geolocateLatLonFromPixel(img, site_elevation, float(x), float(y))
 
+# TODO: Implement in a nicer way when Geolocator class is merged
 # area map object, area map width, area map height, pixel x-coordinate, pixel y-coordinate
 @multimethod(AreaMap, float, float, float, float)
 def geolocateLatLonFromPixel(area_map, area_map_width, area_map_height, x, y):
-    lat = (x/area_map_width)*(area_map.ur_lat - area_map.ul_lat) + area_map.ul_lat
-    lon = (y/area_map_height)*(area_map.ll_lon - area_map.ul_lon) + area_map.ul_lon
+    lat = (y/area_map_height)*(area_map.ll_lat - area_map.ul_lat) + area_map.ul_lat
+    lon = (x/area_map_width) * (area_map.ur_lon - area_map.ul_lon) + area_map.ul_lon
     return lat, lon
 
 #

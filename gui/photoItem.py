@@ -28,7 +28,8 @@ class PhotoItem(QtWidgets.QGraphicsPixmapItem, Observable):
                         self.notifyObservers("MARKER_CREATE", None, [event, _tag])
             elif current_tab_index == TAB_INDICES['TAB_MAP']:
                 current_action = self.map_context_menu.exec_(event.screenPos())
-                self.map_context_menu.pixel_x_invocation_coord = event.screenPos().x()
-                self.map_context_menu.pixel_y_invocation_coord = event.screenPos().y()
-                message = self.map_context_menu.map_action_dict[current_action]
-                self.notifyObservers(message, None, None)
+                self.map_context_menu.pixel_x_invocation_coord = event.pos().x()
+                self.map_context_menu.pixel_y_invocation_coord = event.pos().y()
+                if current_action is not None:
+                    message = self.map_context_menu.map_action_dict[current_action]
+                    self.notifyObservers(message, None, None)
