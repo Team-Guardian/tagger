@@ -31,14 +31,14 @@ def convertGeodeticToEcef(lat, lon, elevation):
     Xe = (N + elevation) * cos(lat) * cos(lon)
     Ye = (N + elevation) * cos(lat) * sin(lon)
     Ze = (N * (1 - e2) + elevation) * sin(lat)
-    ecefCoords = np.array([[Xe], [Ye], [Ze]])
+    ecefCoords = np.array([[Xe], [Ye], [Ze]], dtype=np.float64)
 
     return ecefCoords
 
 
 def convertEcefToGeodetic(ecef):
     # WGS-84 ellipsoid parameters
-    a = 6378137
+    a = 6378137.0
     f = 1 / 298.257223563
 
     # Derived parameters
@@ -105,7 +105,7 @@ def homogenousTransformFromEcefToNed(lat, lon, ecef_ref_vector, vector_in_ecef_f
         [-sin(lat)*cos(lon), -sin(lat)*sin(lon),  cos(lat)],
         [-sin(lon),                    cos(lon),         0],
         [-cos(lat)*cos(lon), -cos(lat)*sin(lon), -sin(lat)]
-    ])
+    ], dtype=np.float64)
 
     vector_from_ned_origin_to_point = np.dot(rotation_ecef_to_ned, vector_in_ecef_from_ecef_ref_to_body)
 
@@ -118,7 +118,7 @@ def homogenousTransformFromNedToEcef(lat, lon, ecef_ref_vector, vector_from_ned_
         [-sin(lat)*cos(lon), -sin(lon), -cos(lat)*cos(lon)],
         [-sin(lat)*sin(lon),  cos(lon), -cos(lat)*sin(lon)],
         [cos(lat),                   0,          -sin(lat)]
-    ])
+    ], dtype=np.float64)
 
     vector_in_ecef_from_ecef_ref_to_point = np.dot(rotation_ned_to_ecef, vector_from_ned_origin_to_point)
     vector_in_ecef_from_ecef_origin_to_point = vector_in_ecef_from_ecef_ref_to_point + ecef_ref_vector
@@ -131,12 +131,12 @@ def createRotationCameraToNed(pitch, roll, yaw):
         [                                cos(pitch)*cos(yaw),                                 cos(pitch)*sin(yaw),          -sin(pitch)],
         [-cos(roll)*sin(yaw) + sin(roll)*sin(pitch)*cos(yaw),  cos(roll)*cos(yaw) + sin(roll)*sin(pitch)*sin(yaw), sin(roll)*cos(pitch)],
         [ sin(roll)*sin(yaw) + cos(roll)*sin(pitch)*cos(yaw), -sin(roll)*cos(yaw) + cos(roll)*sin(pitch)*sin(yaw), cos(roll)*cos(pitch)]
-    ])
+    ], dtype=np.float64)
 
     # camera orientation (parallel to aircraft z axis)
-    rotation_body_to_camera = np.array([[0, 1, 0],
+    rotation_body_to_camera = np.array([[ 0, 1, 0],
                                         [-1, 0, 0],
-                                        [0, 0, 1]], dtype=np.float64)
+                                        [ 0, 0, 1]], dtype=np.float64)
 
     # rotation between camera frame - mapping (NED) frame
     rotation_ned_to_camera = np.dot(rotation_ned_to_body, rotation_body_to_camera)
