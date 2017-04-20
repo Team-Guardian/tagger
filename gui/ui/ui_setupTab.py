@@ -11,7 +11,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_SetupTab(object):
     def setupUi(self, SetupTab):
         SetupTab.setObjectName("SetupTab")
-        SetupTab.resize(985, 757)
+        SetupTab.resize(1125, 786)
         self.verticalLayout_2 = QtWidgets.QVBoxLayout(SetupTab)
         self.verticalLayout_2.setObjectName("verticalLayout_2")
         self.groupBox_3 = QtWidgets.QGroupBox(SetupTab)

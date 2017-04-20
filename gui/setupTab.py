@@ -22,6 +22,7 @@ class SetupTab(QtWidgets.QWidget, Ui_SetupTab, Observable):
         self.button_createFlight.clicked.connect(self.createFlight)
         self.button_selectAreaMap.clicked.connect(self.selectAreaMap)
         self.button_browseWatchDirectory.clicked.connect(self.selectWatchDirectory)
+        self.button_selectIntrinsicMatrix.clicked.connect(self.selectIntrinsicMatrix)
 
     def enableSelectingAndCreatingFlights(self):
         self.group_createNewFlight.setEnabled(True)
@@ -38,6 +39,7 @@ class SetupTab(QtWidgets.QWidget, Ui_SetupTab, Observable):
         elevation = float(self.line_siteElevation.text())
         date = self.edit_flightDate.text()
         area_map = self.line_areaMap.text()
+        intrinsic_matrix = self.line_IntrinsicMatrix.text()
 
         if AreaMap.objects.filter(name=area_map).exists():
             am = AreaMap.objects.filter(name=area_map).last()
@@ -48,11 +50,12 @@ class SetupTab(QtWidgets.QWidget, Ui_SetupTab, Observable):
                                                              corners_geo[2][1], corners_geo[2][0],
                                                              corners_geo[3][1], corners_geo[3][0])
 
-        f = create_flight(location, elevation, "default.xml", date, am)
+        f = create_flight(location, elevation, intrinsic_matrix + '.xml', date, am)
         self.notifyObservers("FLIGHT_CREATED", f.img_path, f)
 
     def selectAreaMap(self):
-        filepath = QtWidgets.QFileDialog.getOpenFileName(self, "Select Area Map to Load", "./area_maps", "Images (*.png)")
+        filepath = QtWidgets.QFileDialog.getOpenFileName(self, "Select Area Map to Load", "./area_maps",
+                                                         "Images (*.png)")
         file_info = QtCore.QFileInfo(filepath[0])
         filename = file_info.baseName()
         self.line_areaMap.setText(filename)
@@ -62,7 +65,15 @@ class SetupTab(QtWidgets.QWidget, Ui_SetupTab, Observable):
         self.line_watchDirectory.setText(filepath)
         self.enableSelectingAndCreatingFlights()
 
+    def selectIntrinsicMatrix(self):
+        filepath = QtWidgets.QFileDialog.getOpenFileName(self, "Select Intrinsic Matrix to Load", "./intrinsic_matrices",
+                                                         "XML Files (*.xml)")
+        file_info = QtCore.QFileInfo(filepath[0])
+        filename = file_info.baseName()
+        self.line_IntrinsicMatrix.setText(filename)
+
     def resetTab(self):
         self.group_createNewFlight.setEnabled(False)
         self.group_openExistingFlight.setEnabled(False)
         self.line_watchDirectory.setText("")
+
