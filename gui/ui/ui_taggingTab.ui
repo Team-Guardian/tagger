@@ -121,82 +121,46 @@
        <property name="title">
         <string>Images</string>
        </property>
-       <layout class="QVBoxLayout" name="verticalLayout_3">
+       <layout class="QVBoxLayout" name="verticalLayout_3" stretch="1,6,1,2">
         <item>
-         <widget class="QTabWidget" name="image_status_tabs">
-          <property name="tabPosition">
-           <enum>QTabWidget::North</enum>
+         <layout class="QHBoxLayout" name="horizontalLayout_3">
+          <property name="spacing">
+           <number>6</number>
           </property>
-          <property name="tabShape">
-           <enum>QTabWidget::Rounded</enum>
-          </property>
-          <property name="currentIndex">
-           <number>0</number>
-          </property>
-          <property name="elideMode">
-           <enum>Qt::ElideNone</enum>
-          </property>
-          <property name="documentMode">
-           <bool>false</bool>
-          </property>
-          <property name="tabsClosable">
-           <bool>false</bool>
-          </property>
-          <widget class="QWidget" name="reviewed_tab">
-           <property name="enabled">
-            <bool>true</bool>
-           </property>
-           <property name="autoFillBackground">
-            <bool>false</bool>
-           </property>
-           <attribute name="title">
-            <string>Reviewed</string>
-           </attribute>
-           <widget class="QListWidget" name="reviewed_list">
-            <property name="geometry">
-             <rect>
-              <x>0</x>
-              <y>0</y>
-              <width>341</width>
-              <height>181</height>
-             </rect>
+          <item>
+           <widget class="QRadioButton" name="radioButton_reviewed">
+            <property name="cursor">
+             <cursorShape>PointingHandCursor</cursorShape>
             </property>
-            <property name="resizeMode">
-             <enum>QListView::Fixed</enum>
+            <property name="text">
+             <string>Reviewed</string>
             </property>
            </widget>
-          </widget>
-          <widget class="QWidget" name="not_reviewed_tab">
-           <attribute name="title">
-            <string>Not Reviewed</string>
-           </attribute>
-           <widget class="QListWidget" name="not_reviewed_list">
-            <property name="geometry">
-             <rect>
-              <x>0</x>
-              <y>0</y>
-              <width>561</width>
-              <height>271</height>
-             </rect>
+          </item>
+          <item>
+           <widget class="QRadioButton" name="radioButton_notReviewed">
+            <property name="cursor">
+             <cursorShape>PointingHandCursor</cursorShape>
+            </property>
+            <property name="text">
+             <string>Not Reviewed</string>
             </property>
            </widget>
-          </widget>
-          <widget class="QWidget" name="all_images_tab">
-           <attribute name="title">
-            <string>All Images</string>
-           </attribute>
-           <widget class="QListWidget" name="all_images_list">
-            <property name="geometry">
-             <rect>
-              <x>0</x>
-              <y>0</y>
-              <width>341</width>
-              <height>181</height>
-             </rect>
+          </item>
+          <item>
+           <widget class="QRadioButton" name="radioButton_allImages">
+            <property name="cursor">
+             <cursorShape>PointingHandCursor</cursorShape>
+            </property>
+            <property name="text">
+             <string>All Images</string>
             </property>
            </widget>
-          </widget>
-         </widget>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <widget class="QListWidget" name="images_list"/>
         </item>
         <item>
          <layout class="QGridLayout" name="gridLayout_2">
