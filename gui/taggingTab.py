@@ -28,6 +28,7 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
 
         self.setupUi(self)
         self.connectButtons()
+        self.radioButton_allImages.setChecked(True)
 
         self.image_list_item_dict = {}
         self.tag_dialog = TagDialog()
@@ -45,7 +46,7 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
             delete_marker(data.getMarker())
         elif event is "MARKER_PARENT_IMAGE_CHANGE":
             if data in self.image_list_item_dict:
-                self.list_images.setCurrentItem(self.image_list_item_dict.get(data))
+                self.images_list.setCurrentItem(self.image_list_item_dict.get(data))
 
     def connectButtons(self):
         self.button_addTag.clicked.connect(self.addTag)
@@ -53,9 +54,9 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
         self.button_removeTag.clicked.connect(self.removeTag)
 
         self.images_list.currentItemChanged.connect(self.currentImageChanged)
-        self.radioButton_allImages.toggled.connect(self.allImagesButtonToggled)
-        self.radioButton_reviewed.toggled.connect(self.reviewedButtonToggled)
-        self.radioButton_notReviewed.toggled.connect(self.notReviewedButtonToggled)
+        self.radioButton_allImages.clicked.connect(self.allImagesButtonToggled)
+        self.radioButton_reviewed.clicked.connect(self.reviewedButtonToggled)
+        self.radioButton_notReviewed.clicked.connect(self.notReviewedButtonToggled)
 
         self.button_toggleReviewed.clicked.connect(self.toggleImageReviewed)
         self.button_previous.clicked.connect(self.previousImage)
@@ -208,18 +209,18 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
 
     def toggleImageReviewed(self):
         item = self.images_list.currentItem()
-        if item:
-            font = item.font()
-            font.setBold(not font.bold())
-            item.setFont(font)
-            item.getImage().is_reviewed = False
+        image = item.getImage()
+        if image.is_reviewed:
+            image.is_reviewed = False
+        else:
+            image.is_reviewed = True
+        image.save()
+        self.nextImage()
+        self.updateList()
 
-            # image was marked as reviewed
-            if not font.bold():
-                item.getImage().is_reviewed = True
-                self.nextImage()
-
-            item.getImage().save()
+    def updateList(self):
+        current_button = self.image_status_buttons.checkedButton()
+        current_button.click()
 
     def addImage(self):
         paths = QtWidgets.QFileDialog.getOpenFileNames(self, "Select images", ".", "Images (*.jpg)")[0]

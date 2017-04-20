@@ -135,6 +135,9 @@
             <property name="text">
              <string>Reviewed</string>
             </property>
+            <attribute name="buttonGroup">
+             <string notr="true">image_status_buttons</string>
+            </attribute>
            </widget>
           </item>
           <item>
@@ -145,6 +148,9 @@
             <property name="text">
              <string>Not Reviewed</string>
             </property>
+            <attribute name="buttonGroup">
+             <string notr="true">image_status_buttons</string>
+            </attribute>
            </widget>
           </item>
           <item>
@@ -155,6 +161,9 @@
             <property name="text">
              <string>All Images</string>
             </property>
+            <attribute name="buttonGroup">
+             <string notr="true">image_status_buttons</string>
+            </attribute>
            </widget>
           </item>
          </layout>
@@ -252,4 +261,7 @@
  </customwidgets>
  <resources/>
  <connections/>
+ <buttongroups>
+  <buttongroup name="image_status_buttons"/>
+ </buttongroups>
 </ui>
