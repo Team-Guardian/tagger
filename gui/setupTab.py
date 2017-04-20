@@ -25,8 +25,8 @@ class SetupTab(QtWidgets.QWidget, Ui_SetupTab, Observable):
         self.button_selectIntrinsicMatrix.clicked.connect(self.selectIntrinsicMatrix)
 
     def enableSelectingAndCreatingFlights(self):
-        self.group_createNewFlight.setEnabled(True)
         self.group_openExistingFlight.setEnabled(True)
+        self.group_createNewFlight.setEnabled(True)
 
     def addFlightToUi(self, flight):
         self.combo_flights.addItem(flight.location + " " + str(flight.date))
@@ -70,7 +70,7 @@ class SetupTab(QtWidgets.QWidget, Ui_SetupTab, Observable):
                                                          "XML Files (*.xml)")
         file_info = QtCore.QFileInfo(filepath[0])
         filename = file_info.baseName()
-        self.line_IntrinsicMatrix.setText(filename)
+        self.line_intrinsicMatrix.setText(filename)
 
     def resetTab(self):
         self.group_createNewFlight.setEnabled(False)
