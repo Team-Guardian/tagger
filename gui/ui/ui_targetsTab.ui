@@ -15,7 +15,7 @@
   </property>
   <layout class="QHBoxLayout" name="horizontalLayout" stretch="1,3">
    <item>
-    <layout class="QVBoxLayout" name="verticalLayout_4">
+    <layout class="QVBoxLayout" name="verticalLayout_4" stretch="1,2">
      <item>
       <widget class="QGroupBox" name="groupBox_5">
        <property name="title">
@@ -23,7 +23,7 @@
        </property>
        <layout class="QVBoxLayout" name="verticalLayout_6">
         <item>
-         <widget class="QListView" name="list_tagFilter"/>
+         <widget class="QListWidget" name="list_tags"/>
         </item>
        </layout>
       </widget>
@@ -42,16 +42,9 @@
          </widget>
         </item>
         <item>
-         <widget class="QListView" name="list_taggedImages"/>
+         <widget class="QListWidget" name="list_taggedImages"/>
         </item>
        </layout>
-      </widget>
-     </item>
-     <item>
-      <widget class="QLabel" name="label_6">
-       <property name="text">
-        <string>MINIMAP</string>
-       </property>
       </widget>
      </item>
     </layout>

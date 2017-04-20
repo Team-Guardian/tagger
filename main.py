@@ -66,6 +66,7 @@ class Controller(Observer):
         self.tags = get_all_tags()
         for tag in self.tags:
             self.window.taggingTab.addTagToUi(tag)
+            self.window.targetsTab.addTagToUi(tag)
 
     def loadMap(self, flight):
         self.window.taggingTab.minimap.setMinimap(flight)
@@ -74,6 +75,7 @@ class Controller(Observer):
         self.images = get_all_images_for_flight(self.currentFlight)
         for i in self.images:
             self.window.taggingTab.addImageToUi(i)
+            self.window.targetsTab.addImageToUi(i)
             self.window.mapTab.addImageToUi(i)
 
     def resetWatcher(self):
