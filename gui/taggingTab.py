@@ -1,4 +1,4 @@
-from PyQt5 import QtWidgets, QtGui
+from PyQt5 import QtWidgets, QtGui, QtCore
 from PyQt5.QtWidgets import QDialog
 from PyQt5.QtGui import QPixmap
 from PyQt5.QtCore import QRect
@@ -81,7 +81,7 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
         [self.list_tags.setItem(row, col, TagTableItem(text, tag)) for col, text in enumerate(texts)]
 
         # add tag to context menu
-        self.viewer_single.getPhotoItem().context_menu.addTagToContextMenu(tag)
+        self.viewer_single.getPhotoItem().tag_context_menu.addTagToContextMenu(tag)
 
         # Update the drop-down menu for adding/editing tags
         self.tag_dialog.removeIcon(tag.symbol)
@@ -132,7 +132,7 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
                     [self.list_tags.setItem(row, col, TagTableItem(text, tag)) for col, text in enumerate(texts)]
 
                     # update tag in context menu
-                    self.viewer_single.getPhotoItem().context_menu.updateTagItem(tag)
+                    self.viewer_single.getPhotoItem().tag_context_menu.updateTagItem(tag)
 
                     self.notifyObservers("TAG_EDITED", None, tag)
             else:
@@ -143,7 +143,7 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
         tag = self.list_tags.item(row, 0).getTag()
         if row >= 0:
             self.list_tags.removeRow(row)
-            self.viewer_single.getPhotoItem().context_menu.removeTagItem(tag)
+            self.viewer_single.getPhotoItem().tag_context_menu.removeTagItem(tag)
             self.deleteMarkersFromUi(tag=tag)
             self.tag_dialog.addIcon(tag.symbol)
             self.notifyObservers("TAG_DELETED", None, tag)
@@ -231,6 +231,13 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
         self.list_images.addItem(item)
         self.image_list_item_dict[image] = item
 
+    def goToImage(self, selected_image):
+        for image, item in self.image_list_item_dict.iteritems():
+            item_row = self.list_images.row(item)
+            if selected_image == image:
+                self.list_images.setCurrentRow(item_row)
+                self.list_images.scrollToItem(item, QtWidgets.QAbstractItemView.PositionAtCenter)
+
     def currentImageChanged(self, current, _):
         # Clear the scene
         self.deleteMarkersFromUi()
@@ -317,7 +324,7 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
 
         # clear all tags
         self.list_tags.setRowCount(0) # discards all rows and data stored in them
-        self.viewer_single.getPhotoItem().context_menu.clearTagContextMenu() # clear tags from the context menu
+        self.viewer_single.getPhotoItem().tag_context_menu.clearTagContextMenu() # clear tags from the context menu
 
         # clear all markers
         self.deleteMarkersFromUi()

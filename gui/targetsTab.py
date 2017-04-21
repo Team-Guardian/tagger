@@ -6,6 +6,8 @@ from db.dbHelper import *
 from gui.tagListItem import TagListItem
 from gui.imageListItem import ImageListItem
 
+TAB_INDICES = {'TAB_SETUP': 0, 'TAB_TAGGING': 1, 'TAB_TARGETS': 2, 'TAB_MAP': 3}
+
 class TargetsTab(QtWidgets.QWidget, Ui_TargetsTab, Observer):
     def __init__(self):
         super(TargetsTab, self).__init__()
@@ -19,6 +21,8 @@ class TargetsTab(QtWidgets.QWidget, Ui_TargetsTab, Observer):
 
         self.tag_list_item_dict = {}
         self.image_list_item_dict = {}
+
+        self.viewer_targets.getPhotoItem().addObserver(self)
 
     def notify(self, event, id, data):
         if event is "TAG_CREATED":
@@ -34,6 +38,10 @@ class TargetsTab(QtWidgets.QWidget, Ui_TargetsTab, Observer):
             self.list_tags.takeItem(deleted_tag_list_item_row)
             self.changeCurrentTagItemAfterTagDelete(deleted_tag_list_item_row)
             del self.tag_list_item_dict[data]
+        elif event is "GO_TO_IMG_IN_TAGGING_TAB":
+            main_window = QtWidgets.QApplication.activeWindow()
+            main_window.taggingTab.goToImage(self.current_image)
+            main_window.ui.tabWidget.setCurrentIndex(TAB_INDICES['TAB_TAGGING'])
 
     def changeCurrentTagItemAfterTagDelete(self, deleted_row_num):
         if deleted_row_num == self.list_tags.count():
@@ -66,7 +74,6 @@ class TargetsTab(QtWidgets.QWidget, Ui_TargetsTab, Observer):
 
     def currentTagChanged(self, current, _):
         if current is not None:
-            print 'true'
             current_tag = current.getTag()
             # visually shows that a current item has been selected when the tab was switched
             self.list_tags.setCurrentRow(self.list_tags.row(current))
@@ -93,6 +100,12 @@ class TargetsTab(QtWidgets.QWidget, Ui_TargetsTab, Observer):
                         self.list_taggedImages.item(item_row).setHidden(True)
         else:
             self.hideAllImageListItems()
+
+    def getCurrentImage(self):
+        return self.current_image
+
+    def getCurrentFlight(self):
+        return self.current_flight
 
     def resetTab(self):
         pass # TODO
