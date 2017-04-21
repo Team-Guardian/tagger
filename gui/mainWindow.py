@@ -72,11 +72,10 @@ class MainWindow(QtWidgets.QMainWindow, Observable):
                 if not self.mapTab.viewer_map.isImageNull():
                     point = self.mapTab.viewer_map.mapToScene(event.pos())
                     image = self.mapTab.getCurrentImage()
-                    if image is not None:
-                        lat, lon = self.mapTab.geolocatePoint(point.x(), point.y())
-                        site_elevation = self.mapTab.getCurrentFlight().reference_altitude
-                        self.ui.statusbar.showMessage('x: %4d, y: %4d, lat: %-3.6f, lon: %-3.6f, alt (MSL): %3.1f, alt (AGL): %3.1f, pitch: %2.3f, roll: %2.3f, yaw: %2.3f' % \
-                                              (round(point.x()), round(point.y()), lat, lon, image.altitude, image.altitude - site_elevation, image.pitch, image.roll, image.yaw))
+                    lat, lon = self.mapTab.geolocatePoint(point.x(), point.y())
+                    site_elevation = self.mapTab.getCurrentFlight().reference_altitude
+                    self.ui.statusbar.showMessage('x: %4d, y: %4d, lat: %-3.6f, lon: %-3.6f' % \
+                                          (round(point.x()), round(point.y()), lat, lon))
 
         return QtWidgets.QWidget.eventFilter(self, source, event)
 

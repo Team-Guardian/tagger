@@ -50,6 +50,7 @@ class Controller(Observer):
             new_image = data
             self.images.append(new_image)
             self.window.taggingTab.addImageToUi(new_image)
+            self.window.mapTab.addImageToUi(new_image)
 
     def loadFlight(self, id): # TODO: this function does more than the name implies
         self.currentFlight = self.flights[id]
