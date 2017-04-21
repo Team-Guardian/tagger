@@ -48,12 +48,8 @@ class MapTab(QtWidgets.QWidget, Ui_MapTab, Observer):
             self.copyPointLatLonToClipboard(point_lat, point_lon)
 
         elif event is "RESET_FILTERS":
-            self.line_latitude.setText('')
-            self.line_longitude.setText('')
-            # unhide all images
-            for i in range(self.list_allImages.count()):
-                self.list_allImages.item(i).setHidden(False)
-            return
+            self.clearLatLonInputFields()
+            self.unhideAllImages()
 
     def geolocatePoint(self, x, y):
         map_width, map_height = self.viewer_map._photo.boundingRect().getRect()[2:]
@@ -118,9 +114,7 @@ class MapTab(QtWidgets.QWidget, Ui_MapTab, Observer):
     # Class utility functions
     def search(self):
         if len(self.line_latitude.text()) == 0 and len(self.line_longitude.text()) == 0:
-            # unhide all
-            for i in range(self.list_allImages.count()):
-                self.list_allImages.item(i).setHidden(False)
+            self.unhideAllImages()
             return
 
         # both are required
@@ -128,11 +122,23 @@ class MapTab(QtWidgets.QWidget, Ui_MapTab, Observer):
             return
 
         # hide all
-        for i in range(self.list_allImages.count()):
-            self.list_allImages.item(i).setHidden(True)
+        self.hideAllImages()
 
-        lat = float(self.line_latitude.text())
-        lon = float(self.line_longitude.text())
+        try:
+            lat = float(self.line_latitude.text())
+        except ValueError:
+            print 'Latitude is not a float'
+            self.clearLatLonInputFields()
+            self.unhideAllImages()
+            return
+        try:
+            lon = float(self.line_longitude.text())
+        except ValueError:
+            print 'Longitude is not a float'
+            self.clearLatLonInputFields()
+            self.unhideAllImages()
+            return
+
         p = Point(lat, lon)
         for i in range(self.list_allImages.count()):
             item = self.list_allImages.item(i)
@@ -147,6 +153,18 @@ class MapTab(QtWidgets.QWidget, Ui_MapTab, Observer):
 
     def copyPointLatLonToClipboard(self, lat, lon):
         QtWidgets.QApplication.clipboard().setText('{}, {}'.format(lat, lon))
+
+    def hideAllImages(self):
+        for i in range(self.list_allImages.count()):
+            self.list_allImages.item(i).setHidden(True)
+
+    def unhideAllImages(self):
+        for i in range(self.list_allImages.count()):
+            self.list_allImages.item(i).setHidden(False)
+
+    def clearLatLonInputFields(self):
+        self.line_latitude.setText('')
+        self.line_longitude.setText('')
 
     def createImageContour(self, image):
         contour = Contour(self.parent_polygon)
