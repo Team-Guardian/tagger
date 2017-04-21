@@ -36,6 +36,7 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
 
         # Initialize geolocator object
         self.geolocator = Geolocator()
+        self.minimap.setGeolocator(self.geolocator)
 
     def notify(self, event, id, data):
         if event is "MARKER_CREATE":

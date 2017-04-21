@@ -18,11 +18,16 @@ class MiniMap(QtWidgets.QGraphicsView):
         # construct an empty pixmap object placeholder and show it
         self.createAndSetPlaceholderPixmap()
 
+        self.geolocator = None
+
         # create null objects
         self._current_flight = None
 
         self.addMapToScene()
         self.setScene(self._scene)
+
+    def setGeolocator(self, geolocator):
+        self.geolocator = geolocator
 
     # show the original minimap after flight has been selected
     def setMinimap(self, flight):
@@ -50,11 +55,10 @@ class MiniMap(QtWidgets.QGraphicsView):
 
         current_area_map = self._current_flight.area_map
 
-        tagging_tab = self.parent().parent()
-        (img_upper_left_lat, img_upper_left_lon) = tagging_tab.geolocator.getLatLonFromPixel(0, 0)
-        (img_upper_right_lat, img_upper_right_lon) = tagging_tab.geolocator.getLatLonFromPixel(img.width, 0)
-        (img_lower_right_lat, img_lower_right_lon) = tagging_tab.geolocator.getLatLonFromPixel(img.width, img.height)
-        (img_lower_left_lat, img_lower_left_lon) = tagging_tab.geolocator.getLatLonFromPixel(0, img.height)
+        (img_upper_left_lat, img_upper_left_lon) = self.geolocator.getLatLonFromPixel(0, 0)
+        (img_upper_right_lat, img_upper_right_lon) = self.geolocator.getLatLonFromPixel(img.width, 0)
+        (img_lower_right_lat, img_lower_right_lon) = self.geolocator.getLatLonFromPixel(img.width, img.height)
+        (img_lower_left_lat, img_lower_left_lon) = self.geolocator.getLatLonFromPixel(0, img.height)
 
         # interpolate the location of the image on the minimap (in px)
         self._img_contour._topLeft.setX(((img_upper_left_lon - current_area_map.ul_lon) /
