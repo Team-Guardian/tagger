@@ -116,7 +116,7 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
                             image_width = self.currentImage.width
                             image_height = self.currentImage.height
                             reference_altitude = self.currentFlight.reference_altitude
-                            marker_list = self.getMarkersForImage(self.currentImage)
+                            marker_list = self.getMarkersForImage()
                             for marker in marker_list:
                                 x, y = getPixelFromLatLon(self.currentImage, image_width, image_height, reference_altitude, \
                                                           marker.latitude, marker.longitude)

@@ -35,7 +35,7 @@
        </property>
        <layout class="QVBoxLayout" name="verticalLayout_5">
         <item>
-         <widget class="QLineEdit" name="lineEdit">
+         <widget class="QLineEdit" name="line_searchImages">
           <property name="text">
            <string>search image by name</string>
           </property>

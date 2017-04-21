@@ -28,9 +28,9 @@ class Ui_TargetsTab(object):
         self.groupBox_4.setObjectName("groupBox_4")
         self.verticalLayout_5 = QtWidgets.QVBoxLayout(self.groupBox_4)
         self.verticalLayout_5.setObjectName("verticalLayout_5")
-        self.lineEdit = QtWidgets.QLineEdit(self.groupBox_4)
-        self.lineEdit.setObjectName("lineEdit")
-        self.verticalLayout_5.addWidget(self.lineEdit)
+        self.line_searchImages = QtWidgets.QLineEdit(self.groupBox_4)
+        self.line_searchImages.setObjectName("line_searchImages")
+        self.verticalLayout_5.addWidget(self.line_searchImages)
         self.list_taggedImages = QtWidgets.QListWidget(self.groupBox_4)
         self.list_taggedImages.setObjectName("list_taggedImages")
         self.verticalLayout_5.addWidget(self.list_taggedImages)
@@ -56,6 +56,6 @@ class Ui_TargetsTab(object):
         TargetsTab.setWindowTitle(_translate("TargetsTab", "Form"))
         self.groupBox_5.setTitle(_translate("TargetsTab", "Select Tag"))
         self.groupBox_4.setTitle(_translate("TargetsTab", "Images with Selected Tag"))
-        self.lineEdit.setText(_translate("TargetsTab", "search image by name"))
+        self.line_searchImages.setText(_translate("TargetsTab", "search image by name"))
 
 from gui.photoViewer import PhotoViewer
