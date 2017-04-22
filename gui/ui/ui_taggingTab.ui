@@ -169,7 +169,7 @@
          </layout>
         </item>
         <item>
-         <widget class="QListWidget" name="images_list"/>
+         <widget class="QListWidget" name="list_images"/>
         </item>
         <item>
          <layout class="QGridLayout" name="gridLayout_2">

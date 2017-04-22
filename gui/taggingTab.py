@@ -46,14 +46,14 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
             delete_marker(data.getMarker())
         elif event is "MARKER_PARENT_IMAGE_CHANGE":
             if data in self.image_list_item_dict:
-                self.images_list.setCurrentItem(self.image_list_item_dict.get(data))
+                self.list_images.setCurrentItem(self.image_list_item_dict.get(data))
 
     def connectButtons(self):
         self.button_addTag.clicked.connect(self.addTag)
         self.button_editTag.clicked.connect(self.editTag)
         self.button_removeTag.clicked.connect(self.removeTag)
 
-        self.images_list.currentItemChanged.connect(self.currentImageChanged)
+        self.list_images.currentItemChanged.connect(self.currentImageChanged)
         self.radioButton_allImages.clicked.connect(self.allImagesButtonToggled)
         self.radioButton_reviewed.clicked.connect(self.reviewedButtonToggled)
         self.radioButton_notReviewed.clicked.connect(self.notReviewedButtonToggled)
@@ -208,7 +208,7 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
                     self.viewer_single.getScene().removeItem(item)
 
     def toggleImageReviewed(self):
-        item = self.images_list.currentItem()
+        item = self.list_images.currentItem()
         image = item.getImage()
         if image.is_reviewed:
             image.is_reviewed = False
@@ -230,7 +230,7 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
 
     def addImageToUi(self, image):
         item = ImageListItem(image.filename, image)
-        self.images_list.addItem(item)
+        self.list_images.addItem(item)
         self.image_list_item_dict[image] = item
 
     def currentImageChanged(self, current, _):
@@ -255,39 +255,39 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
             self.addMarkerToUi(x, y, marker, opacity)
 
     def allImagesButtonToggled(self):
-        for row_num in range(self.images_list.count()):
-            self.images_list.item(row_num).setHidden(False)
+        for row_num in range(self.list_images.count()):
+            self.list_images.item(row_num).setHidden(False)
 
     def reviewedButtonToggled(self):
         for image, item in self.image_list_item_dict.iteritems():
-            item_row = self.images_list.row(item)
+            item_row = self.list_images.row(item)
             if image.is_reviewed:
-                self.images_list.item(item_row).setHidden(False)
+                self.list_images.item(item_row).setHidden(False)
             else:
-                self.images_list.item(item_row).setHidden(True)
+                self.list_images.item(item_row).setHidden(True)
 
     def notReviewedButtonToggled(self):
         for image, item in self.image_list_item_dict.iteritems():
-            item_row = self.images_list.row(item)
+            item_row = self.list_images.row(item)
             if not image.is_reviewed:
-                self.images_list.item(item_row).setHidden(False)
+                self.list_images.item(item_row).setHidden(False)
             else:
-                self.images_list.item(item_row).setHidden(True)
+                self.list_images.item(item_row).setHidden(True)
 
     def openImage(self, path, viewer):
         viewer.setPhoto(QtGui.QPixmap(path))
 
     def previousImage(self):
-        next_row = self.images_list.currentRow() - 1
+        next_row = self.list_images.currentRow() - 1
         self.setImageRow(next_row)
 
     def nextImage(self):
-        next_row = self.images_list.currentRow() + 1
+        next_row = self.list_images.currentRow() + 1
         self.setImageRow(next_row)
 
     def setImageRow(self, row):
-        if 0 <= row < self.images_list.count():
-            self.images_list.setCurrentRow(row)
+        if 0 <= row < self.list_images.count():
+            self.list_images.setCurrentRow(row)
 
     def getSelectedImageSize(self):
         return self.viewer_single.getImageSize()
@@ -336,7 +336,7 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
         # clear all images and references to the objects
         self.image_list_item_dict = {}
         self.disableCurrentImageChangedEvent() # disconnect signal to avoid triggering an event
-        self.images_list.clear()
+        self.list_images.clear()
         self.enableCurrentItemChangedEvent() # re-enable the event
 
         # clear all tags
@@ -353,10 +353,10 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
         self.viewer_single.setPhoto(None)
 
     def disableCurrentImageChangedEvent(self):
-        self.images_list.currentItemChanged.disconnect(self.currentImageChanged)
+        self.list_images.currentItemChanged.disconnect(self.currentImageChanged)
 
     def enableCurrentItemChangedEvent(self):
-        self.images_list.currentItemChanged.connect(self.currentImageChanged)
+        self.list_images.currentItemChanged.connect(self.currentImageChanged)
 
     def saveImage(self):
         scene_width = self.viewer_single.viewport().rect().width()
