@@ -1,8 +1,5 @@
-# Math reference: http://stackoverflow.com/questions/2827393/angles-between-two-n-dimensional-vectors-in-python/13849249#13849249
-
 from PyQt5 import QtCore, QtGui, QtWidgets
-import numpy
-from math import sin, cos
+
 import utils.geolocate
 from contour import Contour
 
