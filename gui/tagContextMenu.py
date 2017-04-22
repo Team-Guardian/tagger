@@ -14,8 +14,7 @@ class TagContextMenu(QtWidgets.QMenu):
         self.pixel_y_invocation_coord = None
 
     def addTagToContextMenu(self, new_tag):
-        # new_action = self.addAction('{}, {}'.format(new_tag.type, new_tag.subtype))
-        new_action = self.addAction('fuck you qt')
+        new_action = self.addAction('{}, {}'.format(new_tag.type, new_tag.subtype))
         self.action_data_dict[new_action] = new_tag
         self.action_message_dict[new_action] = "MARKER_CREATE"
         if len(self.actions()) > 1:

@@ -15,9 +15,6 @@ class PhotoItem(QtWidgets.QGraphicsPixmapItem, Observable):
 
         self.tab_context_menu = None
 
-        self.tag_context_menu = TagContextMenu()
-        self.target_tab_context_menu = TargetContextMenu()
-
     def setTabContextMenu(self, context_menu):
         self.tab_context_menu = context_menu
 
