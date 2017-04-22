@@ -105,7 +105,6 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
                 if len(self.tag_dialog.tagType.text()) > 0 and len(self.tag_dialog.subtype.text()) > 0:
                     tag.type = self.tag_dialog.tagType.text()
                     tag.subtype = self.tag_dialog.subtype.text()
-                    tag.num_occurrences = -1
                     tag.symbol = self.tag_dialog.icons.currentText()
                     tag.save()
 
