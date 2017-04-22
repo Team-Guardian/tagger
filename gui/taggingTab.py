@@ -239,6 +239,7 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
 
         self.minimap.updateContourOnImageChange(self.currentImage)
         self.openImage('./flights/{}/{}'.format(self.currentFlight.img_path, self.currentImage.filename), self.viewer_single)
+        self.notifyObservers("CURRENT_IMG_CHANGED", None, None)
 
         # Display markers for this image
         image_width = self.currentImage.width
@@ -344,6 +345,10 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
             pixmap = QPixmap(image_path)
             fileSaveDialog = QtWidgets.QFileDialog()
             fileSaveDialog.setWindowTitle('Save Image')
+            savedImagesPath = FLIGHT_DIRECTORY + '{}/saved-images'.format(self.currentFlight.img_path)
+            if not os.path.exists(savedImagesPath):
+                os.makedirs(savedImagesPath)
+            fileSaveDialog.setDirectory(savedImagesPath)
             fileSaveDialog.setAcceptMode(QtWidgets.QFileDialog.AcceptSave)
             fileSaveDialog.setNameFilter('Images (*.jpg)')
             fileSaveDialog.setDefaultSuffix('.jpg')
