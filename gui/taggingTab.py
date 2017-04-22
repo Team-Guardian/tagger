@@ -12,6 +12,7 @@ from utils.geolocate import geolocateLatLonFromPixel, getPixelFromLatLon
 from utils.geographicUtilities import *
 from gui.imageListItem import ImageListItem
 from gui.tagTableItem import TagTableItem
+from gui.tagContextMenu import TagContextMenu
 from markerItem import MarkerItem
 
 from utils.imageInfo import FLIGHT_DIRECTORY
@@ -30,6 +31,9 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
 
         self.image_list_item_dict = {}
         self.tag_dialog = TagDialog()
+
+        self.tagging_tab_context_menu = TagContextMenu()
+        self.viewer_single._photo.setTabContextMenu(self.tagging_tab_context_menu)
 
         self.viewer_single.getPhotoItem().addObserver(self)
 
@@ -148,10 +152,9 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
             self.tag_dialog.addIcon(tag.symbol)
             self.notifyObservers("TAG_DELETED", None, tag)
 
-    def addMarker(self, data):
-        event, tag = data
-        pu = event.scenePos().x()
-        pv = event.scenePos().y()
+    def addMarker(self, tag):
+        pu = self.tagging_tab_context_menu.pixel_x_invocation_coord
+        pv = self.tagging_tab_context_menu.pixel_y_invocation_coord
         lat, lon = geolocateLatLonFromPixel(self.currentImage, self.currentFlight.reference_altitude, pu, pv)
         m = create_marker(tag=tag, image=self.currentImage, latitude=lat, longitude=lon)
         m.tag.num_occurrences += 1

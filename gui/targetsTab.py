@@ -5,6 +5,7 @@ from observer import Observer
 from db.dbHelper import *
 from gui.tagListItem import TagListItem
 from gui.imageListItem import ImageListItem
+from gui.targetContextMenu import TargetContextMenu
 
 TAB_INDICES = {'TAB_SETUP': 0, 'TAB_TAGGING': 1, 'TAB_TARGETS': 2, 'TAB_MAP': 3}
 
@@ -21,6 +22,9 @@ class TargetsTab(QtWidgets.QWidget, Ui_TargetsTab, Observer):
 
         self.tag_list_item_dict = {}
         self.image_list_item_dict = {}
+
+        self.targets_tab_context_menu = TargetContextMenu()
+        self.viewer_targets._photo.setTabContextMenu(self.targets_tab_context_menu)
 
         self.viewer_targets.getPhotoItem().addObserver(self)
 
