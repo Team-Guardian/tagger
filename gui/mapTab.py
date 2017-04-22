@@ -71,8 +71,8 @@ class MapTab(QtWidgets.QWidget, Ui_MapTab, Observer):
 
     def loadAndSetFlightAreaPixmap(self):
         areamap_full_filepath = "./area_maps/{}".format(self.current_flight.area_map.filename)
-        self.viewer_map._photo.setPixmap(QtGui.QPixmap(areamap_full_filepath))
-        self.viewer_map.centerOn(self.viewer_map._photo.pixmap().rect().center())
+        self.viewer_map.setPhoto(QtGui.QPixmap(areamap_full_filepath))
+        # self.viewer_map.centerOn(self.viewer_map._photo.pixmap().rect().center())
 
     def addMapToScene(self):
         self.viewer_map._scene.addItem(self.viewer_map._photo)
@@ -81,7 +81,7 @@ class MapTab(QtWidgets.QWidget, Ui_MapTab, Observer):
         self.viewer_map._photo.setPixmap(self.generatePlaceholderPixmap())
 
     def generatePlaceholderPixmap(self):
-        placeholder_pixmap = QtGui.QPixmap(1000, 1000)
+        placeholder_pixmap = QtGui.QPixmap(1220, 846)
         placeholder_pixmap.fill(QtCore.Qt.transparent)
         return placeholder_pixmap
 

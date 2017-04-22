@@ -92,6 +92,8 @@ class MainWindow(QtWidgets.QMainWindow, Observable):
 
     def tabChangeHandler(self):
         currentTabIndex = self.ui.tabWidget.currentIndex()
+        if currentTabIndex == TAB_INDICES['TAB_MAP']:
+            self.mapTab.viewer_map.fitInView()
         if currentTabIndex != TAB_INDICES['TAB_TAGGING']:
             self.ui.actionSaveImage.setDisabled(True)
         else:
