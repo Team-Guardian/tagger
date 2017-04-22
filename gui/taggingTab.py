@@ -16,7 +16,6 @@ from markerItem import MarkerItem
 
 from utils.imageInfo import FLIGHT_DIRECTORY
 TAG_TABLE_INDICES = {'TYPE': 0, 'SUBTYPE': 1, 'COUNT': 2, 'SYMBOL': 3}
-image_status_tabs_TAB_INDICES = {'REVIEWED': 0, 'NOT_REVIEWED': 1, 'ALL_IMAGES': 2}
 
 class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
     def __init__(self):
@@ -210,13 +209,19 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
     def toggleImageReviewed(self):
         item = self.images_list.currentItem()
         image = item.getImage()
-        if image.is_reviewed:
-            image.is_reviewed = False
-        else:
+
+        if item:
+            font = item.font()
             image.is_reviewed = True
-        image.save()
-        self.nextImage()
+            if not font.bold():
+                image.is_reviewed = False
+            image.save()
+            font.setBold(not font.bold())
+            item.setFont(font)
+
         self.updateList()
+        self.nextImage()
+
 
     def updateList(self):
         current_button = self.image_status_buttons.checkedButton()
@@ -232,6 +237,10 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
         item = ImageListItem(image.filename, image)
         self.images_list.addItem(item)
         self.image_list_item_dict[image] = item
+        if not image.is_reviewed:
+            font = item.font()
+            font.setBold(not font.bold())
+            item.setFont(font)
 
     def currentImageChanged(self, current, _):
         # Clear the scene
