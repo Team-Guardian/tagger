@@ -219,9 +219,9 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
             font.setBold(not font.bold())
             item.setFont(font)
 
+        self.images_list.setFocus()
         self.updateList()
         self.nextImage()
-
 
     def updateList(self):
         current_button = self.image_status_buttons.checkedButton()
