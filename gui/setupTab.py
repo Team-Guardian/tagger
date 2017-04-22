@@ -39,7 +39,7 @@ class SetupTab(QtWidgets.QWidget, Ui_SetupTab, Observable):
         elevation = float(self.line_siteElevation.text())
         date = self.edit_flightDate.text()
         area_map = self.line_areaMap.text()
-        intrinsic_matrix = self.line_IntrinsicMatrix.text()
+        intrinsic_matrix = self.line_intrinsicMatrix.text()
 
         if AreaMap.objects.filter(name=area_map).exists():
             am = AreaMap.objects.filter(name=area_map).last()
