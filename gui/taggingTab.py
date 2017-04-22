@@ -345,9 +345,10 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
             pixmap = QPixmap(image_path)
             fileSaveDialog = QtWidgets.QFileDialog()
             fileSaveDialog.setWindowTitle('Save Image')
-            if not os.path.exists(FLIGHT_DIRECTORY + '{}/saved-images'.format(self.currentFlight.img_path)):
-                os.makedirs(FLIGHT_DIRECTORY + '{}/saved-images'.format(self.currentFlight.img_path))
-            fileSaveDialog.setDirectory(FLIGHT_DIRECTORY + '{}/saved-images'.format(self.currentFlight.img_path))
+            savedImagesPath = FLIGHT_DIRECTORY + '{}/saved-images'.format(self.currentFlight.img_path)
+            if not os.path.exists(savedImagesPath):
+                os.makedirs(savedImagesPath)
+            fileSaveDialog.setDirectory(savedImagesPath)
             fileSaveDialog.setAcceptMode(QtWidgets.QFileDialog.AcceptSave)
             fileSaveDialog.setNameFilter('Images (*.jpg)')
             fileSaveDialog.setDefaultSuffix('.jpg')
