@@ -232,11 +232,11 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
         self.image_list_item_dict[image] = item
 
     def goToImage(self, selected_image):
-        for image, item in self.image_list_item_dict.iteritems():
+        item = self.image_list_item_dict.get(selected_image)
+        if item:
             item_row = self.list_images.row(item)
-            if selected_image == image:
-                self.list_images.setCurrentRow(item_row)
-                self.list_images.scrollToItem(item, QtWidgets.QAbstractItemView.PositionAtCenter)
+            self.list_images.setCurrentRow(item_row)
+            self.list_images.scrollToItem(item, QtWidgets.QAbstractItemView.PositionAtCenter)
 
     def currentImageChanged(self, current, _):
         # Clear the scene
