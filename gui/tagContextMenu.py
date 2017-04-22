@@ -26,10 +26,14 @@ class TagContextMenu(QtWidgets.QMenu):
                 action.setText(tag.type + ", " + tag.subtype)
 
     def removeTagItem(self, tag_to_remove):
+        action_to_remove = None
         for action, tag in self.action_data_dict.iteritems():
             if tag == tag_to_remove:
-                del self.action_dict[action]
-                self.removeAction(action)
+                action_to_remove = action
+        if action_to_remove is not None:
+            del self.action_data_dict[action_to_remove]
+            del self.action_message_dict[action_to_remove]
+            self.removeAction(action_to_remove)
 
         if len(self.actions()) == 1:
             self.default_action_handle.setVisible(True)

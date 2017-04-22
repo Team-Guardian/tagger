@@ -19,6 +19,7 @@ class TargetsTab(QtWidgets.QWidget, Ui_TargetsTab, Observer):
 
         self.current_flight = None
         self.current_image = None
+        self.current_tag = None
 
         self.tag_list_item_dict = {}
         self.image_list_item_dict = {}
@@ -31,6 +32,7 @@ class TargetsTab(QtWidgets.QWidget, Ui_TargetsTab, Observer):
     def notify(self, event, id, data):
         if event is "TAG_CREATED":
             self.addTagToUi(data)
+
         elif event is "TAG_EDITED":
             edited_tag_list_item = self.tag_list_item_dict.get(data)
             tag_name = '{}, {}'.format(data.type, data.subtype)
@@ -42,6 +44,10 @@ class TargetsTab(QtWidgets.QWidget, Ui_TargetsTab, Observer):
             self.list_tags.takeItem(deleted_tag_list_item_row)
             self.changeCurrentTagItemAfterTagDelete(deleted_tag_list_item_row)
             del self.tag_list_item_dict[data]
+        elif event is "MARKER_CREATED":
+            marker_tag = data.tag
+            if self.current_tag == marker_tag:
+                self.sortImages(marker_tag)
         elif event is "GO_TO_IMG_IN_TAGGING_TAB":
             main_window = QtWidgets.QApplication.activeWindow()
             main_window.taggingTab.goToImage(self.current_image)
@@ -78,10 +84,10 @@ class TargetsTab(QtWidgets.QWidget, Ui_TargetsTab, Observer):
 
     def currentTagChanged(self, current, _):
         if current is not None:
-            current_tag = current.getTag()
+            self.current_tag = current.getTag()
             # visually shows that a current item has been selected when the tab was switched
             self.list_tags.setCurrentRow(self.list_tags.row(current))
-            self.sortImages(current_tag)
+            self.sortImages(self.current_tag)
         else:
             self.hideAllImageListItems()
 
@@ -92,16 +98,15 @@ class TargetsTab(QtWidgets.QWidget, Ui_TargetsTab, Observer):
     def openImage(self, path):
         self.viewer_targets.setPhoto(QtGui.QPixmap(path))
 
-    def sortImages(self, current_tag):
-        if Marker.objects.filter(tag=current_tag).exists():
-            for marker in Marker.objects.filter(tag=current_tag):
+    def sortImages(self, tag):
+        if Marker.objects.filter(tag=tag).exists():
+            self.hideAllImageListItems()
+            for marker in Marker.objects.filter(tag=tag):
                 marked_image = marker.image
                 for image, item in self.image_list_item_dict.iteritems():
                     item_row = self.list_taggedImages.row(item)
                     if image == marked_image:
                         self.list_taggedImages.item(item_row).setHidden(False)
-                    else:
-                        self.list_taggedImages.item(item_row).setHidden(True)
         else:
             self.hideAllImageListItems()
 
