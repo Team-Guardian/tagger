@@ -60,6 +60,7 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
     def addTag(self):
         self.tag_dialog.setWindowTitle("Create tag")
         self.tag_dialog.tagType.setText('')
+        self.tag_dialog.tagType.setFocus()
         self.tag_dialog.subtype.setText('')
         self.tag_dialog.icons.setCurrentIndex(0)
         if self.tag_dialog.exec_() == QDialog.Accepted:
@@ -95,6 +96,7 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
             icon = tag.symbol
             self.tag_dialog.setWindowTitle("Edit tag")
             self.tag_dialog.tagType.setText(tagType)
+            self.tag_dialog.tagType.setFocus()
             self.tag_dialog.subtype.setText(subtype)
             self.tag_dialog.addIcon(icon) # Show the current symbol in the list
             index = self.tag_dialog.icons.findText(icon)
