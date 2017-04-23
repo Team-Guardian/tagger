@@ -58,7 +58,9 @@ def getExifDataFromImage(path_to_image):
     return imageData
 
 def loadGeotiff(img_path):
-    raster=img_path + '.tif'
+    raster = '{}.tiff'.format(img_path)
+    if raster is None:
+        raster='{}.tif'.format(img_path)
     ds=gdal.Open(raster)
 
     gt=ds.GetGeoTransform()
