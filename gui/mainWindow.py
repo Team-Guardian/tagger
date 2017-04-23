@@ -84,6 +84,7 @@ class MainWindow(QtWidgets.QMainWindow, Observable):
     def resizeEvent(self, resizeEvent):
         openedTab = self.ui.tabWidget.currentWidget()
         imageViewers = openedTab.findChildren(QtWidgets.QGraphicsView)
+        self.taggingTab.viewer_single.updateScale()
     
         # if no PhotoViewers exist in current tab, do nothing
         if imageViewers == None:

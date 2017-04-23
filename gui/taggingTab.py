@@ -249,15 +249,17 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
 
         # update current image
         self.currentImage = current.getImage()
+        self.viewer_single.getScale().setCurrentImage(self.currentImage)
 
         # update widgets
         self.minimap.updateContourOnImageChange(self.currentImage)
-        self.viewer_single.updateScale()
-        self.viewer_single.getScale().setCurrentImage(self.currentImage)
 
         # open image and notify observers that it has changed
         self.openImage('./flights/{}/{}'.format(self.currentFlight.img_path, self.currentImage.filename), self.viewer_single)
         self.notifyObservers("CURRENT_IMG_CHANGED", None, None)
+
+        # udpate scale
+        self.viewer_single.updateScale()
 
         # Display markers for this image
         image_width = self.currentImage.width
