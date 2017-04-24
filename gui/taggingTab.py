@@ -43,10 +43,12 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
             self.addMarker(data)
         elif event is "MARKER_DELETED":
             self.viewer_single.getScene().removeItem(data)
-            data.getMarker().tag.num_occurrences -= 1
-            data.getMarker().tag.save()
-            self.updateTagMarkerCountInUi(data.getMarker().tag)
-            delete_marker(data.getMarker())
+            marker_to_delete = data.getMarker()
+            marker_to_delete.tag.num_occurrences -= 1
+            marker_to_delete.tag.save()
+            self.updateTagMarkerCountInUi(marker_to_delete.tag)
+            delete_marker(marker_to_delete)
+            self.notifyObservers("MARKER_DELETED", None, marker_to_delete)
         elif event is "MARKER_PARENT_IMAGE_CHANGE":
             if data in self.image_list_item_dict:
                 self.list_images.setCurrentItem(self.image_list_item_dict.get(data))
@@ -198,6 +200,7 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
             if tableTag == tag:
                 self.list_tags.setItem(rowIndex, TAG_TABLE_INDICES['COUNT'], TagTableItem(str(tag.num_occurrences), tag))
 
+    # TODO: Is this method used anywhere?
     def deleteMarkersFromUi(self, tag=None):
         sceneObjects = self.viewer_single.getScene().items()
         for item in sceneObjects:

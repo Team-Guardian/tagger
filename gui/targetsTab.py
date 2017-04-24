@@ -32,7 +32,6 @@ class TargetsTab(QtWidgets.QWidget, Ui_TargetsTab, Observer):
     def notify(self, event, id, data):
         if event is "TAG_CREATED":
             self.addTagToUi(data)
-
         elif event is "TAG_EDITED":
             edited_tag_list_item = self.tag_list_item_dict.get(data)
             tag_name = '{}, {}'.format(data.type, data.subtype)
