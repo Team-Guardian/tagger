@@ -207,6 +207,7 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
                         self.viewer_single.getScene().removeItem(item)
                         item.getMarker().tag.num_occurrences -= 1
                         item.getMarker().tag.save()
+                        self.notifyObservers("MARKER_DELETED", None, item.getMarker())
                 else:
                     self.viewer_single.getScene().removeItem(item)
 

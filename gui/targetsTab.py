@@ -47,7 +47,11 @@ class TargetsTab(QtWidgets.QWidget, Ui_TargetsTab, Observer):
         elif event is "MARKER_CREATED":
             marker_tag = data.tag
             if self.current_tag == marker_tag:
-                self.sortImages(marker_tag)
+                self.filterImages(marker_tag)
+        elif event is "MARKER_DELETED":
+            marker_tag = data.tag
+            if self.current_tag == marker_tag:
+                self.filterImages(marker_tag)
         elif event is "GO_TO_IMG_IN_TAGGING_TAB":
             main_window = QtWidgets.QApplication.activeWindow()
             main_window.taggingTab.goToImage(self.current_image)
@@ -87,7 +91,7 @@ class TargetsTab(QtWidgets.QWidget, Ui_TargetsTab, Observer):
             self.current_tag = current.getTag()
             # visually shows that a current item has been selected when the tab was switched
             self.list_tags.setCurrentRow(self.list_tags.row(current))
-            self.sortImages(self.current_tag)
+            self.filterImages(self.current_tag)
         else:
             self.hideAllImageListItems()
 
