@@ -7,6 +7,7 @@ sudo apt-get install qttools5-dev-tools python-pyqt5 postgresql python-psycopg2 
 sudo -H pip install django
 sudo -H pip install setuptools
 sudo -H pip install watchdog
+sudo -H pip install multimethods
 ```
 ## 2. PostgreSQL Installation and Setup
 
