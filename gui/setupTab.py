@@ -44,8 +44,8 @@ class SetupTab(QtWidgets.QWidget, Ui_SetupTab, Observable):
         if AreaMap.objects.filter(name=area_map).exists():
             am = AreaMap.objects.filter(name=area_map).last()
         else:
-            corners_geo = loadGeotiff('./area_maps/' + area_map)
-            am = create_areamap(area_map, area_map + '.png', corners_geo[0][1], corners_geo[0][0],
+            corners_geo = loadGeotiff('./area_maps/{}'.format(area_map))
+            am = create_areamap(area_map, '{}.png'.format(area_map), corners_geo[0][1], corners_geo[0][0],
                                                              corners_geo[1][1], corners_geo[1][0],
                                                              corners_geo[2][1], corners_geo[2][0],
                                                              corners_geo[3][1], corners_geo[3][0])
