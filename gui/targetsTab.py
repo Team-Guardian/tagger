@@ -98,7 +98,7 @@ class TargetsTab(QtWidgets.QWidget, Ui_TargetsTab, Observer):
     def openImage(self, path):
         self.viewer_targets.setPhoto(QtGui.QPixmap(path))
 
-    def sortImages(self, tag):
+    def filterImages(self, tag):
         if Marker.objects.filter(tag=tag).exists():
             self.hideAllImageListItems()
             for marker in Marker.objects.filter(tag=tag):
