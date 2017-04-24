@@ -1,4 +1,4 @@
-from PyQt5 import QtWidgets, QtGui
+from PyQt5 import QtWidgets, QtGui, QtCore
 from PyQt5.QtWidgets import QDialog
 from PyQt5.QtGui import QPixmap
 from PyQt5.QtCore import QRect
@@ -27,6 +27,7 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
 
         self.setupUi(self)
         self.connectButtons()
+        self.radioButton_allImages.setChecked(True)
 
         self.image_list_item_dict = {}
         self.tag_dialog = TagDialog()
@@ -52,6 +53,10 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
         self.button_removeTag.clicked.connect(self.removeTag)
 
         self.list_images.currentItemChanged.connect(self.currentImageChanged)
+        self.radioButton_allImages.clicked.connect(self.allImagesButtonToggled)
+        self.radioButton_reviewed.clicked.connect(self.reviewedButtonToggled)
+        self.radioButton_notReviewed.clicked.connect(self.notReviewedButtonToggled)
+
         self.button_toggleReviewed.clicked.connect(self.toggleImageReviewed)
         self.button_previous.clicked.connect(self.previousImage)
         self.button_next.clicked.connect(self.nextImage)
@@ -60,6 +65,7 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
     def addTag(self):
         self.tag_dialog.setWindowTitle("Create tag")
         self.tag_dialog.tagType.setText('')
+        self.tag_dialog.tagType.setFocus()
         self.tag_dialog.subtype.setText('')
         self.tag_dialog.icons.setCurrentIndex(0)
         if self.tag_dialog.exec_() == QDialog.Accepted:
@@ -95,6 +101,7 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
             icon = tag.symbol
             self.tag_dialog.setWindowTitle("Edit tag")
             self.tag_dialog.tagType.setText(tagType)
+            self.tag_dialog.tagType.setFocus()
             self.tag_dialog.subtype.setText(subtype)
             self.tag_dialog.addIcon(icon) # Show the current symbol in the list
             index = self.tag_dialog.icons.findText(icon)
@@ -103,7 +110,6 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
                 if len(self.tag_dialog.tagType.text()) > 0 and len(self.tag_dialog.subtype.text()) > 0:
                     tag.type = self.tag_dialog.tagType.text()
                     tag.subtype = self.tag_dialog.subtype.text()
-                    tag.num_occurrences = -1
                     tag.symbol = self.tag_dialog.icons.currentText()
                     tag.save()
 
@@ -116,7 +122,7 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
                             image_width = self.currentImage.width
                             image_height = self.currentImage.height
                             reference_altitude = self.currentFlight.reference_altitude
-                            marker_list = self.getMarkersForImage(self.currentImage)
+                            marker_list = self.getMarkersForImage()
                             for marker in marker_list:
                                 x, y = getPixelFromLatLon(self.currentImage, image_width, image_height, reference_altitude, \
                                                           marker.latitude, marker.longitude)
@@ -203,18 +209,24 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
 
     def toggleImageReviewed(self):
         item = self.list_images.currentItem()
+        image = item.getImage()
+
         if item:
             font = item.font()
+            image.is_reviewed = True
+            if not font.bold():
+                image.is_reviewed = False
+            image.save()
             font.setBold(not font.bold())
             item.setFont(font)
-            item.getImage().is_reviewed = False
 
-            # image was marked as reviewed
-            if not font.bold():
-                item.getImage().is_reviewed = True
-                self.nextImage()
+        self.images_list.setFocus()
+        self.updateList()
+        self.nextImage()
 
-            item.getImage().save()
+    def updateList(self):
+        current_button = self.image_status_buttons.checkedButton()
+        current_button.click()
 
     def addImage(self):
         paths = QtWidgets.QFileDialog.getOpenFileNames(self, "Select images", ".", "Images (*.jpg)")[0]
@@ -224,12 +236,12 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
 
     def addImageToUi(self, image):
         item = ImageListItem(image.filename, image)
-        if not image.is_reviewed:
-            font = item.font()
-            font.setBold(True)
-            item.setFont(font)
         self.list_images.addItem(item)
         self.image_list_item_dict[image] = item
+        if not image.is_reviewed:
+            font = item.font()
+            font.setBold(not font.bold())
+            item.setFont(font)
 
     def currentImageChanged(self, current, _):
         # Clear the scene
@@ -239,6 +251,7 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
 
         self.minimap.updateContourOnImageChange(self.currentImage)
         self.openImage('./flights/{}/{}'.format(self.currentFlight.img_path, self.currentImage.filename), self.viewer_single)
+        self.notifyObservers("CURRENT_IMG_CHANGED", None, None)
 
         # Display markers for this image
         image_width = self.currentImage.width
@@ -252,14 +265,36 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
                 opacity = 0.5
             self.addMarkerToUi(x, y, marker, opacity)
 
+    def allImagesButtonToggled(self):
+        for row_num in range(self.list_images.count()):
+            self.list_images.item(row_num).setHidden(False)
+
+    def reviewedButtonToggled(self):
+        for image, item in self.image_list_item_dict.iteritems():
+            item_row = self.list_images.row(item)
+            if image.is_reviewed:
+                self.list_images.item(item_row).setHidden(False)
+            else:
+                self.list_images.item(item_row).setHidden(True)
+
+    def notReviewedButtonToggled(self):
+        for image, item in self.image_list_item_dict.iteritems():
+            item_row = self.list_images.row(item)
+            if not image.is_reviewed:
+                self.list_images.item(item_row).setHidden(False)
+            else:
+                self.list_images.item(item_row).setHidden(True)
+
     def openImage(self, path, viewer):
         viewer.setPhoto(QtGui.QPixmap(path))
 
     def previousImage(self):
-        self.setImageRow(self.list_images.currentRow() - 1)
+        next_row = self.list_images.currentRow() - 1
+        self.setImageRow(next_row)
 
     def nextImage(self):
-        self.setImageRow(self.list_images.currentRow() + 1)
+        next_row = self.list_images.currentRow() + 1
+        self.setImageRow(next_row)
 
     def setImageRow(self, row):
         if 0 <= row < self.list_images.count():
@@ -344,6 +379,10 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
             pixmap = QPixmap(image_path)
             fileSaveDialog = QtWidgets.QFileDialog()
             fileSaveDialog.setWindowTitle('Save Image')
+            savedImagesPath = FLIGHT_DIRECTORY + '{}/saved-images'.format(self.currentFlight.img_path)
+            if not os.path.exists(savedImagesPath):
+                os.makedirs(savedImagesPath)
+            fileSaveDialog.setDirectory(savedImagesPath)
             fileSaveDialog.setAcceptMode(QtWidgets.QFileDialog.AcceptSave)
             fileSaveDialog.setNameFilter('Images (*.jpg)')
             fileSaveDialog.setDefaultSuffix('.jpg')
