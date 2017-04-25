@@ -25,6 +25,11 @@ class Scale(Observer):
         # text box to show distance that scale represents
         self.distance_text_box = QtWidgets.QGraphicsTextItem()
 
+        # create a group for easy graphic items manipulation
+        self.scale_item_group = QtWidgets.QGraphicsItemGroup()
+
+        self.addGraphicsItemsToGroup()
+
         # empty graphics view object to be filled by PhotoViewer
         self.graphics_view = None
 
@@ -33,6 +38,13 @@ class Scale(Observer):
 
         # apply style to the scale lines
         self.setScaleStyle()
+
+    def addGraphicsItemsToGroup(self):
+        self.scale_item_group.addToGroup(self.horizontal_line)
+        self.scale_item_group.addToGroup(self.vertical_line_start)
+        self.scale_item_group.addToGroup(self.vertical_line_middle)
+        self.scale_item_group.addToGroup(self.vertical_line_end)
+        self.scale_item_group.addToGroup(self.distance_text_box)
 
     # class setters
     def setGraphicsView(self, photoviewer_graphics_view):
@@ -166,6 +178,13 @@ class Scale(Observer):
         return (self.graphics_view.mapToScene(0, self.graphics_view.viewport().size().height()).y() -
                                       self.graphics_view.mapToScene(0, 0).y())
 
+    # # loop through all items shown in the scene and delete items that belong to Scale class
+    # def deleteScaleFromScene(self):
+    #     for item in self.graphics_view.getScene().items():
+    #         if item == self.scale_item_group:
+    #             self.graphics_view.getScene().removeItem(item)
+    #             return
+
     # loop through all items shown in the scene and delete items that belong to Scale class
     def deleteScaleFromScene(self):
         for item in self.graphics_view.getScene().items():
@@ -174,6 +193,7 @@ class Scale(Observer):
                 self.graphics_view.getScene().removeItem(item)
 
     def addScaleToScene(self):
+        # self.graphics_view.getScene().addItem(self.scale_item_group)
         self.graphics_view.getScene().addItem(self.horizontal_line)
         self.graphics_view.getScene().addItem(self.vertical_line_start)
         self.graphics_view.getScene().addItem(self.vertical_line_middle)
@@ -190,3 +210,28 @@ class Scale(Observer):
         y_end_coord_in_viewport = y_start_coord_in_viewport
         scene_point_default_end = self.graphics_view.mapToScene(x_end_coord_in_viewport, y_end_coord_in_viewport)
         return scene_point_start, scene_point_default_end
+
+    def paintScaleOnSavedImage(self, filename, scene_cropping_rect):
+        saved_image = QtGui.QImage(filename)
+        painter_device = QtGui.QPainter(saved_image)
+        removed_items = self.prepareSceneForScaleCapture()
+        if scene_cropping_rect is not None:
+            print scene_cropping_rect
+            self.graphics_view.getScene().render(painter_device, QtCore.QRectF(scene_cropping_rect))
+        else:
+            self.graphics_view.getScene().render(painter_device)
+        painter_device.end()
+        saved_image.save('{}_with_scale'.format(filename), format='jpg', quality=100)
+        self.restoreSceneAfterScaleCapture(removed_items)
+
+    def prepareSceneForScaleCapture(self):
+        removed_items = []
+        for item in self.graphics_view.getScene().items():
+            if item != self.horizontal_line and item != self.vertical_line_start and item != self.vertical_line_end and item != self.vertical_line_middle and item != self.distance_text_box:
+                self.graphics_view.getScene().removeItem(item)
+                removed_items.append(item)
+        return removed_items
+
+    def restoreSceneAfterScaleCapture(self, items_to_restore):
+        for item in items_to_restore:
+            self.graphics_view.getScene().addItem(item)

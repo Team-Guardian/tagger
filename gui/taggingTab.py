@@ -394,10 +394,12 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
             fileSaveDialog.setAcceptMode(QtWidgets.QFileDialog.AcceptSave)
             fileSaveDialog.setNameFilter('Images (*.jpg)')
             fileSaveDialog.setDefaultSuffix('.jpg')
+            cropping_rect = None
             if fileSaveDialog.exec_() == QtWidgets.QFileDialog.Accepted:
                 fName = fileSaveDialog.selectedFiles()[0]
                 if self.viewer_single.zoomFactor() == 0: # This means that the image is fully zoomed out
                     pixmap.save(fName, format='jpg', quality=100)
+                    self.viewer_single.getScale().paintScaleOnSavedImage(fName, cropping_rect)
                 else:
                     save_image_width = imageBottomRightPixel.x() - imageTopLeftPixel.x()
                     save_image_height = imageBottomRightPixel.y() - imageTopLeftPixel.y()
@@ -405,4 +407,5 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
                                           save_image_width, save_image_height)
                     cropped_pixmap = pixmap.copy(cropping_rect)
                     cropped_pixmap.save(fName, format='jpg', quality=100)
+                    self.viewer_single.getScale().paintScaleOnSavedImage(fName, cropping_rect)
 
