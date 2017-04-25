@@ -8,7 +8,7 @@ HEIGHT_OFFSET = 70
 WIDTH_OFFSET = 70
 
 # default starting values
-DEFAULT_SCALE_WIDTH_FRACTION = 0.15
+DEFAULT_SCALE_WIDTH_FRACTION = 0.20
 DEFAULT_FONT_POINT_SIZE = 25
 DEFAULT_PEN_WIDTH = 6
 
@@ -55,12 +55,12 @@ class Scale(Observer):
 
     def adjustScalePenThickness(self, current_pen):
         if self.graphics_view is not None:
-            current_pen.setWidth(self.getVisibleImageRegionHeight() * 0.00175)
+            current_pen.setWidth(self.getVisibleImageRegionHeight() * 0.00425)
         return current_pen
 
     def adjustScaleTextBoxFontSize(self, current_font):
         if self.graphics_view is not None:
-            current_font.setPointSize(self.getVisibleImageRegionHeight() * 0.015)
+            current_font.setPointSize(self.getVisibleImageRegionHeight() * 0.0225)
         return current_font
 
     def setPenToGraphicsItems(self, pen):
@@ -140,26 +140,26 @@ class Scale(Observer):
         x_start = x_pos
         y_start = y_pos
         x_end = x_start
-        y_end = y_pos - (self.getVisibleImageRegionHeight() * 0.011)
+        y_end = y_pos - (self.getVisibleImageRegionHeight() * 0.0225)
         return x_start, y_start, x_end, y_end
 
     def getEndVerticalLineCoordinates(self, x_pos, y_pos, scale_width):
         x_start = x_pos - scale_width
         y_start = y_pos
         x_end = x_start
-        y_end = y_pos - (self.getVisibleImageRegionHeight() * 0.011)
+        y_end = y_pos - (self.getVisibleImageRegionHeight() * 0.0225)
         return x_start, y_start, x_end, y_end
 
     def getMiddleLineCoordinates(self, x_pos, y_pos, scale_width):
         x_start = x_pos - (scale_width/2)
         y_start = y_pos
         x_end = x_start
-        y_end = y_pos - (self.getVisibleImageRegionHeight() * 0.006)
+        y_end = y_pos - (self.getVisibleImageRegionHeight() * 0.0125)
         return x_start, y_start, x_end, y_end
 
     def getTextboxOffset(self, x_pos, y_pos, scale_width):
         x = x_pos - scale_width
-        y = y_pos - (self.getVisibleImageRegionHeight() * 0.055)
+        y = y_pos - (self.getVisibleImageRegionHeight() * 0.0725)
         return x, y
 
     def getVisibleImageRegionHeight(self):
