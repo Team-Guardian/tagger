@@ -227,7 +227,7 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
             font.setBold(not font.bold())
             item.setFont(font)
 
-        self.images_list.setFocus()
+        self.list_images.setFocus()
         self.updateList()
         self.nextImage()
 
