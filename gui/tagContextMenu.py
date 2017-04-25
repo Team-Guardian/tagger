@@ -1,4 +1,5 @@
-from PyQt5 import QtWidgets, QtCore
+from PyQt5 import QtWidgets
+from db.models import Tag
 
 
 class TagContextMenu(QtWidgets.QMenu):
@@ -23,7 +24,7 @@ class TagContextMenu(QtWidgets.QMenu):
     def updateTagItem(self, tag_to_update):
         for action, tag in self.action_data_dict.iteritems():
             if tag == tag_to_update:
-                action.setText(tag.type + ", " + tag.subtype)
+                action.setText('{}, {}'.format(tag.type, tag.subtype))
 
     def removeTagItem(self, tag_to_remove):
         action_to_remove = None
@@ -48,3 +49,12 @@ class TagContextMenu(QtWidgets.QMenu):
         default_action_handle = self.addAction("(No tags)")
         default_action_handle.setEnabled(False)
         return default_action_handle
+
+    def synchronizeWithDatabase(self):
+        for action, tag in self.action_data_dict.iteritems():
+            updated_tag = Tag.objects.get(pk=tag.pk)
+            self.action_data_dict[action] = updated_tag
+
+    def exec_(self, position):
+        self.synchronizeWithDatabase()
+        return super(TagContextMenu, self).exec_(position)

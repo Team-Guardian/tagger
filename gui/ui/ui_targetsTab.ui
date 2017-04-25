@@ -37,7 +37,10 @@
         <item>
          <widget class="QLineEdit" name="line_searchImages">
           <property name="text">
-           <string>search image by name</string>
+           <string/>
+          </property>
+          <property name="placeholderText">
+           <string>Search image by name</string>
           </property>
          </widget>
         </item>

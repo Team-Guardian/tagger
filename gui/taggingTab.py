@@ -200,7 +200,6 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
             if tableTag == tag:
                 self.list_tags.setItem(rowIndex, TAG_TABLE_INDICES['COUNT'], TagTableItem(str(tag.num_occurrences), tag))
 
-    # TODO: Is this method used anywhere?
     def deleteMarkersFromUi(self, tag=None):
         sceneObjects = self.viewer_single.getScene().items()
         for item in sceneObjects:
@@ -208,9 +207,10 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
                 if tag != None:
                     if item.getMarker().tag == tag:
                         self.viewer_single.getScene().removeItem(item)
-                        item.getMarker().tag.num_occurrences -= 1
-                        item.getMarker().tag.save()
-                        self.notifyObservers("MARKER_DELETED", None, item.getMarker())
+                        marker_to_delete_from_ui = item.getMarker()
+                        marker_to_delete_from_ui.tag.num_occurrences -= 1
+                        marker_to_delete_from_ui.tag.save()
+                        self.notifyObservers("MARKER_DELETED", None, marker_to_delete_from_ui)
                 else:
                     self.viewer_single.getScene().removeItem(item)
 
