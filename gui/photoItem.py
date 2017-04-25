@@ -22,6 +22,7 @@ class PhotoItem(QtWidgets.QGraphicsPixmapItem, Observable):
         elif event.button() == QtCore.Qt.RightButton:
             current_tab_index = QtWidgets.QApplication.activeWindow().ui.tabWidget.currentIndex()
             if current_tab_index == TAB_INDICES['TAB_TAGGING']:
+                self.tag_context_menu.update_action_tuples()
                 current_action = self.tag_context_menu.exec_(event.screenPos())
                 for _tag, _action in self.tag_context_menu.tag_action_tuples:
                     if current_action == _action:

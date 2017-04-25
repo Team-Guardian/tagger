@@ -39,8 +39,10 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
             self.addMarker(data)
         elif event is "MARKER_DELETED":
             self.viewer_single.getScene().removeItem(data)
-            data.getMarker().tag.num_occurrences -= 1
-            data.getMarker().tag.save()
+            print 'event:MARKER_DELETED -1'
+            current_marker = data.getMarker()
+            current_marker.tag.num_occurrences -= 1
+            current_marker.tag.save()
             self.updateTagMarkerCountInUi(data.getMarker().tag)
             delete_marker(data.getMarker())
         elif event is "MARKER_PARENT_IMAGE_CHANGE":
@@ -160,6 +162,7 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
         pv = event.scenePos().y()
         lat, lon = geolocateLatLonFromPixel(self.currentImage, self.currentFlight.reference_altitude, pu, pv)
         m = create_marker(tag=tag, image=self.currentImage, latitude=lat, longitude=lon)
+        print 'addMarker +1'
         m.tag.num_occurrences += 1
         m.tag.save()
 
@@ -193,6 +196,7 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
         for rowIndex in range(self.list_tags.rowCount()):
             tableTag = self.list_tags.item(rowIndex, TAG_TABLE_INDICES['COUNT']).getTag()
             if tableTag == tag:
+                print 'upd: ', tag.num_occurrences
                 self.list_tags.setItem(rowIndex, TAG_TABLE_INDICES['COUNT'], TagTableItem(str(tag.num_occurrences), tag))
 
     def deleteMarkersFromUi(self, tag=None):
@@ -202,8 +206,10 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
                 if tag != None:
                     if item.getMarker().tag == tag:
                         self.viewer_single.getScene().removeItem(item)
+                        print 'deleteMarkersFromUi -1'
                         item.getMarker().tag.num_occurrences -= 1
                         item.getMarker().tag.save()
+                        # print 'after: ', item.getMarker().tag.num_occurrences
                 else:
                     self.viewer_single.getScene().removeItem(item)
 
