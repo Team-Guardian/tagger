@@ -26,9 +26,8 @@ class Scale(Observer):
         self.distance_text_box = QtWidgets.QGraphicsTextItem()
 
         # create a group for easy graphic items manipulation
-        self.scale_item_group = QtWidgets.QGraphicsItemGroup()
-
-        self.addGraphicsItemsToGroup()
+        self.scale_items_list = []
+        self.addGraphicsItemsToList()
 
         # empty graphics view object to be filled by PhotoViewer
         self.graphics_view = None
@@ -39,12 +38,12 @@ class Scale(Observer):
         # apply style to the scale lines
         self.setScaleStyle()
 
-    def addGraphicsItemsToGroup(self):
-        self.scale_item_group.addToGroup(self.horizontal_line)
-        self.scale_item_group.addToGroup(self.vertical_line_start)
-        self.scale_item_group.addToGroup(self.vertical_line_middle)
-        self.scale_item_group.addToGroup(self.vertical_line_end)
-        self.scale_item_group.addToGroup(self.distance_text_box)
+    def addGraphicsItemsToList(self):
+        self.scale_items_list.append(self.horizontal_line)
+        self.scale_items_list.append(self.vertical_line_start)
+        self.scale_items_list.append(self.vertical_line_middle)
+        self.scale_items_list.append(self.vertical_line_end)
+        self.scale_items_list.append(self.distance_text_box)
 
     # class setters
     def setGraphicsView(self, photoviewer_graphics_view):
@@ -107,7 +106,10 @@ class Scale(Observer):
             reduced_distance_in_meters = distance_in_meters - (distance_in_meters % ROUNDING_FACTOR)
 
             # Using proportions, find the width of the scale that will correspond to the "pretty" distance
-            scale_width_in_pixels = (x_start - default_x_end) * (reduced_distance_in_meters / distance_in_meters)
+            if distance_in_meters != 0:
+                scale_width_in_pixels = (x_start - default_x_end) * (reduced_distance_in_meters / distance_in_meters)
+            else:
+                scale_width_in_pixels = 0
 
             self.distance_text_box.setHtml('{} m'.format(reduced_distance_in_meters))
 
@@ -181,7 +183,7 @@ class Scale(Observer):
     # # loop through all items shown in the scene and delete items that belong to Scale class
     # def deleteScaleFromScene(self):
     #     for item in self.graphics_view.getScene().items():
-    #         if item == self.scale_item_group:
+    #         if item == self.scale_items_group:
     #             self.graphics_view.getScene().removeItem(item)
     #             return
 
@@ -193,7 +195,6 @@ class Scale(Observer):
                 self.graphics_view.getScene().removeItem(item)
 
     def addScaleToScene(self):
-        # self.graphics_view.getScene().addItem(self.scale_item_group)
         self.graphics_view.getScene().addItem(self.horizontal_line)
         self.graphics_view.getScene().addItem(self.vertical_line_start)
         self.graphics_view.getScene().addItem(self.vertical_line_middle)
@@ -211,17 +212,19 @@ class Scale(Observer):
         scene_point_default_end = self.graphics_view.mapToScene(x_end_coord_in_viewport, y_end_coord_in_viewport)
         return scene_point_start, scene_point_default_end
 
-    def paintScaleOnSavedImage(self, filename, scene_cropping_rect):
-        saved_image = QtGui.QImage(filename)
+    def paintScaleOnSavedImage(self, image_root, filename, scene_cropping_rect=None):
+        saved_image_path = image_root + "/" + filename
+        # saved_image = QtGui.QImage(2448, 2048, QtGui.QImage.Format_ARGB32_Premultiplied)
+        saved_image = QtGui.QImage(saved_image_path)
         painter_device = QtGui.QPainter(saved_image)
         removed_items = self.prepareSceneForScaleCapture()
         if scene_cropping_rect is not None:
             print scene_cropping_rect
-            self.graphics_view.getScene().render(painter_device, QtCore.QRectF(scene_cropping_rect))
+            self.graphics_view.getScene().render(painter_device, QtCore.QRectF(saved_image.rect()), QtCore.QRectF(scene_cropping_rect))
         else:
             self.graphics_view.getScene().render(painter_device)
         painter_device.end()
-        saved_image.save('{}_with_scale'.format(filename), format='jpg', quality=100)
+        saved_image.save(saved_image_path, format='png', quality=100)
         self.restoreSceneAfterScaleCapture(removed_items)
 
     def prepareSceneForScaleCapture(self):
