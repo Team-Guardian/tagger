@@ -4,6 +4,7 @@ from ui.ui_mapTab import Ui_MapTab
 from gui.imageListItem import ImageListItem
 from utils.geographicUtilities import Point, PolygonBounds
 from utils.geolocate import geolocateLatLonFromPixel
+from mapContextMenu import MapContextMenu
 from observer import *
 
 
@@ -28,6 +29,9 @@ class MapTab(QtWidgets.QWidget, Ui_MapTab, Observer):
         # Sets a transparent pixmap to initialize the size of the PhotoViewer
         self.createAndSetPlaceholderAreaPixmap()
 
+        self.map_context_menu = MapContextMenu()
+        self.viewer_map._photo.setTabContextMenu(self.map_context_menu)
+
         # Connect tab buttons and clickable items to event handlers
         self.button_search.clicked.connect(self.search)
         self.list_allImages.currentItemChanged.connect(self.currentImageChanged)
@@ -36,14 +40,14 @@ class MapTab(QtWidgets.QWidget, Ui_MapTab, Observer):
 
     def notify(self, event, id, data):
         if event is "FIND_IMAGES":
-            point_pixel_x_coord = self.viewer_map.getPhotoItem().map_context_menu.pixel_x_invocation_coord
-            point_pixel_y_coord = self.viewer_map.getPhotoItem().map_context_menu.pixel_y_invocation_coord
+            point_pixel_x_coord = self.map_context_menu.pixel_x_invocation_coord
+            point_pixel_y_coord = self.map_context_menu.pixel_y_invocation_coord
             point_lat, point_lon = self.geolocatePoint(point_pixel_x_coord, point_pixel_y_coord)
             self.findImagesContainingPoint(point_lat, point_lon)
 
         elif event is "COPY_LAT_LON":
-            point_pixel_x_coord = self.viewer_map.getPhotoItem().map_context_menu.pixel_x_invocation_coord
-            point_pixel_y_coord = self.viewer_map.getPhotoItem().map_context_menu.pixel_y_invocation_coord
+            point_pixel_x_coord = self.map_context_menu.pixel_x_invocation_coord
+            point_pixel_y_coord = self.map_context_menu.pixel_y_invocation_coord
             point_lat, point_lon = self.geolocatePoint(point_pixel_x_coord, point_pixel_y_coord)
             self.copyPointLatLonToClipboard(point_lat, point_lon)
 

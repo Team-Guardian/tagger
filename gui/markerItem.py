@@ -1,5 +1,6 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
 from observer import *
+from db.models import Marker
 from tagDialog import ICON_DIRECTORY
 
 
@@ -42,4 +43,8 @@ class MarkerItem(QtWidgets.QGraphicsPixmapItem, Observable):
                 self.notifyObservers("MARKER_PARENT_IMAGE_CHANGE", None, self.marker.image)
 
     def getMarker(self):
+        self.synchronizeWithDatabase()
         return self.marker
+
+    def synchronizeWithDatabase(self):
+        self.marker = Marker.objects.get(pk=self.marker.pk)

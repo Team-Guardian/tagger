@@ -12,6 +12,7 @@ from utils.geolocate import geolocateLatLonFromPixel, getPixelFromLatLon
 from utils.geographicUtilities import *
 from gui.imageListItem import ImageListItem
 from gui.tagTableItem import TagTableItem
+from gui.tagContextMenu import TagContextMenu
 from markerItem import MarkerItem
 
 from utils.imageInfo import FLIGHT_DIRECTORY
@@ -32,6 +33,9 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
         self.image_list_item_dict = {}
         self.tag_dialog = TagDialog()
 
+        self.tagging_tab_context_menu = TagContextMenu()
+        self.viewer_single._photo.setTabContextMenu(self.tagging_tab_context_menu)
+
         self.viewer_single.getPhotoItem().addObserver(self)
 
     def notify(self, event, id, data):
@@ -39,10 +43,12 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
             self.addMarker(data)
         elif event is "MARKER_DELETED":
             self.viewer_single.getScene().removeItem(data)
-            data.getMarker().tag.num_occurrences -= 1
-            data.getMarker().tag.save()
-            self.updateTagMarkerCountInUi(data.getMarker().tag)
-            delete_marker(data.getMarker())
+            marker_to_delete = data.getMarker()
+            marker_to_delete.tag.num_occurrences -= 1
+            marker_to_delete.tag.save()
+            self.updateTagMarkerCountInUi(marker_to_delete.tag)
+            delete_marker(marker_to_delete)
+            self.notifyObservers("MARKER_DELETED", None, marker_to_delete)
         elif event is "MARKER_PARENT_IMAGE_CHANGE":
             if data in self.image_list_item_dict:
                 self.list_images.setCurrentItem(self.image_list_item_dict.get(data))
@@ -87,7 +93,7 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
         [self.list_tags.setItem(row, col, TagTableItem(text, tag)) for col, text in enumerate(texts)]
 
         # add tag to context menu
-        self.viewer_single.getPhotoItem().tag_context_menu.addTagToContextMenu(tag)
+        self.tagging_tab_context_menu.addTagToContextMenu(tag)
 
         # Update the drop-down menu for adding/editing tags
         self.tag_dialog.removeIcon(tag.symbol)
@@ -138,7 +144,7 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
                     [self.list_tags.setItem(row, col, TagTableItem(text, tag)) for col, text in enumerate(texts)]
 
                     # update tag in context menu
-                    self.viewer_single.getPhotoItem().tag_context_menu.updateTagItem(tag)
+                    self.tagging_tab_context_menu.updateTagItem(tag)
 
                     self.notifyObservers("TAG_EDITED", None, tag)
             else:
@@ -149,15 +155,14 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
         tag = self.list_tags.item(row, 0).getTag()
         if row >= 0:
             self.list_tags.removeRow(row)
-            self.viewer_single.getPhotoItem().tag_context_menu.removeTagItem(tag)
+            self.tagging_tab_context_menu.removeTagItem(tag)
             self.deleteMarkersFromUi(tag=tag)
             self.tag_dialog.addIcon(tag.symbol)
             self.notifyObservers("TAG_DELETED", None, tag)
 
-    def addMarker(self, data):
-        event, tag = data
-        pu = event.scenePos().x()
-        pv = event.scenePos().y()
+    def addMarker(self, tag):
+        pu = self.tagging_tab_context_menu.pixel_x_invocation_coord
+        pv = self.tagging_tab_context_menu.pixel_y_invocation_coord
         lat, lon = geolocateLatLonFromPixel(self.currentImage, self.currentFlight.reference_altitude, pu, pv)
         m = create_marker(tag=tag, image=self.currentImage, latitude=lat, longitude=lon)
         m.tag.num_occurrences += 1
@@ -202,8 +207,10 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
                 if tag != None:
                     if item.getMarker().tag == tag:
                         self.viewer_single.getScene().removeItem(item)
-                        item.getMarker().tag.num_occurrences -= 1
-                        item.getMarker().tag.save()
+                        marker_to_delete_from_ui = item.getMarker()
+                        marker_to_delete_from_ui.tag.num_occurrences -= 1
+                        marker_to_delete_from_ui.tag.save()
+                        self.notifyObservers("MARKER_DELETED", None, marker_to_delete_from_ui)
                 else:
                     self.viewer_single.getScene().removeItem(item)
 
@@ -220,7 +227,7 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
             font.setBold(not font.bold())
             item.setFont(font)
 
-        self.images_list.setFocus()
+        self.list_images.setFocus()
         self.updateList()
         self.nextImage()
 
@@ -242,6 +249,13 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
             font = item.font()
             font.setBold(not font.bold())
             item.setFont(font)
+
+    def goToImage(self, selected_image):
+        item = self.image_list_item_dict.get(selected_image)
+        if item:
+            item_row = self.list_images.row(item)
+            self.list_images.setCurrentRow(item_row)
+            self.list_images.scrollToItem(item, QtWidgets.QAbstractItemView.PositionAtCenter)
 
     def currentImageChanged(self, current, _):
         # Clear the scene
@@ -352,7 +366,7 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
 
         # clear all tags
         self.list_tags.setRowCount(0) # discards all rows and data stored in them
-        self.viewer_single.getPhotoItem().tag_context_menu.clearTagContextMenu() # clear tags from the context menu
+        self.tagging_tab_context_menu.clearTagContextMenu() # clear tags from the context menu
 
         # clear all markers
         self.deleteMarkersFromUi()
@@ -397,4 +411,3 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
                                           save_image_width, save_image_height)
                     cropped_pixmap = pixmap.copy(cropping_rect)
                     cropped_pixmap.save(fName, format='jpg', quality=100)
-
