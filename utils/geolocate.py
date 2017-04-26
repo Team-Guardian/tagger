@@ -1,5 +1,8 @@
 from math import cos, sin, sqrt, radians, degrees
 from math import acos, asin, atan2
+from multimethods import multimethod
+from db.models import *
+import utils.xmlParser
 import numpy
 
 
@@ -40,12 +43,15 @@ def getPixelFromLatLon(image, image_width, image_height, site_elevation, pixel_l
 
     return x, y
 
+@multimethod(Image, int, float, float)
 def geolocateLatLonFromPixel(img, site_elevation, pu, pv):
     lat = radians(img.latitude)
     lon = radians(img.longitude)
     # maybe these can be useful - no idea what these do
     #orig_roll = roll
     #roll = atan(cos(img.pitch)*tan(orig_roll))#RMissue:8, corrects roll for img.pitched axis
+
+    site_elevation = img.flight.reference_altitude
 
     # choose a reference location inside flight area
     latRef = radians(49.903867)
@@ -60,9 +66,7 @@ def geolocateLatLonFromPixel(img, site_elevation, pu, pv):
 
     rotationCameraToNed = createRotationCameraToNed(radians(img.pitch), radians(img.roll), radians(img.yaw))
 
-    intrinsicMatrix = numpy.array([[3446.85229, 0, 1477.50261],
-                                   [0, 3431.11804, 1002.49563],
-                                   [0, 0, 1]], dtype=numpy.float64)
+    intrinsicMatrix = utils.xmlParser.getIntrinsicMatrix(img.flight.intrinsic_matrix)
 
     # image frame (pixel location) column vector
     imagePoint = numpy.array([[pu],
@@ -98,6 +102,18 @@ def geolocateLatLonFromPixel(img, site_elevation, pu, pv):
     dLon = degrees(pixelGeodetic[1])
 
     return dLat, dLon
+
+@multimethod(Image, int, int, int)
+def geolocateLatLonFromPixel(img, site_elevation, x, y):
+    return geolocateLatLonFromPixel(img, site_elevation, float(x), float(y))
+
+# TODO: Implement in a nicer way when Geolocator class is merged
+# area map object, area map width, area map height, pixel x-coordinate, pixel y-coordinate
+@multimethod(AreaMap, float, float, float, float)
+def geolocateLatLonFromPixel(area_map, area_map_width, area_map_height, x, y):
+    lat = (y/area_map_height)*(area_map.ll_lat - area_map.ul_lat) + area_map.ul_lat
+    lon = (x/area_map_width) * (area_map.ur_lon - area_map.ul_lon) + area_map.ul_lon
+    return lat, lon
 
 #
 # Location-specific ECEF reference that serves as unique NED origin
