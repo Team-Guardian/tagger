@@ -6,6 +6,7 @@ from db.dbHelper import *
 from gui.tagListItem import TagListItem
 from gui.imageListItem import ImageListItem
 from gui.targetContextMenu import TargetContextMenu
+from utils.imageInfo import FLIGHT_DIRECTORY
 
 TAB_INDICES = {'TAB_SETUP': 0, 'TAB_TAGGING': 1, 'TAB_TARGETS': 2, 'TAB_MAP': 3}
 
@@ -96,7 +97,7 @@ class TargetsTab(QtWidgets.QWidget, Ui_TargetsTab, Observer):
 
     def currentImageChanged(self, current, _):
         self.current_image = current.getImage()
-        self.openImage('./flights/{}/{}'.format(self.current_flight.img_path, self.current_image.filename))
+        self.openImage(FLIGHT_DIRECTORY + '{}/{}'.format(self.current_flight.img_path, self.current_image.filename))
 
     def openImage(self, path):
         self.viewer_targets.setPhoto(QtGui.QPixmap(path))

@@ -16,6 +16,7 @@ from gui.tagContextMenu import TagContextMenu
 from markerItem import MarkerItem
 
 from utils.imageInfo import FLIGHT_DIRECTORY
+from utils.imageInfo import FLIGHT_DIRECTORY
 TAG_TABLE_INDICES = {'TYPE': 0, 'SUBTYPE': 1, 'COUNT': 2, 'SYMBOL': 3}
 
 class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
@@ -246,6 +247,7 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
         self.list_images.addItem(item)
         self.image_list_item_dict[image] = item
         if not image.is_reviewed:
+            # TODO: The three lines below trigger a warning on the first image from watcher.
             font = item.font()
             font.setBold(not font.bold())
             item.setFont(font)
@@ -264,7 +266,7 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
         self.currentImage = current.getImage()
 
         self.minimap.updateContourOnImageChange(self.currentImage)
-        self.openImage('./flights/{}/{}'.format(self.currentFlight.img_path, self.currentImage.filename), self.viewer_single)
+        self.openImage(FLIGHT_DIRECTORY + '{}/{}'.format(self.currentFlight.img_path, self.currentImage.filename), self.viewer_single)
         self.notifyObservers("CURRENT_IMG_CHANGED", None, None)
 
         # Display markers for this image
