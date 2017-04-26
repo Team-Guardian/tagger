@@ -3,6 +3,7 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
 from photoItem import PhotoItem
 from markerItem import MarkerItem
+from scale import Scale
 
 
 class PhotoViewer(QtWidgets.QGraphicsView):
@@ -11,6 +12,7 @@ class PhotoViewer(QtWidgets.QGraphicsView):
         self._zoom = 0
         self._scene = QtWidgets.QGraphicsScene(self)
         self._photo = PhotoItem()
+        self._scale = Scale()
         self._scene.addItem(self._photo)
         self.setScene(self._scene)
         self.setTransformationAnchor(QtWidgets.QGraphicsView.AnchorUnderMouse)
@@ -19,6 +21,8 @@ class PhotoViewer(QtWidgets.QGraphicsView):
         self.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
         self.setBackgroundBrush(QtGui.QBrush(QtGui.QColor(30, 30, 30)))
         self.setFrameShape(QtWidgets.QFrame.NoFrame)
+
+        self._scale.setGraphicsView(self)
 
     def fitInView(self):
         rect = QtCore.QRectF(self._photo.pixmap().rect())
@@ -76,11 +80,19 @@ class PhotoViewer(QtWidgets.QGraphicsView):
             else:
                 self._zoom = 0
 
+            self.updateScale()
+
+    def updateScale(self):
+        self._scale.updateScale()
+
     def isImageNull(self):
         return self._photo.pixmap().isNull()
 
     def getImageSize(self):
         return self._photo.pixmap().rect()
+
+    def getScale(self):
+        return self._scale
 
     def getScene(self):
         return self._scene

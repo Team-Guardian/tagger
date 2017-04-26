@@ -14,6 +14,7 @@ from gui.imageListItem import ImageListItem
 from gui.tagTableItem import TagTableItem
 from gui.tagContextMenu import TagContextMenu
 from markerItem import MarkerItem
+from utils.imageInfo import GetDirectoryAndFilenameFromFullPath
 
 from utils.imageInfo import FLIGHT_DIRECTORY
 TAG_TABLE_INDICES = {'TYPE': 0, 'SUBTYPE': 1, 'COUNT': 2, 'SYMBOL': 3}
@@ -261,11 +262,19 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
         # Clear the scene
         self.deleteMarkersFromUi()
 
+        # update current image
         self.currentImage = current.getImage()
+        self.viewer_single.getScale().setCurrentImage(self.currentImage)
 
+        # update widgets
         self.minimap.updateContourOnImageChange(self.currentImage)
+
+        # open image and notify observers that it has changed
         self.openImage('./flights/{}/{}'.format(self.currentFlight.img_path, self.currentImage.filename), self.viewer_single)
         self.notifyObservers("CURRENT_IMG_CHANGED", None, None)
+
+        # udpate scale
+        self.viewer_single.updateScale()
 
         # Display markers for this image
         image_width = self.currentImage.width
@@ -389,25 +398,28 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
         imageTopLeftPixel = self.viewer_single.mapToScene(0, 0) # Currently displayed top left pixel
         imageBottomRightPixel = self.viewer_single.mapToScene(scene_width, scene_height) # Currently displayed bottom right pixel
         if self.currentImage != None:
-            image_path = FLIGHT_DIRECTORY + '{}/{}'.format(self.currentFlight.img_path, self.currentImage.filename)
+            flight_root = FLIGHT_DIRECTORY + '{}'.format(self.currentFlight.img_path)
+            image_path = flight_root + '/{}'.format(self.currentImage.filename)
             pixmap = QPixmap(image_path)
             fileSaveDialog = QtWidgets.QFileDialog()
             fileSaveDialog.setWindowTitle('Save Image')
-            savedImagesPath = FLIGHT_DIRECTORY + '{}/saved-images'.format(self.currentFlight.img_path)
-            if not os.path.exists(savedImagesPath):
-                os.makedirs(savedImagesPath)
-            fileSaveDialog.setDirectory(savedImagesPath)
+            path_to_saved_image = FLIGHT_DIRECTORY + '{}/saved-images'.format(self.currentFlight.img_path)
+            if not os.path.exists(path_to_saved_image):
+                os.makedirs(path_to_saved_image)
+            fileSaveDialog.setDirectory(path_to_saved_image)
             fileSaveDialog.setAcceptMode(QtWidgets.QFileDialog.AcceptSave)
-            fileSaveDialog.setNameFilter('Images (*.jpg)')
-            fileSaveDialog.setDefaultSuffix('.jpg')
+            fileSaveDialog.setNameFilter('Images (*.png)')
+            fileSaveDialog.setDefaultSuffix('.png')
             if fileSaveDialog.exec_() == QtWidgets.QFileDialog.Accepted:
-                fName = fileSaveDialog.selectedFiles()[0]
+                target_filepath = fileSaveDialog.selectedFiles()[0]
                 if self.viewer_single.zoomFactor() == 0: # This means that the image is fully zoomed out
-                    pixmap.save(fName, format='jpg', quality=100)
+                    pixmap.save(target_filepath, format='png', quality=100)
+                    self.viewer_single.getScale().paintScaleOnSavedImage(path_to_saved_image, GetDirectoryAndFilenameFromFullPath(target_filepath)[1])
                 else:
                     save_image_width = imageBottomRightPixel.x() - imageTopLeftPixel.x()
                     save_image_height = imageBottomRightPixel.y() - imageTopLeftPixel.y()
                     cropping_rect = QRect(imageTopLeftPixel.x(), imageTopLeftPixel.y(), \
                                           save_image_width, save_image_height)
                     cropped_pixmap = pixmap.copy(cropping_rect)
-                    cropped_pixmap.save(fName, format='jpg', quality=100)
+                    cropped_pixmap.save(target_filepath, format='png', quality=100)
+                    self.viewer_single.getScale().paintScaleOnSavedImage(path_to_saved_image, GetDirectoryAndFilenameFromFullPath(target_filepath)[1], cropping_rect)
