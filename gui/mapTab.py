@@ -112,7 +112,17 @@ class MapTab(QtWidgets.QWidget, Ui_MapTab, Observer):
         # update currentImage with selected item
         self.current_image = current.getImage()
 
-        # highlight the corresponding contour with a different color
+        # remove the contour for the current image
+        self.removeCurrentContourFromScene()
+
+        # create a contour for current image on the top layer
+        item = ImageListItem(self.current_image.filename, self.current_image)
+        contour = self.createImageContour(self.current_image)
+        # pair contour and corresponding image in a dict
+        self.image_list_contour_and_item_dict[self.current_image] = [item, contour]
+        self.updateAndShowContoursOnAreamap(contour)
+
+        # highlight the current contour with a different color
         self.highlightCurrentImageContour()
 
     # Class utility functions
@@ -229,6 +239,12 @@ class MapTab(QtWidgets.QWidget, Ui_MapTab, Observer):
     def clearScene(self):
         for item in self.viewer_map._scene.items():
             self.viewer_map._scene.removeItem(item)
+
+    def removeCurrentContourFromScene(self):
+        if self.current_image is not None:
+            # extract the contour from dictionary (don't care about the current item)
+            _, current_contour = self.image_list_contour_and_item_dict[self.current_image]
+            self.viewer_map._scene.removeItem(current_contour)
 
     def removeContoursFromScene(self):
         for item in  self.viewer_map._scene.items():
