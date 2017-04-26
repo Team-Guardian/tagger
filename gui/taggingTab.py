@@ -330,31 +330,9 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
         _list = list(Marker.objects.filter(image=image)) # Convert QuerySet to a list
 
         for m in Marker.objects.filter(image__flight=self.currentFlight).exclude(image=image):
-            image_width = image.width
-            image_height = image.height
-
-            image_bounds = PolygonBounds()
-
-            #The order of UL UR LR LL is important
-            # Upper Left
-            lat, lon = geolocateLatLonFromPixel(image, self.currentFlight.reference_altitude, 0, 0)
-            image_bounds.addVertex(Point(lat, lon))
-
-            # Upper Right
-            lat, lon = geolocateLatLonFromPixel(image, self.currentFlight.reference_altitude, image_width, 0)
-            image_bounds.addVertex(Point(lat, lon))
-
-            # Lower Right
-            lat, lon = geolocateLatLonFromPixel(image, self.currentFlight.reference_altitude, image_width, image_height)
-            image_bounds.addVertex(Point(lat, lon))
-
-            # Lower Left
-            lat, lon = geolocateLatLonFromPixel(image, self.currentFlight.reference_altitude, 0, image_height)
-            image_bounds.addVertex(Point(lat, lon))
-
-            marker_loc = Point(m.latitude, m.longitude)
-
-            if image_bounds.isPointInsideBounds(marker_loc):
+            top_left_pixel = QtCore.QPoint(0,0)
+            bottom_right_pixel = QtCore.QPoint(image.width, image.height)
+            if self.isMarkerInBounds(m, top_left_pixel, bottom_right_pixel):
                 _list.append(m)
 
         return _list
@@ -399,6 +377,7 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
             if not os.path.exists(savedImagesPath):
                 os.makedirs(savedImagesPath)
             fileSaveDialog.setDirectory(savedImagesPath)
+            self.generateFilenameForSavedImage(imageTopLeftPixel, imageBottomRightPixel)
             fileSaveDialog.setAcceptMode(QtWidgets.QFileDialog.AcceptSave)
             fileSaveDialog.setNameFilter('Images (*.jpg)')
             fileSaveDialog.setDefaultSuffix('.jpg')
@@ -413,3 +392,68 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
                                           save_image_width, save_image_height)
                     cropped_pixmap = pixmap.copy(cropping_rect)
                     cropped_pixmap.save(fName, format='jpg', quality=100)
+
+    def generateFilenameForSavedImage(self, top_left_pixel, bottom_right_pixel):
+        tags = {}
+        markers = self.getMarkersInFrame(top_left_pixel, bottom_right_pixel)
+        for m in markers:
+            tag = m.tag
+            type_subtype = '{}_{}'.format(tag.type, tag.subtype)
+            if tags.has_key(type_subtype):
+                tags[type_subtype] += 1
+            else:
+                tags[type_subtype] = 1
+
+        save_image_name = ''
+        for key, count in tags.iteritems():
+            save_image_name += key + '_' + str(count) + '_'
+        save_image_name += self.currentImage.filename.split('.')[0]
+        print save_image_name
+
+        return save_image_name
+
+    def getMarkersInFrame(self, top_left_pixel, bottom_right_pixel):
+        _list = []
+
+        for m in Marker.objects.filter(image__flight=self.currentFlight):
+            if self.isMarkerInBounds(m, top_left_pixel, bottom_right_pixel):
+                _list.append(m)
+
+        return _list
+
+    def isMarkerInBounds(self, marker, top_left_pixel, bottom_right_pixel):
+        image = self.currentImage
+        image_bounds = PolygonBounds()
+
+        # The order of UL UR LR LL is important
+        # Upper Left
+        lat, lon = geolocateLatLonFromPixel(image, self.currentFlight.reference_altitude, top_left_pixel.x(),
+                                            top_left_pixel.y())
+        image_bounds.addVertex(Point(lat, lon))
+
+        # Upper Right
+        lat, lon = geolocateLatLonFromPixel(image, self.currentFlight.reference_altitude, bottom_right_pixel.x(),
+                                            top_left_pixel.y())
+        image_bounds.addVertex(Point(lat, lon))
+
+        # Lower Right
+        lat, lon = geolocateLatLonFromPixel(image, self.currentFlight.reference_altitude, bottom_right_pixel.x(),
+                                            bottom_right_pixel.y())
+        image_bounds.addVertex(Point(lat, lon))
+
+        # Lower Left
+        lat, lon = geolocateLatLonFromPixel(image, self.currentFlight.reference_altitude, top_left_pixel.x(),
+                                            bottom_right_pixel.y())
+        image_bounds.addVertex(Point(lat, lon))
+
+        marker_loc = Point(marker.latitude, marker.longitude)
+
+        if image_bounds.isPointInsideBounds(marker_loc):
+            return True
+        return False
+
+
+
+
+
+
