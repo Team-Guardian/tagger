@@ -265,6 +265,11 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
 
         self.currentImage = current.getImage()
 
+        # attempt to refresh tag counts
+        update_num_occurrences()
+        for tag in get_all_tags():
+            self.updateTagMarkerCountInUi(tag)
+
         self.minimap.updateContourOnImageChange(self.currentImage)
         self.openImage(FLIGHT_DIRECTORY + '{}/{}'.format(self.currentFlight.img_path, self.currentImage.filename), self.viewer_single)
         self.notifyObservers("CURRENT_IMG_CHANGED", None, None)
