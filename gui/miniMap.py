@@ -36,14 +36,15 @@ class MiniMap(QtWidgets.QGraphicsView):
         self.fitInView()
         self.addMapToScene()
 
-    def updateContourOnImageChange(self, image):
-        if self._current_flight.area_map is not None:
-            self.removeContourFromScene()
-            self.findImageCornerPixelCoordinates(image)
-            self._img_contour.updatePolygon()
-            self.addContourToScene()
-        else:
-            print "This flight does not have an associated areamap."
+    def updateContour(self, image):
+        if self._current_flight is not None:
+            if self._current_flight.area_map is not None:
+                self.removeContourFromScene()
+                self.findImageCornerPixelCoordinates(image)
+                self._img_contour.updatePolygon()
+                self.addContourToScene()
+            else:
+                print "This flight does not have an associated areamap."
 
     def findImageCornerPixelCoordinates(self, img):
         map_dims = self._map.boundingRect()

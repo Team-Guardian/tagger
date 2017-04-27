@@ -253,7 +253,7 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
 
         self.currentImage = current.getImage()
 
-        self.minimap.updateContourOnImageChange(self.currentImage)
+        self.minimap.updateContour(self.currentImage)
         self.openImage('./flights/{}/{}'.format(self.currentFlight.img_path, self.currentImage.filename), self.viewer_single)
         self.notifyObservers("CURRENT_IMG_CHANGED", None, None)
 
@@ -369,7 +369,8 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
 
     def updateOnResize(self):
         self.viewer_single.fitInView()
-        self.currentImageChanged()
+        self.minimap.fitInView()
+        self.minimap.updateContour(self.currentImage)
 
     def disableCurrentImageChangedEvent(self):
         self.list_images.currentItemChanged.disconnect(self.currentImageChanged)

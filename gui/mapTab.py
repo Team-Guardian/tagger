@@ -239,7 +239,7 @@ class MapTab(QtWidgets.QWidget, Ui_MapTab, Observer):
 
     def updateOnResize(self):
         self.viewer_map.fitInView()
-        self.currentImageChanged()
+        # self.updateContourPositions() # TODO: IMPORTANT! Implement when merged
 
     # Accessors and mutators of the class variables
     def getCurrentImage(self):

@@ -81,15 +81,6 @@ class MainWindow(QtWidgets.QMainWindow, Observable):
         for tabIndex in range(self.ui.tabWidget.count()):  # iterate over each tab
             current_tab = self.ui.tabWidget.widget(tabIndex)
             current_tab.updateOnResize()
-        openedTab = self.ui.tabWidget.currentWidget()
-        imageViewers = openedTab.findChildren(QtWidgets.QGraphicsView)
-    
-        # if no PhotoViewers exist in current tab, do nothing
-        if imageViewers == None:
-            pass
-        else:
-            for imgViewer in imageViewers:
-                imgViewer.fitInView()
 
     def tabChangeHandler(self):
         currentTabIndex = self.ui.tabWidget.currentIndex()
