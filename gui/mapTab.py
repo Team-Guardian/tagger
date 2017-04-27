@@ -2,7 +2,7 @@ from PyQt5 import QtWidgets, QtGui, QtCore
 from contour import Contour
 from ui.ui_mapTab import Ui_MapTab
 from gui.imageListItem import ImageListItem
-from utils.geographicUtilities import Point, PolygonBounds
+from utils.geographicUtilities import Point, PolygonBounds, getFrameBounds
 from utils.geolocate import geolocateLatLonFromPixel
 from mapContextMenu import MapContextMenu
 from observer import *
@@ -157,11 +157,7 @@ class MapTab(QtWidgets.QWidget, Ui_MapTab, Observer):
         for i in range(self.list_allImages.count()):
             item = self.list_allImages.item(i)
             img = item.getImage()
-            bounds = PolygonBounds()
-            bounds.addVertex(Point(*geolocateLatLonFromPixel(img, self.current_flight.reference_altitude, 0, 0)))
-            bounds.addVertex(Point(*geolocateLatLonFromPixel(img, self.current_flight.reference_altitude, img.width, 0)))
-            bounds.addVertex(Point(*geolocateLatLonFromPixel(img, self.current_flight.reference_altitude, img.width, img.height)))
-            bounds.addVertex(Point(*geolocateLatLonFromPixel(img, self.current_flight.reference_altitude, 0, img.height)))
+            bounds = getFrameBounds(img, self.current_flight.reference_altitude)
             if bounds.isPointInsideBounds(p):
                 item.setHidden(False)
 
@@ -270,7 +266,7 @@ class MapTab(QtWidgets.QWidget, Ui_MapTab, Observer):
         self.enableCurrentItemChangedEvent()  # re-enable the event
 
         self.clearScene()
-        
+
     # Accessors and mutators of the class variables
     def getCurrentImage(self):
         return self.current_image

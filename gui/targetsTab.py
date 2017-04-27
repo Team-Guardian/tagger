@@ -7,6 +7,8 @@ from gui.tagListItem import TagListItem
 from gui.imageListItem import ImageListItem
 from gui.targetContextMenu import TargetContextMenu
 from utils.imageInfo import FLIGHT_DIRECTORY
+from utils.geographicUtilities import getFrameBounds, Point
+
 
 TAB_INDICES = {'TAB_SETUP': 0, 'TAB_TAGGING': 1, 'TAB_TARGETS': 2, 'TAB_MAP': 3}
 
@@ -103,16 +105,22 @@ class TargetsTab(QtWidgets.QWidget, Ui_TargetsTab, Observer):
         self.viewer_targets.setPhoto(QtGui.QPixmap(path))
 
     def filterImages(self, tag):
+        self.hideAllImageListItems()
         if Marker.objects.filter(tag=tag).exists():
-            self.hideAllImageListItems()
             for marker in Marker.objects.filter(tag=tag):
-                marked_image = marker.image
-                for image, item in self.image_list_item_dict.iteritems():
-                    item_row = self.list_taggedImages.row(item)
-                    if image == marked_image:
-                        self.list_taggedImages.item(item_row).setHidden(False)
-        else:
-            self.hideAllImageListItems()
+                p = Point(marker.latitude, marker.longitude)
+                for i in range(self.list_taggedImages.count()):
+                    item = self.list_taggedImages.item(i)
+                    img = item.getImage()
+                    bounds = getFrameBounds(img, self.current_flight.reference_altitude)
+                    if bounds.isPointInsideBounds(p):
+                        item.setHidden(False)
+
+                # marked_image = marker.image
+                # for image, item in self.image_list_item_dict.iteritems():
+                #     item_row = self.list_taggedImages.row(item)
+                #     if image == marked_image:
+                #         self.list_taggedImages.item(item_row).setHidden(False)
 
     def getCurrentImage(self):
         return self.current_image

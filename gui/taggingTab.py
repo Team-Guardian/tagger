@@ -6,15 +6,14 @@ from ui.ui_taggingTab import Ui_TaggingTab
 from tagDialog import TagDialog
 from db.dbHelper import *
 from observer import *
-from utils.imageInfo import processNewImage
-from utils.geolocate import geolocateLatLonFromPixel, getPixelFromLatLon
-from utils.geographicUtilities import *
 from gui.imageListItem import ImageListItem
 from gui.tagTableItem import TagTableItem
 from gui.tagContextMenu import TagContextMenu
 from markerItem import MarkerItem
-from utils.imageInfo import GetDirectoryAndFilenameFromFullPath
-from utils.imageInfo import FLIGHT_DIRECTORY
+from utils.imageInfo import GetDirectoryAndFilenameFromFullPath, FLIGHT_DIRECTORY
+from utils.imageInfo import processNewImage
+from utils.geolocate import getPixelFromLatLon
+from utils.geographicUtilities import *
 
 
 TAG_TABLE_INDICES = {'TYPE': 0, 'SUBTYPE': 1, 'COUNT': 2, 'SYMBOL': 3}
@@ -467,28 +466,8 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
 
     def isMarkerInBounds(self, marker, top_left_pixel, bottom_right_pixel):
         image = self.currentImage
-        image_bounds = PolygonBounds()
-
-        # The order of UL UR LR LL is important
-        # Upper Left
-        lat, lon = geolocateLatLonFromPixel(image, self.currentFlight.reference_altitude, top_left_pixel.x(),
-                                            top_left_pixel.y())
-        image_bounds.addVertex(Point(lat, lon))
-
-        # Upper Right
-        lat, lon = geolocateLatLonFromPixel(image, self.currentFlight.reference_altitude, bottom_right_pixel.x(),
-                                            top_left_pixel.y())
-        image_bounds.addVertex(Point(lat, lon))
-
-        # Lower Right
-        lat, lon = geolocateLatLonFromPixel(image, self.currentFlight.reference_altitude, bottom_right_pixel.x(),
-                                            bottom_right_pixel.y())
-        image_bounds.addVertex(Point(lat, lon))
-
-        # Lower Left
-        lat, lon = geolocateLatLonFromPixel(image, self.currentFlight.reference_altitude, top_left_pixel.x(),
-                                            bottom_right_pixel.y())
-        image_bounds.addVertex(Point(lat, lon))
+        image_bounds = getFrameBounds(image, self.currentFlight.reference_altitude, top_left_pixel=top_left_pixel,
+                                      bottom_right_pixel=bottom_right_pixel)
 
         marker_loc = Point(marker.latitude, marker.longitude)
 
