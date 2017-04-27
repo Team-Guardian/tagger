@@ -44,8 +44,19 @@ class MainWindow(QtWidgets.QMainWindow, Observable):
         self.ui.actionSaveImage.setShortcut(QKeySequence.Save)
         self.ui.actionSaveImage.setShortcutContext(QtCore.Qt.WidgetShortcut)
         self.ui.actionSaveImage.setDisabled(True)
+
+        # keyboard shortcuts
+        # save
         self.saveImageShortcut = QShortcut(QKeySequence("Ctrl+S"), self)
         self.saveImageShortcut.activated.connect(self.saveImage)
+
+        # go to next item in the list of images and mark current image as reviewed
+        self.nextImageInTheListShortcut = QShortcut(QKeySequence(" "), self)
+        self.nextImageInTheListShortcut.activated.connect(self.nextImageInTheList)
+
+        # toggle review marker
+        self.toggleReviewedStatusShortcut = QShortcut(QKeySequence("R"), self)
+        self.toggleReviewedStatusShortcut.activated.connect(self.toggleReviewedStatus)
 
         self.ui.tabWidget.currentChanged.connect(self.tabChangeHandler)
 
@@ -104,3 +115,13 @@ class MainWindow(QtWidgets.QMainWindow, Observable):
     def saveImage(self):
         if self.ui.tabWidget.currentIndex() == TAB_INDICES['TAB_TAGGING']:
             self.taggingTab.saveImage()
+
+    def nextImageInTheList(self):
+        if self.ui.tabWidget.currentIndex() == TAB_INDICES['TAB_TAGGING']:
+            self.taggingTab.markImageAsReviewed()
+            self.taggingTab.nextImage()
+
+    def toggleReviewedStatus(self):
+        # we only want it to be activated from the targets tab
+        if self.ui.tabWidget.currentIndex() == TAB_INDICES['TAB_TAGGING']:
+            self.taggingTab.toggleImageReviewed()

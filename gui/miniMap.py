@@ -37,7 +37,7 @@ class MiniMap(QtWidgets.QGraphicsView):
         self.addMapToScene()
 
     def updateContour(self, image):
-        if self._current_flight is not None:
+        if self._current_flight is not None and image is not None:
             if self._current_flight.area_map is not None:
                 self.removeContourFromScene()
                 self.findImageCornerPixelCoordinates(image)

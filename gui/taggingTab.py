@@ -39,7 +39,6 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
             self.addMarker(data)
         elif event is "MARKER_DELETED":
             self.viewer_single.getScene().removeItem(data)
-            print 'event:MARKER_DELETED -1'
             current_marker = data.getMarker()
             current_marker.tag.num_occurrences -= 1
             current_marker.tag.save()
@@ -160,7 +159,6 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
         pv = event.scenePos().y()
         lat, lon = geolocateLatLonFromPixelOnImage(self.currentImage, self.currentFlight.reference_altitude, pu, pv)
         m = create_marker(tag=tag, image=self.currentImage, latitude=lat, longitude=lon)
-        print 'addMarker +1'
         m.tag.num_occurrences += 1
         m.tag.save()
 
@@ -194,7 +192,6 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
         for rowIndex in range(self.list_tags.rowCount()):
             tableTag = self.list_tags.item(rowIndex, TAG_TABLE_INDICES['COUNT']).getTag()
             if tableTag == tag:
-                print 'upd: ', tag.num_occurrences
                 self.list_tags.setItem(rowIndex, TAG_TABLE_INDICES['COUNT'], TagTableItem(str(tag.num_occurrences), tag))
 
     def deleteMarkersFromUi(self, tag=None):
@@ -204,10 +201,8 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
                 if tag != None:
                     if item.getMarker().tag == tag:
                         self.viewer_single.getScene().removeItem(item)
-                        print 'deleteMarkersFromUi -1'
                         item.getMarker().tag.num_occurrences -= 1
                         item.getMarker().tag.save()
-                        # print 'after: ', item.getMarker().tag.num_occurrences
                 else:
                     self.viewer_single.getScene().removeItem(item)
 
@@ -224,9 +219,19 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
             font.setBold(not font.bold())
             item.setFont(font)
 
-        self.images_list.setFocus()
+        self.list_images.setFocus()
         self.updateList()
-        self.nextImage()
+
+    def markImageAsReviewed(self):
+        item = self.list_images.currentItem()
+        image = item.getImage()
+
+        if item:
+            image.is_reviewed = True
+            image.save()
+            font = item.font()
+            font.setBold(False)
+            item.setFont(font)
 
     def updateList(self):
         current_button = self.image_status_buttons.checkedButton()
