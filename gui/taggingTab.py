@@ -251,12 +251,12 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
 
     def addImageToUi(self, image):
         item = ImageListItem(image.filename, image)
-        self.list_images.addItem(item)
         self.image_list_item_dict[image] = item
         if not image.is_reviewed:
-            font = item.font()
-            font.setBold(not font.bold())
-            item.setFont(font)
+            bold_font = QtGui.QFont()
+            bold_font.setBold(True)
+            item.setFont(bold_font)
+        self.list_images.addItem(item)
 
     def goToImage(self, selected_image):
         item = self.image_list_item_dict.get(selected_image)

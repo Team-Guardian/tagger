@@ -1,6 +1,5 @@
 from math import cos, sin, sqrt, radians, degrees
 from math import acos, asin, atan2
-from db.models import *
 import utils.xmlParser
 import numpy
 
