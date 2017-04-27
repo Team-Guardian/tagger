@@ -2,7 +2,6 @@ from PyQt5 import QtWidgets, QtGui, QtCore
 from PyQt5.QtWidgets import QDialog
 from PyQt5.QtGui import QPixmap
 from PyQt5.QtCore import QRect
-
 from ui.ui_taggingTab import Ui_TaggingTab
 from tagDialog import TagDialog
 from db.dbHelper import *
@@ -14,9 +13,9 @@ from gui.imageListItem import ImageListItem
 from gui.tagTableItem import TagTableItem
 from gui.tagContextMenu import TagContextMenu
 from markerItem import MarkerItem
+from utils.imageInfo import FLIGHT_DIRECTORY
 
-from utils.imageInfo import FLIGHT_DIRECTORY
-from utils.imageInfo import FLIGHT_DIRECTORY
+
 TAG_TABLE_INDICES = {'TYPE': 0, 'SUBTYPE': 1, 'COUNT': 2, 'SYMBOL': 3}
 
 class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
@@ -215,6 +214,32 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
                 else:
                     self.viewer_single.getScene().removeItem(item)
 
+    def updateImageList(self):
+        for row_num in range(self.list_images.count()):
+            item = self.list_images.item(row_num)
+            image = item.getImage()
+            image.refresh_from_db()
+
+            font = item.font()
+            if not image.is_reviewed:
+                font.setBold(True)
+            else:
+                font.setBold(False)
+
+            item.setFont(font)
+
+        if self.radioButton_allImages.isChecked():
+            self.allImagesButtonToggled()
+        if self.radioButton_notReviewed.isChecked():
+            self.notReviewedButtonToggled()
+        if self.radioButton_reviewed.isChecked():
+            self.reviewedButtonToggled()
+
+        if not image.is_reviewed:
+            font = item.font()
+            font.setBold(not font.bold())
+            item.setFont(font)
+
     def toggleImageReviewed(self):
         item = self.list_images.currentItem()
         image = item.getImage()
@@ -264,6 +289,9 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
         self.deleteMarkersFromUi()
 
         self.currentImage = current.getImage()
+
+        # refresh image reviewed/not reviewed state
+        self.updateImageList()
 
         # attempt to refresh tag counts
         update_num_occurrences()
