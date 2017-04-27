@@ -382,7 +382,7 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
             if not os.path.exists(savedImagesPath):
                 os.makedirs(savedImagesPath)
             fileSaveDialog.setDirectory(savedImagesPath)
-            self.generateFilenameForSavedImage(imageTopLeftPixel, imageBottomRightPixel)
+            fileSaveDialog.selectFile(self.generateFilenameForSavedImage(imageTopLeftPixel, imageBottomRightPixel))
             fileSaveDialog.setAcceptMode(QtWidgets.QFileDialog.AcceptSave)
             fileSaveDialog.setNameFilter('Images (*.jpg)')
             fileSaveDialog.setDefaultSuffix('.jpg')
