@@ -1,35 +1,42 @@
-from PyQt5 import QtWidgets, QtCore
+from PyQt5 import QtWidgets
 from db.models import Tag
-
 
 class TagContextMenu(QtWidgets.QMenu):
     def __init__(self, parent=None, title=""):
         super(TagContextMenu, self).__init__(parent)
 
         # add default action
-        self.defaultActionHandle = self.addAction("(No tags)")
-        self.defaultActionHandle.setEnabled(False)
-        self.tag_action_tuples = []
+        self.default_action_handle = self.resetAndSetDefaultActionHandle()
+        self.action_message_dict = {}
+        self.action_data_dict = {}
 
-    def addTagToContextMenu(self, tag):
-        self.tag_action_tuples.append((tag, self.addAction(tag.type + ", " + tag.subtype)))
+        self.pixel_x_invocation_coord = None
+        self.pixel_y_invocation_coord = None
+
+    def addTagToContextMenu(self, new_tag):
+        new_action = self.addAction('{}, {}'.format(new_tag.type, new_tag.subtype))
+        self.action_data_dict[new_action] = new_tag
+        self.action_message_dict[new_action] = "MARKER_CREATE"
         if len(self.actions()) > 1:
-            self.defaultActionHandle.setVisible(False)
+            self.default_action_handle.setVisible(False)
 
-    def updateTagItem(self, tag):
-        for i, _data in enumerate(self.tag_action_tuples):
-            _tag, _action = _data
-            if _tag is tag:
-                _action.setText(tag.type + ", " + tag.subtype)
+    def updateTagItem(self, tag_to_update):
+        for action, tag in self.action_data_dict.iteritems():
+            if tag == tag_to_update:
+                action.setText('{}, {}'.format(tag.type, tag.subtype))
 
-    def removeTagItem(self, tag):
-        for _tag, _action in self.tag_action_tuples:
-            if _tag == tag:
-                self.tag_action_tuples.remove((_tag, _action))
-                self.removeAction(_action)
+    def removeTagItem(self, tag_to_remove):
+        action_to_remove = None
+        for action, tag in self.action_data_dict.iteritems():
+            if tag == tag_to_remove:
+                action_to_remove = action
+        if action_to_remove is not None:
+            del self.action_data_dict[action_to_remove]
+            del self.action_message_dict[action_to_remove]
+            self.removeAction(action_to_remove)
 
         if len(self.actions()) == 1:
-            self.defaultActionHandle.setVisible(True)
+            self.default_action_handle.setVisible(True)
 
     def update_action_tuples(self):
         updated_action_tuples = []
@@ -43,11 +50,20 @@ class TagContextMenu(QtWidgets.QMenu):
 
     def clearTagContextMenu(self):
         self.clear()
-        self.defaultActionHandle = self.addAction("(No tags)")
-        self.defaultActionHandle.setEnabled(False)
-        self.tag_action_tuples = []
+        self.default_action_handle = self.resetAndSetDefaultActionHandle()
+        self.action_data_dict = {}
+        self.action_message_dict = {}
 
-    def clearOnUpdate(self):
-        self.clear()
-        self.defaultActionHandle = self.addAction("(No tags)")
-        self.defaultActionHandle.setEnabled(False)
+    def resetAndSetDefaultActionHandle(self):
+        default_action_handle = self.addAction("(No tags)")
+        default_action_handle.setEnabled(False)
+        return default_action_handle
+
+    def synchronizeWithDatabase(self):
+        for action, tag in self.action_data_dict.iteritems():
+            updated_tag = Tag.objects.get(pk=tag.pk)
+            self.action_data_dict[action] = updated_tag
+
+    def exec_(self, position):
+        self.synchronizeWithDatabase()
+        return super(TagContextMenu, self).exec_(position)

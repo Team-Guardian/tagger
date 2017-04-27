@@ -44,5 +44,8 @@ class MarkerItem(QtWidgets.QGraphicsPixmapItem, Observable):
                 self.notifyObservers("MARKER_PARENT_IMAGE_CHANGE", None, self.marker.image)
 
     def getMarker(self):
-        self.marker = Marker.objects.get(pk=self.marker.pk)
+        self.synchronizeWithDatabase()
         return self.marker
+
+    def synchronizeWithDatabase(self):
+        self.marker = Marker.objects.get(pk=self.marker.pk)

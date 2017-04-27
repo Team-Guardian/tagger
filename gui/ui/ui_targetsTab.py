@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'gui/ui/ui_targetsTab.ui'
+# Form implementation generated from reading ui file 'ui_targetsTab.ui'
 #
 # Created by: PyQt5 UI code generator 5.5.1
 #
@@ -20,24 +20,24 @@ class Ui_TargetsTab(object):
         self.groupBox_5.setObjectName("groupBox_5")
         self.verticalLayout_6 = QtWidgets.QVBoxLayout(self.groupBox_5)
         self.verticalLayout_6.setObjectName("verticalLayout_6")
-        self.list_tagFilter = QtWidgets.QListView(self.groupBox_5)
-        self.list_tagFilter.setObjectName("list_tagFilter")
-        self.verticalLayout_6.addWidget(self.list_tagFilter)
+        self.list_tags = QtWidgets.QListWidget(self.groupBox_5)
+        self.list_tags.setObjectName("list_tags")
+        self.verticalLayout_6.addWidget(self.list_tags)
         self.verticalLayout_4.addWidget(self.groupBox_5)
         self.groupBox_4 = QtWidgets.QGroupBox(TargetsTab)
         self.groupBox_4.setObjectName("groupBox_4")
         self.verticalLayout_5 = QtWidgets.QVBoxLayout(self.groupBox_4)
         self.verticalLayout_5.setObjectName("verticalLayout_5")
-        self.lineEdit = QtWidgets.QLineEdit(self.groupBox_4)
-        self.lineEdit.setObjectName("lineEdit")
-        self.verticalLayout_5.addWidget(self.lineEdit)
-        self.list_taggedImages = QtWidgets.QListView(self.groupBox_4)
+        self.line_searchImages = QtWidgets.QLineEdit(self.groupBox_4)
+        self.line_searchImages.setText("")
+        self.line_searchImages.setObjectName("line_searchImages")
+        self.verticalLayout_5.addWidget(self.line_searchImages)
+        self.list_taggedImages = QtWidgets.QListWidget(self.groupBox_4)
         self.list_taggedImages.setObjectName("list_taggedImages")
         self.verticalLayout_5.addWidget(self.list_taggedImages)
         self.verticalLayout_4.addWidget(self.groupBox_4)
-        self.label_6 = QtWidgets.QLabel(TargetsTab)
-        self.label_6.setObjectName("label_6")
-        self.verticalLayout_4.addWidget(self.label_6)
+        self.verticalLayout_4.setStretch(0, 1)
+        self.verticalLayout_4.setStretch(1, 2)
         self.horizontalLayout.addLayout(self.verticalLayout_4)
         self.verticalLayout_10 = QtWidgets.QVBoxLayout()
         self.verticalLayout_10.setContentsMargins(-1, -1, 0, -1)
@@ -57,7 +57,6 @@ class Ui_TargetsTab(object):
         TargetsTab.setWindowTitle(_translate("TargetsTab", "Form"))
         self.groupBox_5.setTitle(_translate("TargetsTab", "Select Tag"))
         self.groupBox_4.setTitle(_translate("TargetsTab", "Images with Selected Tag"))
-        self.lineEdit.setText(_translate("TargetsTab", "search image by name"))
-        self.label_6.setText(_translate("TargetsTab", "MINIMAP"))
+        self.line_searchImages.setPlaceholderText(_translate("TargetsTab", "Search image by name"))
 
 from gui.photoViewer import PhotoViewer

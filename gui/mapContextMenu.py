@@ -14,7 +14,13 @@ class MapContextMenu(QtWidgets.QMenu):
         self.pixel_y_invocation_coord = None
 
         # create a dictionary of actions and messages
-        self.map_action_dict = {}
-        self.map_action_dict[self.find_images_containing_point] = "FIND_IMAGES"
-        self.map_action_dict[self.copy_pixel_lat_lon] = "COPY_LAT_LON"
-        self.map_action_dict[self.reset_all_filters] = "RESET_FILTERS"
+        self.action_message_dict = {}
+        self.action_message_dict[self.find_images_containing_point] = "FIND_IMAGES"
+        self.action_message_dict[self.copy_pixel_lat_lon] = "COPY_LAT_LON"
+        self.action_message_dict[self.reset_all_filters] = "RESET_FILTERS"
+
+        # create a dictionary of actions and data
+        self.action_data_dict = {}
+        self.action_data_dict[self.find_images_containing_point] = None
+        self.action_data_dict[self.copy_pixel_lat_lon] = None
+        self.action_data_dict[self.reset_all_filters] = None
