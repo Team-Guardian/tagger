@@ -254,9 +254,23 @@ class MapTab(QtWidgets.QWidget, Ui_MapTab, Observer):
     def addContourToScene(self, contour):
         self.viewer_map._scene.addItem(contour)
 
-    def resetTab(self):
-        self.clearScene()
+    def disableCurrentImageChangedEvent(self):
+        self.list_allImages.currentItemChanged.disconnect(self.currentImageChanged)
 
+    def enableCurrentItemChangedEvent(self):
+        self.list_allImages.currentItemChanged.connect(self.currentImageChanged)
+
+    def resetTab(self):
+        self.image_list_contour_and_item_dict = {}
+        self.current_flight = None
+        self.current_image = None
+
+        self.disableCurrentImageChangedEvent()  # disconnect signal to avoid triggering an event
+        self.list_allImages.clear()
+        self.enableCurrentItemChangedEvent()  # re-enable the event
+
+        self.clearScene()
+        
     # Accessors and mutators of the class variables
     def getCurrentImage(self):
         return self.current_image

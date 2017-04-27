@@ -120,5 +120,19 @@ class TargetsTab(QtWidgets.QWidget, Ui_TargetsTab, Observer):
     def getCurrentFlight(self):
         return self.current_flight
 
+    def disableCurrentImageChangedEvent(self):
+        self.list_taggedImages.currentItemChanged.disconnect(self.currentImageChanged)
+
+    def enableCurrentItemChangedEvent(self):
+        self.list_taggedImages.currentItemChanged.connect(self.currentImageChanged)
+
     def resetTab(self):
-        pass # TODO
+        self.tag_list_item_dict = {}
+        self.image_list_item_dict = {}
+
+        self.targets_tab_context_menu.clearTargetContextMenu()
+
+        self.disableCurrentImageChangedEvent()  # disconnect signal to avoid triggering an event
+        self.list_taggedImages.clear()
+        self.list_tags.clear()
+        self.enableCurrentItemChangedEvent()  # re-enable the event
