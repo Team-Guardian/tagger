@@ -1,9 +1,7 @@
 # Math reference: http://stackoverflow.com/questions/2827393/angles-between-two-n-dimensional-vectors-in-python/13849249#13849249
 
 from PyQt5 import QtCore, QtGui, QtWidgets
-import numpy
-from math import sin, cos
-import utils.geolocate
+from utils.geolocate import geolocateLatLonFromPixelOnImage
 from contour import Contour
 
 class MiniMap(QtWidgets.QGraphicsView):
@@ -53,13 +51,13 @@ class MiniMap(QtWidgets.QGraphicsView):
         current_area_map = self._current_flight.area_map
 
         site_elevation = img.flight.reference_altitude
-        (img_upper_left_lat, img_upper_left_lon) = utils.geolocate.geolocateLatLonFromPixel(img, site_elevation, 0, 0)
-        (img_upper_right_lat, img_upper_right_lon) = utils.geolocate.geolocateLatLonFromPixel(img, site_elevation,
+        (img_upper_left_lat, img_upper_left_lon) = geolocateLatLonFromPixelOnImage(img, site_elevation, 0, 0)
+        (img_upper_right_lat, img_upper_right_lon) = geolocateLatLonFromPixelOnImage(img, site_elevation,
                                                                                               img.width, 0)
-        (img_lower_right_lat, img_lower_right_lon) = utils.geolocate.geolocateLatLonFromPixel(img, site_elevation,
+        (img_lower_right_lat, img_lower_right_lon) = geolocateLatLonFromPixelOnImage(img, site_elevation,
                                                                                               img.width,
                                                                                               img.height)
-        (img_lower_left_lat, img_lower_left_lon) = utils.geolocate.geolocateLatLonFromPixel(img, site_elevation,
+        (img_lower_left_lat, img_lower_left_lon) = geolocateLatLonFromPixelOnImage(img, site_elevation,
                                                                                             0, img.height)
 
         # interpolate the location of the image on the minimap (in px)

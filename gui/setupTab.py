@@ -77,3 +77,5 @@ class SetupTab(QtWidgets.QWidget, Ui_SetupTab, Observable):
         self.group_openExistingFlight.setEnabled(False)
         self.line_watchDirectory.setText("")
 
+    def updateOnResize(self):
+        pass # nothing to do here

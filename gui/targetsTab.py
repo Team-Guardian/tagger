@@ -9,3 +9,7 @@ class TargetsTab(QtWidgets.QWidget, Ui_TargetsTab):
 
     def resetTab(self):
         pass # TODO
+
+    def updateOnResize(self):
+        self.viewer_targets.fitInView()
+        # self.currentImageChanged() # TODO: merge and uncomment

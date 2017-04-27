@@ -8,7 +8,7 @@ from tagDialog import TagDialog
 from db.dbHelper import *
 from observer import *
 from utils.imageInfo import processNewImage
-from utils.geolocate import geolocateLatLonFromPixel, getPixelFromLatLon
+from utils.geolocate import geolocateLatLonFromPixelOnImage, getPixelFromLatLon
 from utils.geographicUtilities import *
 from gui.imageListItem import ImageListItem
 from gui.tagTableItem import TagTableItem
@@ -60,8 +60,6 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
         self.radioButton_notReviewed.clicked.connect(self.notReviewedButtonToggled)
 
         self.button_toggleReviewed.clicked.connect(self.toggleImageReviewed)
-        self.button_previous.clicked.connect(self.previousImage)
-        self.button_next.clicked.connect(self.nextImage)
         self.button_addImage.clicked.connect(self.addImage)
 
     def addTag(self):
@@ -160,7 +158,7 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
         event, tag = data
         pu = event.scenePos().x()
         pv = event.scenePos().y()
-        lat, lon = geolocateLatLonFromPixel(self.currentImage, self.currentFlight.reference_altitude, pu, pv)
+        lat, lon = geolocateLatLonFromPixelOnImage(self.currentImage, self.currentFlight.reference_altitude, pu, pv)
         m = create_marker(tag=tag, image=self.currentImage, latitude=lat, longitude=lon)
         print 'addMarker +1'
         m.tag.num_occurrences += 1
@@ -327,19 +325,19 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
 
             #The order of UL UR LR LL is important
             # Upper Left
-            lat, lon = geolocateLatLonFromPixel(image, self.currentFlight.reference_altitude, 0, 0)
+            lat, lon = geolocateLatLonFromPixelOnImage(image, self.currentFlight.reference_altitude, 0, 0)
             image_bounds.addVertex(Point(lat, lon))
 
             # Upper Right
-            lat, lon = geolocateLatLonFromPixel(image, self.currentFlight.reference_altitude, image_width, 0)
+            lat, lon = geolocateLatLonFromPixelOnImage(image, self.currentFlight.reference_altitude, image_width, 0)
             image_bounds.addVertex(Point(lat, lon))
 
             # Lower Right
-            lat, lon = geolocateLatLonFromPixel(image, self.currentFlight.reference_altitude, image_width, image_height)
+            lat, lon = geolocateLatLonFromPixelOnImage(image, self.currentFlight.reference_altitude, image_width, image_height)
             image_bounds.addVertex(Point(lat, lon))
 
             # Lower Left
-            lat, lon = geolocateLatLonFromPixel(image, self.currentFlight.reference_altitude, 0, image_height)
+            lat, lon = geolocateLatLonFromPixelOnImage(image, self.currentFlight.reference_altitude, 0, image_height)
             image_bounds.addVertex(Point(lat, lon))
 
             marker_loc = Point(m.latitude, m.longitude)
@@ -368,6 +366,10 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
 
         # clear the photo viewer
         self.viewer_single.setPhoto(None)
+
+    def updateOnResize(self):
+        self.viewer_single.fitInView()
+        self.currentImageChanged()
 
     def disableCurrentImageChangedEvent(self):
         self.list_images.currentItemChanged.disconnect(self.currentImageChanged)

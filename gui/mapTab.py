@@ -3,7 +3,7 @@ from contour import Contour
 from ui.ui_mapTab import Ui_MapTab
 from gui.imageListItem import ImageListItem
 from utils.geographicUtilities import Point, PolygonBounds
-from utils.geolocate import geolocateLatLonFromPixel
+from utils.geolocate import geolocateLatLonFromPixelOnAreamap, geolocateLatLonFromPixelOnImage
 from observer import *
 
 
@@ -53,7 +53,7 @@ class MapTab(QtWidgets.QWidget, Ui_MapTab, Observer):
 
     def geolocatePoint(self, x, y):
         map_width, map_height = self.viewer_map._photo.boundingRect().getRect()[2:]
-        lat, lon = geolocateLatLonFromPixel(self.current_flight.area_map, map_width, map_height, x, y)
+        lat, lon = geolocateLatLonFromPixelOnAreamap(self.current_flight.area_map, map_width, map_height, x, y)
         return lat, lon
 
     def findImagesContainingPoint(self, lat, lon):
@@ -144,10 +144,10 @@ class MapTab(QtWidgets.QWidget, Ui_MapTab, Observer):
             item = self.list_allImages.item(i)
             img = item.getImage()
             bounds = PolygonBounds()
-            bounds.addVertex(Point(*geolocateLatLonFromPixel(img, self.current_flight.reference_altitude, 0, 0)))
-            bounds.addVertex(Point(*geolocateLatLonFromPixel(img, self.current_flight.reference_altitude, img.width, 0)))
-            bounds.addVertex(Point(*geolocateLatLonFromPixel(img, self.current_flight.reference_altitude, img.width, img.height)))
-            bounds.addVertex(Point(*geolocateLatLonFromPixel(img, self.current_flight.reference_altitude, 0, img.height)))
+            bounds.addVertex(Point(*geolocateLatLonFromPixelOnImage(img, self.current_flight.reference_altitude, 0, 0)))
+            bounds.addVertex(Point(*geolocateLatLonFromPixelOnImage(img, self.current_flight.reference_altitude, img.width, 0)))
+            bounds.addVertex(Point(*geolocateLatLonFromPixelOnImage(img, self.current_flight.reference_altitude, img.width, img.height)))
+            bounds.addVertex(Point(*geolocateLatLonFromPixelOnImage(img, self.current_flight.reference_altitude, 0, img.height)))
             if bounds.isPointInsideBounds(p):
                 item.setHidden(False)
 
@@ -174,13 +174,13 @@ class MapTab(QtWidgets.QWidget, Ui_MapTab, Observer):
         current_area_map = self.current_flight.area_map
 
         site_elevation = image.flight.reference_altitude
-        (img_upper_left_lat, img_upper_left_lon) = geolocateLatLonFromPixel(image, site_elevation, 0, 0)
-        (img_upper_right_lat, img_upper_right_lon) = geolocateLatLonFromPixel(image, site_elevation,
+        (img_upper_left_lat, img_upper_left_lon) = geolocateLatLonFromPixelOnImage(image, site_elevation, 0, 0)
+        (img_upper_right_lat, img_upper_right_lon) = geolocateLatLonFromPixelOnImage(image, site_elevation,
                                                                               image.width, 0)
-        (img_lower_right_lat, img_lower_right_lon) = geolocateLatLonFromPixel(image, site_elevation,
+        (img_lower_right_lat, img_lower_right_lon) = geolocateLatLonFromPixelOnImage(image, site_elevation,
                                                                               image.width,
                                                                               image.height)
-        (img_lower_left_lat, img_lower_left_lon) = geolocateLatLonFromPixel(image, site_elevation,
+        (img_lower_left_lat, img_lower_left_lon) = geolocateLatLonFromPixelOnImage(image, site_elevation,
                                                                                             0, image.height)
 
         # interpolate the location of the image on the minimap (in px)
@@ -236,6 +236,10 @@ class MapTab(QtWidgets.QWidget, Ui_MapTab, Observer):
 
     def resetTab(self):
         self.clearScene()
+
+    def updateOnResize(self):
+        self.viewer_map.fitInView()
+        self.currentImageChanged()
 
     # Accessors and mutators of the class variables
     def getCurrentImage(self):
