@@ -427,7 +427,7 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
                 target_filepath = fileSaveDialog.selectedFiles()[0]
                 if self.viewer_single.zoomFactor() == 0: # This means that the image is fully zoomed out
                     pixmap.save(target_filepath, format='png', quality=100)
-                    self.viewer_single.getScale().paintScaleOnSavedImage(path_to_saved_image, GetDirectoryAndFilenameFromFullPath(target_filepath)[1])
+                    self.viewer_single.getScale().paintScaleOnSavedImage(savedImagesPath, GetDirectoryAndFilenameFromFullPath(target_filepath)[1])
                 else:
                     save_image_width = imageBottomRightPixel.x() - imageTopLeftPixel.x()
                     save_image_height = imageBottomRightPixel.y() - imageTopLeftPixel.y()
@@ -435,7 +435,7 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
                                           save_image_width, save_image_height)
                     cropped_pixmap = pixmap.copy(cropping_rect)
                     cropped_pixmap.save(target_filepath, format='png', quality=100)
-                    self.viewer_single.getScale().paintScaleOnSavedImage(path_to_saved_image, GetDirectoryAndFilenameFromFullPath(target_filepath)[1], cropping_rect)
+                    self.viewer_single.getScale().paintScaleOnSavedImage(savedImagesPath, GetDirectoryAndFilenameFromFullPath(target_filepath)[1], cropping_rect)
 
     def generateFilenameForSavedImage(self, top_left_pixel, bottom_right_pixel):
         tags = {}
