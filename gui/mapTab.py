@@ -19,6 +19,7 @@ class MapTab(QtWidgets.QWidget, Ui_MapTab, Observer):
         self.current_flight = None
         # Current image will be set based on the user selecting an image from the list
         self.current_image = None
+        self.current_contour = None
 
         # Parent QGraphicsPolygonItem to create contour classes
         self.parent_polygon = QtWidgets.QGraphicsPolygonItem()
@@ -106,24 +107,16 @@ class MapTab(QtWidgets.QWidget, Ui_MapTab, Observer):
         self.updateAndShowContoursOnAreamap(contour)
 
     def currentImageChanged(self, current, _):
-        # restore original contour color to the image that is no longer selected
-        self.removeOldContourHighlight()
+        if self.current_contour:
+            self.removeCurrentContourFromScene()
 
         # update currentImage with selected item
         self.current_image = current.getImage()
 
-        # remove the contour for the current image
-        self.removeCurrentContourFromScene()
-
-        # create a contour for current image on the top layer
-        item = ImageListItem(self.current_image.filename, self.current_image)
-        contour = self.createImageContour(self.current_image)
-        # pair contour and corresponding image in a dict
-        self.image_list_contour_and_item_dict[self.current_image] = [item, contour]
-        self.updateAndShowContoursOnAreamap(contour)
-
-        # highlight the current contour with a different color
+        self.current_contour = self.createImageContour(self.current_image)
+        self.updateAndShowContoursOnAreamap(self.current_contour)
         self.highlightCurrentImageContour()
+
 
     # Class utility functions
     def search(self):
@@ -227,9 +220,7 @@ class MapTab(QtWidgets.QWidget, Ui_MapTab, Observer):
             current_contour.removePolygonHighlight()
 
     def highlightCurrentImageContour(self):
-        if self.current_image is not None:
-            _, current_contour = self.image_list_contour_and_item_dict[self.current_image]
-            current_contour.highlightPolygon()
+        self.current_contour.highlightPolygon()
 
     # Clear and reset routines
     def clearScene(self):
@@ -237,10 +228,7 @@ class MapTab(QtWidgets.QWidget, Ui_MapTab, Observer):
             self.viewer_map._scene.removeItem(item)
 
     def removeCurrentContourFromScene(self):
-        if self.current_image is not None:
-            # extract the contour from dictionary (don't care about the current item)
-            _, current_contour = self.image_list_contour_and_item_dict[self.current_image]
-            self.viewer_map._scene.removeItem(current_contour)
+        self.viewer_map._scene.removeItem(self.current_contour)
 
     def removeContoursFromScene(self):
         for item in  self.viewer_map._scene.items():
