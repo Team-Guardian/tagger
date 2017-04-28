@@ -51,24 +51,25 @@ python manage.py migrate
 
 # How to Set Up a Slave Tagger on a Local Area Network
 
-## 2. Install dependencies
+1. Install dependencies
 ```
 sudo apt-get update
 sudo apt-get install sshfs openssh-server
 ```
 
-## 3. Configure user groups
+2. Configure user groups
 ```
 sudo groupadd fuse
 sudo adduser <my_user> fuse
 ```
 
-## 4. Create a destination directory for mapping in your tagger repo root directory
+3. Create a destination directory for mapping in your tagger repo root directory
 ```
 mkdir <path_to_tagger_repo>/remote_flights
 ```
 
-## 5. Map GCS flights directory to the local folder you just created
+4. Map GCS flights directory to the local folder you just created
+```
 sshfs uav@gcs-vision.local:/home/uav/tagger/flights <path_to_tagger_repo>/remote_flights
-
+```
 
