@@ -59,7 +59,6 @@ sudo apt-get install sshfs openssh-server
 
 ## 3. Configure user groups
 ```
-groupadd fuse
 sudo groupadd fuse
 sudo adduser <my_user> fuse
 ```
