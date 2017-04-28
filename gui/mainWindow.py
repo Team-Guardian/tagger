@@ -72,9 +72,7 @@ class MainWindow(QtWidgets.QMainWindow, Observable):
             elif source is self.mapTab.viewer_map.viewport():
                 if not self.mapTab.viewer_map.isImageNull():
                     point = self.mapTab.viewer_map.mapToScene(event.pos())
-                    image = self.mapTab.getCurrentImage()
                     lat, lon = self.mapTab.geolocatePoint(point.x(), point.y())
-                    site_elevation = self.mapTab.getCurrentFlight().reference_altitude
                     self.ui.statusbar.showMessage('x: %4d, y: %4d, lat: %-3.6f, lon: %-3.6f' % \
                                           (round(point.x()), round(point.y()), lat, lon))
 
