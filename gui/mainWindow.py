@@ -87,6 +87,9 @@ class MainWindow(QtWidgets.QMainWindow, Observable):
                     self.ui.statusbar.showMessage('x: %4d, y: %4d, lat: %-3.6f, lon: %-3.6f' % \
                                           (round(point.x()), round(point.y()), lat, lon))
 
+        elif event.type() == QtCore.QEvent.MouseMove and event.buttons() == QtCore.Qt.LeftButton:
+            self.taggingTab.viewer_single.updateScale()
+
         return QtWidgets.QWidget.eventFilter(self, source, event)
 
     def resizeEvent(self, resizeEvent):

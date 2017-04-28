@@ -2,8 +2,8 @@ from PyQt5 import QtWidgets, QtGui, QtCore
 from contour import Contour
 from ui.ui_mapTab import Ui_MapTab
 from gui.imageListItem import ImageListItem
-from utils.geographicUtilities import Point, PolygonBounds
 from utils.geolocate import geolocateLatLonFromPixelOnAreamap, geolocateLatLonFromPixelOnImage
+from utils.geographicUtilities import Point, PolygonBounds, getFrameBounds
 from mapContextMenu import MapContextMenu
 from observer import *
 
@@ -18,6 +18,7 @@ class MapTab(QtWidgets.QWidget, Ui_MapTab, Observer):
         self.current_flight = None
         # Current image will be set based on the user selecting an image from the list
         self.current_image = None
+        self.current_contour = None
 
         # Parent QGraphicsPolygonItem to create contour classes
         self.parent_polygon = QtWidgets.QGraphicsPolygonItem()
@@ -118,14 +119,16 @@ class MapTab(QtWidgets.QWidget, Ui_MapTab, Observer):
         self.contour_draw_queue.append(contour)
 
     def currentImageChanged(self, current, _):
-        # restore original contour color to the image that is no longer selected
-        self.removeOldContourHighlight()
+        if self.current_contour:
+            self.removeCurrentContourFromScene()
 
         # update currentImage with selected item
         self.current_image = current.getImage()
 
-        # highlight the corresponding contour with a different color
+        self.current_contour = self.createImageContour(self.current_image)
+        self.updateAndShowContoursOnAreamap(self.current_contour)
         self.highlightCurrentImageContour()
+
 
     # Class utility functions
     def search(self):
@@ -159,11 +162,7 @@ class MapTab(QtWidgets.QWidget, Ui_MapTab, Observer):
         for i in range(self.list_allImages.count()):
             item = self.list_allImages.item(i)
             img = item.getImage()
-            bounds = PolygonBounds()
-            bounds.addVertex(Point(*geolocateLatLonFromPixelOnImage(img, self.current_flight.reference_altitude, 0, 0)))
-            bounds.addVertex(Point(*geolocateLatLonFromPixelOnImage(img, self.current_flight.reference_altitude, img.width, 0)))
-            bounds.addVertex(Point(*geolocateLatLonFromPixelOnImage(img, self.current_flight.reference_altitude, img.width, img.height)))
-            bounds.addVertex(Point(*geolocateLatLonFromPixelOnImage(img, self.current_flight.reference_altitude, 0, img.height)))
+            bounds = getFrameBounds(img, self.current_flight.reference_altitude)
             if bounds.isPointInsideBounds(p):
                 item.setHidden(False)
 
@@ -229,21 +228,39 @@ class MapTab(QtWidgets.QWidget, Ui_MapTab, Observer):
             current_contour.removePolygonHighlight()
 
     def highlightCurrentImageContour(self):
-        if self.current_image is not None:
-            _, current_contour = self.image_list_contour_and_item_dict[self.current_image]
-            current_contour.highlightPolygon()
+        self.current_contour.highlightPolygon()
 
     # Clear and reset routines
     def clearScene(self):
         for item in self.viewer_map._scene.items():
             self.viewer_map._scene.removeItem(item)
 
+    def removeCurrentContourFromScene(self):
+        self.viewer_map._scene.removeItem(self.current_contour)
+
     def removeContoursFromScene(self):
         for item in  self.viewer_map._scene.items():
             if type(item) is Contour:
                 self.viewer_map._scene.removeItem(item)
 
+    def addContourToScene(self, contour):
+        self.viewer_map._scene.addItem(contour)
+
+    def disableCurrentImageChangedEvent(self):
+        self.list_allImages.currentItemChanged.disconnect(self.currentImageChanged)
+
+    def enableCurrentItemChangedEvent(self):
+        self.list_allImages.currentItemChanged.connect(self.currentImageChanged)
+
     def resetTab(self):
+        self.image_list_contour_and_item_dict = {}
+        self.current_flight = None
+        self.current_image = None
+
+        self.disableCurrentImageChangedEvent()  # disconnect signal to avoid triggering an event
+        self.list_allImages.clear()
+        self.enableCurrentItemChangedEvent()  # re-enable the event
+
         self.clearScene()
 
     def updateOnResize(self):

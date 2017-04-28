@@ -81,6 +81,10 @@ def get_all_markers():
         list.append(m)
     return list
 
+def update_num_occurrences():
+    for tag in Tag.objects.all():
+        tag.num_occurrences = Marker.objects.filter(tag=tag).count()
+
 if __name__=="__main__":
 
     # Usage example

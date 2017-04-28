@@ -6,6 +6,9 @@ from db.dbHelper import *
 from gui.tagListItem import TagListItem
 from gui.imageListItem import ImageListItem
 from gui.targetContextMenu import TargetContextMenu
+from utils.imageInfo import FLIGHT_DIRECTORY
+from utils.geographicUtilities import getFrameBounds, Point
+
 
 TAB_INDICES = {'TAB_SETUP': 0, 'TAB_TAGGING': 1, 'TAB_TARGETS': 2, 'TAB_MAP': 3}
 
@@ -96,22 +99,28 @@ class TargetsTab(QtWidgets.QWidget, Ui_TargetsTab, Observer):
 
     def currentImageChanged(self, current, _):
         self.current_image = current.getImage()
-        self.openImage('./flights/{}/{}'.format(self.current_flight.img_path, self.current_image.filename))
+        self.openImage(FLIGHT_DIRECTORY + '{}/{}'.format(self.current_flight.img_path, self.current_image.filename))
 
     def openImage(self, path):
         self.viewer_targets.setPhoto(QtGui.QPixmap(path))
 
     def filterImages(self, tag):
+        self.hideAllImageListItems()
         if Marker.objects.filter(tag=tag).exists():
-            self.hideAllImageListItems()
             for marker in Marker.objects.filter(tag=tag):
-                marked_image = marker.image
-                for image, item in self.image_list_item_dict.iteritems():
-                    item_row = self.list_taggedImages.row(item)
-                    if image == marked_image:
-                        self.list_taggedImages.item(item_row).setHidden(False)
-        else:
-            self.hideAllImageListItems()
+                p = Point(marker.latitude, marker.longitude)
+                for i in range(self.list_taggedImages.count()):
+                    item = self.list_taggedImages.item(i)
+                    img = item.getImage()
+                    bounds = getFrameBounds(img, self.current_flight.reference_altitude)
+                    if bounds.isPointInsideBounds(p):
+                        item.setHidden(False)
+
+                # marked_image = marker.image
+                # for image, item in self.image_list_item_dict.iteritems():
+                #     item_row = self.list_taggedImages.row(item)
+                #     if image == marked_image:
+                #         self.list_taggedImages.item(item_row).setHidden(False)
 
     def getCurrentImage(self):
         return self.current_image
@@ -119,8 +128,22 @@ class TargetsTab(QtWidgets.QWidget, Ui_TargetsTab, Observer):
     def getCurrentFlight(self):
         return self.current_flight
 
+    def disableCurrentImageChangedEvent(self):
+        self.list_taggedImages.currentItemChanged.disconnect(self.currentImageChanged)
+
+    def enableCurrentItemChangedEvent(self):
+        self.list_taggedImages.currentItemChanged.connect(self.currentImageChanged)
+
     def resetTab(self):
-        pass # TODO
+        self.tag_list_item_dict = {}
+        self.image_list_item_dict = {}
+
+        self.targets_tab_context_menu.clearTargetContextMenu()
+
+        self.disableCurrentImageChangedEvent()  # disconnect signal to avoid triggering an event
+        self.list_taggedImages.clear()
+        self.list_tags.clear()
+        self.enableCurrentItemChangedEvent()  # re-enable the event
 
     def updateOnResize(self):
         self.viewer_targets.fitInView()
