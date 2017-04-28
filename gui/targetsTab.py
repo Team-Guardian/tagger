@@ -134,6 +134,9 @@ class TargetsTab(QtWidgets.QWidget, Ui_TargetsTab, Observer):
     def enableCurrentItemChangedEvent(self):
         self.list_taggedImages.currentItemChanged.connect(self.currentImageChanged)
 
+    def setContextMenu(self):
+        self.targets_tab_context_menu.setTargetContextMenu()
+
     def resetTab(self):
         self.tag_list_item_dict = {}
         self.image_list_item_dict = {}
