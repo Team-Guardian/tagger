@@ -4,7 +4,7 @@ from PyQt5.QtGui import QIcon, QPixmap
 import os
 
 
-ICON_DIRECTORY = 'gui/star_markers/'
+ICON_DIRECTORY = 'gui/pin_markers/'
 PLACEHOLDER_MARKER_NAME = '_placeholder_'
 
 class TagDialog(QDialog):
