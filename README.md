@@ -69,6 +69,6 @@ mkdir <path_to_tagger_repo>/remote_flights
 ```
 
 ## 5. Map GCS flights directory to the local folder you just created
-sshfs uav@gcs-vision.local/home/uav/tagger/flights <path_to_tagger_repo>/remote_flights
+sshfs uav@gcs-vision.local:/home/uav/tagger/flights <path_to_tagger_repo>/remote_flights
 
 
