@@ -2,21 +2,20 @@ from PyQt5 import QtWidgets, QtGui, QtCore
 from PyQt5.QtWidgets import QDialog
 from PyQt5.QtGui import QPixmap
 from PyQt5.QtCore import QRect
-
 from ui.ui_taggingTab import Ui_TaggingTab
 from tagDialog import TagDialog
 from db.dbHelper import *
 from observer import *
-from utils.imageInfo import processNewImage
-from utils.geolocate import geolocateLatLonFromPixel, getPixelFromLatLon
-from utils.geographicUtilities import *
 from gui.imageListItem import ImageListItem
 from gui.tagTableItem import TagTableItem
 from gui.tagContextMenu import TagContextMenu
 from markerItem import MarkerItem
-from utils.imageInfo import GetDirectoryAndFilenameFromFullPath
+from utils.imageInfo import GetDirectoryAndFilenameFromFullPath, FLIGHT_DIRECTORY
+from utils.imageInfo import processNewImage
+from utils.geolocate import getPixelFromLatLon
+from utils.geographicUtilities import *
 
-from utils.imageInfo import FLIGHT_DIRECTORY
+
 TAG_TABLE_INDICES = {'TYPE': 0, 'SUBTYPE': 1, 'COUNT': 2, 'SYMBOL': 3}
 
 class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
@@ -215,6 +214,32 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
                 else:
                     self.viewer_single.getScene().removeItem(item)
 
+    def updateImageList(self):
+        for row_num in range(self.list_images.count()):
+            item = self.list_images.item(row_num)
+            image = item.getImage()
+            image.refresh_from_db()
+
+            font = item.font()
+            if not image.is_reviewed:
+                font.setBold(True)
+            else:
+                font.setBold(False)
+
+            item.setFont(font)
+
+        if self.radioButton_allImages.isChecked():
+            self.allImagesButtonToggled()
+        if self.radioButton_notReviewed.isChecked():
+            self.notReviewedButtonToggled()
+        if self.radioButton_reviewed.isChecked():
+            self.reviewedButtonToggled()
+
+        if not image.is_reviewed:
+            font = item.font()
+            font.setBold(not font.bold())
+            item.setFont(font)
+
     def toggleImageReviewed(self):
         item = self.list_images.currentItem()
         image = item.getImage()
@@ -247,6 +272,7 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
         self.list_images.addItem(item)
         self.image_list_item_dict[image] = item
         if not image.is_reviewed:
+            # TODO: The three lines below trigger a warning on the first image from watcher.
             font = item.font()
             font.setBold(not font.bold())
             item.setFont(font)
@@ -266,11 +292,18 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
         self.currentImage = current.getImage()
         self.viewer_single.getScale().setCurrentImage(self.currentImage)
 
+        # refresh image reviewed/not reviewed state
+        self.updateImageList()
+
+        # attempt to refresh tag counts
+        update_num_occurrences()
+        for tag in get_all_tags():
+            self.updateTagMarkerCountInUi(tag)
+            
         # update widgets
         self.minimap.updateContourOnImageChange(self.currentImage)
+        self.openImage(FLIGHT_DIRECTORY + '{}/{}'.format(self.currentFlight.img_path, self.currentImage.filename), self.viewer_single)
 
-        # open image and notify observers that it has changed
-        self.openImage('./flights/{}/{}'.format(self.currentFlight.img_path, self.currentImage.filename), self.viewer_single)
         self.notifyObservers("CURRENT_IMG_CHANGED", None, None)
 
         # udpate scale
@@ -337,31 +370,9 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
         _list = list(Marker.objects.filter(image=image)) # Convert QuerySet to a list
 
         for m in Marker.objects.filter(image__flight=self.currentFlight).exclude(image=image):
-            image_width = image.width
-            image_height = image.height
-
-            image_bounds = PolygonBounds()
-
-            #The order of UL UR LR LL is important
-            # Upper Left
-            lat, lon = geolocateLatLonFromPixel(image, self.currentFlight.reference_altitude, 0, 0)
-            image_bounds.addVertex(Point(lat, lon))
-
-            # Upper Right
-            lat, lon = geolocateLatLonFromPixel(image, self.currentFlight.reference_altitude, image_width, 0)
-            image_bounds.addVertex(Point(lat, lon))
-
-            # Lower Right
-            lat, lon = geolocateLatLonFromPixel(image, self.currentFlight.reference_altitude, image_width, image_height)
-            image_bounds.addVertex(Point(lat, lon))
-
-            # Lower Left
-            lat, lon = geolocateLatLonFromPixel(image, self.currentFlight.reference_altitude, 0, image_height)
-            image_bounds.addVertex(Point(lat, lon))
-
-            marker_loc = Point(m.latitude, m.longitude)
-
-            if image_bounds.isPointInsideBounds(marker_loc):
+            top_left_pixel = QtCore.QPoint(0,0)
+            bottom_right_pixel = QtCore.QPoint(image.width, image.height)
+            if self.isMarkerInBounds(m, top_left_pixel, bottom_right_pixel):
                 _list.append(m)
 
         return _list
@@ -403,10 +414,11 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
             pixmap = QPixmap(image_path)
             fileSaveDialog = QtWidgets.QFileDialog()
             fileSaveDialog.setWindowTitle('Save Image')
-            path_to_saved_image = FLIGHT_DIRECTORY + '{}/saved-images'.format(self.currentFlight.img_path)
-            if not os.path.exists(path_to_saved_image):
-                os.makedirs(path_to_saved_image)
-            fileSaveDialog.setDirectory(path_to_saved_image)
+            savedImagesPath = FLIGHT_DIRECTORY + '{}/saved-images'.format(self.currentFlight.img_path)
+            if not os.path.exists(savedImagesPath):
+                os.makedirs(savedImagesPath)
+            fileSaveDialog.setDirectory(savedImagesPath)
+            fileSaveDialog.selectFile(self.generateFilenameForSavedImage(imageTopLeftPixel, imageBottomRightPixel))
             fileSaveDialog.setAcceptMode(QtWidgets.QFileDialog.AcceptSave)
             fileSaveDialog.setNameFilter('Images (*.png)')
             fileSaveDialog.setDefaultSuffix('.png')
@@ -414,7 +426,7 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
                 target_filepath = fileSaveDialog.selectedFiles()[0]
                 if self.viewer_single.zoomFactor() == 0: # This means that the image is fully zoomed out
                     pixmap.save(target_filepath, format='png', quality=100)
-                    self.viewer_single.getScale().paintScaleOnSavedImage(path_to_saved_image, GetDirectoryAndFilenameFromFullPath(target_filepath)[1])
+                    self.viewer_single.getScale().paintScaleOnSavedImage(savedImagesPath, GetDirectoryAndFilenameFromFullPath(target_filepath)[1])
                 else:
                     save_image_width = imageBottomRightPixel.x() - imageTopLeftPixel.x()
                     save_image_height = imageBottomRightPixel.y() - imageTopLeftPixel.y()
@@ -422,4 +434,43 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
                                           save_image_width, save_image_height)
                     cropped_pixmap = pixmap.copy(cropping_rect)
                     cropped_pixmap.save(target_filepath, format='png', quality=100)
-                    self.viewer_single.getScale().paintScaleOnSavedImage(path_to_saved_image, GetDirectoryAndFilenameFromFullPath(target_filepath)[1], cropping_rect)
+                    self.viewer_single.getScale().paintScaleOnSavedImage(savedImagesPath, GetDirectoryAndFilenameFromFullPath(target_filepath)[1], cropping_rect)
+
+    def generateFilenameForSavedImage(self, top_left_pixel, bottom_right_pixel):
+        tags = {}
+        markers = self.getMarkersInFrame(top_left_pixel, bottom_right_pixel)
+        for m in markers:
+            tag = m.tag
+            type_subtype = '{}_{}'.format(tag.type, tag.subtype)
+            if tags.has_key(type_subtype):
+                tags[type_subtype] += 1
+            else:
+                tags[type_subtype] = 1
+
+        save_image_name = ''
+        for key, count in tags.iteritems():
+            save_image_name += key + '_' + str(count) + '_'
+        save_image_name += self.currentImage.filename.split('.')[0]
+        print save_image_name
+
+        return save_image_name
+
+    def getMarkersInFrame(self, top_left_pixel, bottom_right_pixel):
+        _list = []
+
+        for m in Marker.objects.filter(image__flight=self.currentFlight):
+            if self.isMarkerInBounds(m, top_left_pixel, bottom_right_pixel):
+                _list.append(m)
+
+        return _list
+
+    def isMarkerInBounds(self, marker, top_left_pixel, bottom_right_pixel):
+        image = self.currentImage
+        image_bounds = getFrameBounds(image, self.currentFlight.reference_altitude, top_left_pixel=top_left_pixel,
+                                      bottom_right_pixel=bottom_right_pixel)
+
+        marker_loc = Point(marker.latitude, marker.longitude)
+
+        if image_bounds.isPointInsideBounds(marker_loc):
+            return True
+        return False

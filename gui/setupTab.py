@@ -63,6 +63,8 @@ class SetupTab(QtWidgets.QWidget, Ui_SetupTab, Observable):
 
     def selectWatchDirectory(self):
         filepath = QtWidgets.QFileDialog.getExistingDirectory(self, "Select Directory to Watch", "../vision-system/")
+        if not filepath:
+            return
         self.line_watchDirectory.setText(filepath)
         self.enableSelectingAndCreatingFlights()
 
