@@ -17,3 +17,10 @@ class TargetContextMenu(QtWidgets.QMenu):
         # update dictionaries
         self.action_message_dict[self.go_to_image_in_tagging_tab] = "GO_TO_IMG_IN_TAGGING_TAB"
         self.action_data_dict[self.go_to_image_in_tagging_tab] = None
+
+    def clearTargetContextMenu(self):
+        self.clear()
+        self.pixel_x_invocation_coord = None
+        self.pixel_x_invocation_coord = None
+        self.action_message_dict = {}
+        self.action_data_dict = {}

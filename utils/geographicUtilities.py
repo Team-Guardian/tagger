@@ -1,3 +1,5 @@
+from geolocate import geolocateLatLonFromPixel
+
 # Definitions and utilities for performing geographic operations.
 
 import sys, os
@@ -23,11 +25,30 @@ def exportAllTelemetry(flight, filename):
 
     out.close()
 
+# Get geographic bounds for any frame - can be an entire image or a subset
+def getFrameBounds(image, reference_altitude, top_left_pixel=None, bottom_right_pixel=None):
+    bounds = PolygonBounds()
+    if top_left_pixel and bottom_right_pixel:
+        bounds.addVertex(Point(*geolocateLatLonFromPixel(image, reference_altitude, top_left_pixel.x(),
+                                            top_left_pixel.y())))
+        bounds.addVertex(Point(*geolocateLatLonFromPixel(image, reference_altitude, bottom_right_pixel.x(),
+                                            top_left_pixel.y())))
+        bounds.addVertex(Point(*geolocateLatLonFromPixel(image, reference_altitude, bottom_right_pixel.x(),
+                                            bottom_right_pixel.y())))
+        bounds.addVertex(Point(*geolocateLatLonFromPixel(image, reference_altitude, top_left_pixel.x(),
+                                            bottom_right_pixel.y())))
+    else:
+        bounds.addVertex(Point(*geolocateLatLonFromPixel(image, reference_altitude, 0, 0)))
+        bounds.addVertex(Point(*geolocateLatLonFromPixel(image, reference_altitude, image.width, 0)))
+        bounds.addVertex(Point(*geolocateLatLonFromPixel(image, reference_altitude, image.width, image.height)))
+        bounds.addVertex(Point(*geolocateLatLonFromPixel(image, reference_altitude, 0, image.height)))
+    return bounds
+
+
 class Point(object):
     def __init__(self, lat, lon):
         self.lat = lat
         self.long = lon
-
 
 # a simple container for the geographic corners of a geotagged image
 class PolygonBounds(object):
@@ -89,3 +110,4 @@ class PolygonBounds(object):
             v1 = v2
 
         return inside
+
