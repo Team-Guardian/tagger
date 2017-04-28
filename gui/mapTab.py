@@ -7,10 +7,9 @@ from utils.geolocate import geolocateLatLonFromPixelOnAreamap, geolocateLatLonFr
 from mapContextMenu import MapContextMenu
 from observer import *
 
-
 class MapTab(QtWidgets.QWidget, Ui_MapTab, Observer):
-    def __init__(self):
-        super(MapTab, self).__init__()
+    def __init__(self, parent=None):
+        super(MapTab, self).__init__(parent)
         Observer.__init__(self)
 
         self.setupUi(self)
@@ -25,6 +24,7 @@ class MapTab(QtWidgets.QWidget, Ui_MapTab, Observer):
 
         # Create a list to hold contour objects for all listed images
         self.image_list_contour_and_item_dict = {}
+        self.contour_draw_queue = []
 
         # Sets a transparent pixmap to initialize the size of the PhotoViewer
         self.createAndSetPlaceholderAreaPixmap()
@@ -37,6 +37,10 @@ class MapTab(QtWidgets.QWidget, Ui_MapTab, Observer):
         self.list_allImages.currentItemChanged.connect(self.currentImageChanged)
 
         self.viewer_map.getPhotoItem().addObserver(self)
+
+        self.timer = QtCore.QTimer()
+        self.timer.timeout.connect(self.paintQueuedContours)
+        self.timer.start(1000)
 
     def notify(self, event, id, data):
         if event is "FIND_IMAGES":
@@ -54,6 +58,12 @@ class MapTab(QtWidgets.QWidget, Ui_MapTab, Observer):
         elif event is "RESET_FILTERS":
             self.clearLatLonInputFields()
             self.unhideAllImages()
+
+    # paints contours on the map tab every second (approximate telemetry Rx rate)
+    def paintQueuedContours(self):
+        if len(self.contour_draw_queue) > 0:
+            self.viewer_map.getScene().addItem(self.contour_draw_queue[0])
+            self.contour_draw_queue.pop(0)
 
     def geolocatePoint(self, x, y):
         map_width, map_height = self.viewer_map._photo.boundingRect().getRect()[2:]
@@ -100,10 +110,12 @@ class MapTab(QtWidgets.QWidget, Ui_MapTab, Observer):
 
         # create a new contour for current image
         contour = self.createImageContour(image)
+        contour.updatePolygon()
+
         # pair contour and corresponding image in a dict
         self.image_list_contour_and_item_dict[image] = [item, contour]
 
-        self.updateAndShowContoursOnAreamap(contour)
+        self.contour_draw_queue.append(contour)
 
     def currentImageChanged(self, current, _):
         # restore original contour color to the image that is no longer selected
@@ -210,10 +222,6 @@ class MapTab(QtWidgets.QWidget, Ui_MapTab, Observer):
 
         return contour
 
-    def updateAndShowContoursOnAreamap(self, contour):
-        contour.updatePolygon()
-        self.addContourToScene(contour)
-
     def removeOldContourHighlight(self):
         if self.current_image is not None:
             # extract the contour from dictionary (don't care about the current item)
@@ -234,9 +242,6 @@ class MapTab(QtWidgets.QWidget, Ui_MapTab, Observer):
         for item in  self.viewer_map._scene.items():
             if type(item) is Contour:
                 self.viewer_map._scene.removeItem(item)
-
-    def addContourToScene(self, contour):
-        self.viewer_map._scene.addItem(contour)
 
     def resetTab(self):
         self.clearScene()

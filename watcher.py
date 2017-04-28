@@ -15,7 +15,7 @@ class Watcher:
         self.event_handler = None
         self.image_watcher_thread = None
         self.event_handler = FileCreatedEventHandler(self.observer)
-        self.stopCommand = False;
+        self.stopCommand = False
 
     def startWatching(self, flight, watched_dir):
         self.event_handler.startEventHandler(flight, watched_dir)

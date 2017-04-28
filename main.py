@@ -1,5 +1,5 @@
 import sys
-from PyQt5 import QtWidgets
+from PyQt5 import QtWidgets, QtCore
 
 from db.dbHelper import *
 from gui.mainWindow import MainWindow, TAB_INDICES
