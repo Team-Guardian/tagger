@@ -288,16 +288,16 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
 
     def addImageToUi(self, image):
         item = ImageListItem(image.filename, image)
-        self.list_images.addItem(item)
         self.image_list_item_dict[image] = item
+        font = item.font()
         if not image.is_reviewed:
-            # TODO: The three lines below trigger a warning on the first image from watcher.
-            font = item.font()
-            font.setBold(not font.bold())
-            item.setFont(font)
+            font.setBold(True)
             self.not_reviewed_image_count += 1
         elif image.is_reviewed:
+            font.setBold(False)
             self.reviewed_image_count += 1
+        item.setFont(font)
+        self.list_images.addItem(item)
         self.all_image_count += 1
         self.updateRadioButtonLabels()
 
