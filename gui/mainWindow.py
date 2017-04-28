@@ -10,12 +10,16 @@ from setupTab import SetupTab
 from taggingTab import TaggingTab
 from targetsTab import TargetsTab
 from observer import *
+from db.models import Image
 from utils.geolocate import geolocateLatLonFromPixelOnImage
 
 TAB_INDICES = {'TAB_SETUP': 0, 'TAB_TAGGING': 1, 'TAB_TARGETS': 2, 'TAB_MAP': 3}
 
 
 class MainWindow(QtWidgets.QMainWindow, Observable):
+
+    image_added_signal = QtCore.pyqtSignal(Image)
+
     def __init__(self):
         super(MainWindow, self).__init__()
         Observable.__init__(self)
@@ -60,6 +64,11 @@ class MainWindow(QtWidgets.QMainWindow, Observable):
         self.toggleReviewedStatusShortcut.activated.connect(self.toggleReviewedStatus)
 
         self.ui.tabWidget.currentChanged.connect(self.tabChangeHandler)
+
+        # self.image_added_signal = QtCore.pyqtSignal(Image)
+        self.image_added_signal.connect(self.taggingTab.processNewImage)
+        self.image_added_signal.connect(self.targetsTab.processNewImage)
+        self.image_added_signal.connect(self.mapTab.processNewImage)
 
     def notify(self, event, id, data):
         if event is "CURRENT_IMG_CHANGED":

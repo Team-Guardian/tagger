@@ -1,8 +1,9 @@
-from PyQt5 import QtWidgets, QtGui
+from PyQt5 import QtWidgets, QtGui, QtCore
 
 from ui.ui_targetsTab import Ui_TargetsTab
 from observer import Observer
 from db.dbHelper import *
+from db.models import Image
 from gui.tagListItem import TagListItem
 from gui.imageListItem import ImageListItem
 from gui.targetContextMenu import TargetContextMenu
@@ -31,6 +32,10 @@ class TargetsTab(QtWidgets.QWidget, Ui_TargetsTab, Observer):
         self.viewer_targets._photo.setTabContextMenu(self.targets_tab_context_menu)
 
         self.viewer_targets.getPhotoItem().addObserver(self)
+
+    @QtCore.pyqtSlot(Image)
+    def processNewImage(self, image):
+        self.addImageToUi(image)
 
     def notify(self, event, id, data):
         if event is "TAG_CREATED":

@@ -1,5 +1,6 @@
 from PyQt5 import QtWidgets, QtGui, QtCore
 from contour import Contour
+from db.models import Image
 from ui.ui_mapTab import Ui_MapTab
 from gui.imageListItem import ImageListItem
 from utils.geolocate import geolocateLatLonFromPixelOnAreamap, geolocateLatLonFromPixelOnImage
@@ -25,7 +26,6 @@ class MapTab(QtWidgets.QWidget, Ui_MapTab, Observer):
 
         # Create a list to hold contour objects for all listed images
         self.image_list_contour_and_item_dict = {}
-        self.contour_draw_queue = []
 
         # Sets a transparent pixmap to initialize the size of the PhotoViewer
         self.createAndSetPlaceholderAreaPixmap()
@@ -38,10 +38,6 @@ class MapTab(QtWidgets.QWidget, Ui_MapTab, Observer):
         self.list_allImages.currentItemChanged.connect(self.currentImageChanged)
 
         self.viewer_map.getPhotoItem().addObserver(self)
-
-        self.timer = QtCore.QTimer()
-        self.timer.timeout.connect(self.paintQueuedContours)
-        self.timer.start(1000)
 
     def notify(self, event, id, data):
         if event is "FIND_IMAGES":
@@ -61,10 +57,9 @@ class MapTab(QtWidgets.QWidget, Ui_MapTab, Observer):
             self.unhideAllImages()
 
     # paints contours on the map tab every second (approximate telemetry Rx rate)
-    def paintQueuedContours(self):
-        if len(self.contour_draw_queue) > 0:
-            self.viewer_map.getScene().addItem(self.contour_draw_queue[0])
-            self.contour_draw_queue.pop(0)
+    @QtCore.pyqtSlot(Image)
+    def processNewImage(self, image):
+        self.addImageToUi(image)
 
     def geolocatePoint(self, x, y):
         map_width, map_height = self.viewer_map._photo.boundingRect().getRect()[2:]
@@ -116,7 +111,8 @@ class MapTab(QtWidgets.QWidget, Ui_MapTab, Observer):
         # pair contour and corresponding image in a dict
         self.image_list_contour_and_item_dict[image] = [item, contour]
 
-        self.contour_draw_queue.append(contour)
+        # self.contour_draw_queue.append(contour)
+        self.viewer_map.getScene().addItem(contour)
 
     def currentImageChanged(self, current, _):
         if self.current_contour:
@@ -128,7 +124,6 @@ class MapTab(QtWidgets.QWidget, Ui_MapTab, Observer):
         self.current_contour = self.createImageContour(self.current_image)
         self.updateAndShowContoursOnAreamap(self.current_contour)
         self.highlightCurrentImageContour()
-
 
     # Class utility functions
     def search(self):
@@ -191,18 +186,18 @@ class MapTab(QtWidgets.QWidget, Ui_MapTab, Observer):
         site_elevation = image.flight.reference_altitude
         (img_upper_left_lat, img_upper_left_lon) = geolocateLatLonFromPixelOnImage(image, site_elevation, 0, 0)
         (img_upper_right_lat, img_upper_right_lon) = geolocateLatLonFromPixelOnImage(image, site_elevation,
-                                                                              image.width, 0)
+                                                                                     image.width, 0)
         (img_lower_right_lat, img_lower_right_lon) = geolocateLatLonFromPixelOnImage(image, site_elevation,
-                                                                              image.width,
-                                                                              image.height)
+                                                                                     image.width,
+                                                                                     image.height)
         (img_lower_left_lat, img_lower_left_lon) = geolocateLatLonFromPixelOnImage(image, site_elevation,
-                                                                                            0, image.height)
+                                                                                   0, image.height)
 
         # interpolate the location of the image on the minimap (in px)
         contour._topLeft.setX(((img_upper_left_lon - current_area_map.ul_lon) /
-                                (current_area_map.lr_lon - current_area_map.ul_lon)) * map_dims.width())
+                               (current_area_map.lr_lon - current_area_map.ul_lon)) * map_dims.width())
         contour._topLeft.setY(((img_upper_left_lat - current_area_map.ul_lat) /
-                                (current_area_map.lr_lat - current_area_map.ul_lat)) * map_dims.height())
+                               (current_area_map.lr_lat - current_area_map.ul_lat)) * map_dims.height())
 
         contour._topRight.setX(((img_upper_right_lon - current_area_map.ul_lon) /
                                 (current_area_map.lr_lon - current_area_map.ul_lon)) * map_dims.width())
@@ -210,14 +205,14 @@ class MapTab(QtWidgets.QWidget, Ui_MapTab, Observer):
                                 (current_area_map.lr_lat - current_area_map.ul_lat)) * map_dims.height())
 
         contour._bottomRight.setX(((img_lower_right_lon - current_area_map.ul_lon) /
-                                (current_area_map.lr_lon - current_area_map.ul_lon)) * map_dims.width())
+                                   (current_area_map.lr_lon - current_area_map.ul_lon)) * map_dims.width())
         contour._bottomRight.setY(((img_lower_right_lat - current_area_map.ul_lat) /
-                                (current_area_map.lr_lat - current_area_map.ul_lat)) * map_dims.height())
+                                   (current_area_map.lr_lat - current_area_map.ul_lat)) * map_dims.height())
 
         contour._bottomLeft.setX(((img_lower_left_lon - current_area_map.ul_lon) /
-                                (current_area_map.lr_lon - current_area_map.ul_lon)) * map_dims.width())
+                                  (current_area_map.lr_lon - current_area_map.ul_lon)) * map_dims.width())
         contour._bottomLeft.setY(((img_lower_left_lat - current_area_map.ul_lat) /
-                                (current_area_map.lr_lat - current_area_map.ul_lat)) * map_dims.height())
+                                  (current_area_map.lr_lat - current_area_map.ul_lat)) * map_dims.height())
 
         return contour
 

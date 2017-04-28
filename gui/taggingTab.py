@@ -5,6 +5,7 @@ from PyQt5.QtCore import QRect
 from ui.ui_taggingTab import Ui_TaggingTab
 from tagDialog import TagDialog
 from db.dbHelper import *
+from db.models import Image
 from observer import *
 from utils.geolocate import geolocateLatLonFromPixelOnImage, getPixelFromLatLon
 from utils.geographicUtilities import *
@@ -39,6 +40,10 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
         self.viewer_single._photo.setTabContextMenu(self.tagging_tab_context_menu)
 
         self.viewer_single.getPhotoItem().addObserver(self)
+
+    @QtCore.pyqtSlot(Image)
+    def processNewImage(self, image):
+        self.addImageToUi(image)
 
     def notify(self, event, id, data):
         if event is "MARKER_CREATE":
