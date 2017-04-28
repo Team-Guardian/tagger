@@ -1,6 +1,6 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
 from observer import Observer
-from utils.geolocate import geolocateLatLonFromPixel
+from utils.geolocate import geolocateLatLonFromPixelOnImage
 from math import cos, asin, sqrt
 
 # offset of the scale in viewport coordinates
@@ -97,8 +97,8 @@ class Scale(Observer):
             default_y_end = scene_point_default_end.y()
 
             # Find geodetic coordinates of two points on the image
-            lat_start, lon_start = geolocateLatLonFromPixel(self.current_image, self.current_image.flight.reference_altitude, x_start, y_start)
-            lat_end, lon_end = geolocateLatLonFromPixel(self.current_image, self.current_image.flight.reference_altitude, default_x_end, default_y_end)
+            lat_start, lon_start = geolocateLatLonFromPixelOnImage(self.current_image, self.current_image.flight.reference_altitude, x_start, y_start)
+            lat_end, lon_end = geolocateLatLonFromPixelOnImage(self.current_image, self.current_image.flight.reference_altitude, default_x_end, default_y_end)
 
             # Find ground distance between two points
             distance_in_meters = self.distanceBetweenGeodeticCoordinates(lat_start, lon_start, lat_end, lon_end)
