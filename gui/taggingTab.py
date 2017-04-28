@@ -183,11 +183,11 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
 
         # Correctly position the MarkerItem graphic on the UI
         markerXPos = x - marker.pixmap().size().width() / 2  # To position w.r.t. center of pixMap
-        markerYPos = y - marker.pixmap().size().height() / 2  # To position w.r.t. center of pixMap
+        markerYPos = y - marker.pixmap().size().height()  # To position w.r.t. center of pixMap
         marker.setPos(markerXPos, markerYPos)
 
         # The following line makes sure that the scaling happens w.r.t. center of pixMap
-        marker.setTransformOriginPoint(marker.pixmap().size().width() / 2, marker.pixmap().size().height() / 2)
+        marker.setTransformOriginPoint(marker.pixmap().size().width() / 2, marker.pixmap().size().height())
 
         # Set image opacity
         marker.setOpacity(opacity)
