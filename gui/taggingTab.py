@@ -246,11 +246,6 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
         if self.radioButton_reviewed.isChecked():
             self.reviewedButtonToggled()
 
-        if not image.is_reviewed:
-            font = item.font()
-            font.setBold(not font.bold())
-            item.setFont(font)
-
     def toggleImageReviewed(self):
         item = self.list_images.currentItem()
         image = item.getImage()
