@@ -6,6 +6,7 @@ from db.dbHelper import *
 from gui.tagListItem import TagListItem
 from gui.imageListItem import ImageListItem
 from gui.targetContextMenu import TargetContextMenu
+from utils.geographicUtilities import exportAllTelemetry
 from utils.imageInfo import FLIGHT_DIRECTORY
 from utils.geographicUtilities import getFrameBounds, Point
 
@@ -29,6 +30,7 @@ class TargetsTab(QtWidgets.QWidget, Ui_TargetsTab, Observer):
 
         self.targets_tab_context_menu = TargetContextMenu()
         self.viewer_targets._photo.setTabContextMenu(self.targets_tab_context_menu)
+        self.button_exportTelemetry.clicked.connect(self.exportTelemetry)
 
         self.viewer_targets.getPhotoItem().addObserver(self)
 
@@ -144,3 +146,7 @@ class TargetsTab(QtWidgets.QWidget, Ui_TargetsTab, Observer):
         self.list_taggedImages.clear()
         self.list_tags.clear()
         self.enableCurrentItemChangedEvent()  # re-enable the event
+
+    def exportTelemetry(self):
+        filename = FLIGHT_DIRECTORY + '{}/{}'.format(self.current_flight.img_path, "gps.csv")
+        exportAllTelemetry(self.current_flight, filename)

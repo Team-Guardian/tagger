@@ -2,11 +2,28 @@ from geolocate import geolocateLatLonFromPixel
 
 # Definitions and utilities for performing geographic operations.
 
+import sys, os
+import pyexiv2
+from db.models import Image
+
 # Combine a point with an existing average of points.
 # Don't use for distances spanning many km
 def addToAverage(count, average, new):
     average.lat = (average.lat * count + new.lat) / (count + 1)
     average.long = (average.long * count + new.long) / (count + 1)
+
+def exportAllTelemetry(flight, filename):
+    out = open(filename, 'w')
+    out.write('name,latitude,longitude,altitude,pitch,roll,yaw\n')
+
+    for img in Image.objects.filter(flight=flight):
+        telemetry = [img.filename,
+                     img.latitude, img.longitude,
+                     img.altitude - flight.reference_altitude,
+                     img.pitch, img.roll, img.yaw]
+        out.write(str.join(",", [str(val) for val in telemetry]) + "\n")
+
+    out.close()
 
 # Get geographic bounds for any frame - can be an entire image or a subset
 def getFrameBounds(image, reference_altitude, top_left_pixel=None, bottom_right_pixel=None):
