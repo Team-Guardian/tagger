@@ -222,9 +222,15 @@
           </property>
           <property name="maximumSize">
            <size>
-            <width>500</width>
-            <height>400</height>
+            <width>1000</width>
+            <height>1000</height>
            </size>
+          </property>
+          <property name="verticalScrollBarPolicy">
+           <enum>Qt::ScrollBarAlwaysOff</enum>
+          </property>
+          <property name="horizontalScrollBarPolicy">
+           <enum>Qt::ScrollBarAlwaysOff</enum>
           </property>
          </widget>
         </item>
