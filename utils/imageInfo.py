@@ -8,7 +8,7 @@ import os
 from db.dbHelper import create_image
 
 #FLIGHT_DIRECTORY = "./flights/"
-FLIGHT_DIRECTORY = "./remote_flights"
+FLIGHT_DIRECTORY = "./../remote_flights/"
 
 # reads an image from path, ensures it not duplicating an existing image
 # reads exif information, creates db entry, moves file to flight directory

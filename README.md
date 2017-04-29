@@ -64,11 +64,11 @@ sudo adduser <my_user> fuse
 
 3. Create a destination directory for mapping in your tagger repo root directory
 ```
-mkdir <path_to_tagger_repo>/remote_flights
+mkdir <path_to_tagger_repo>/../remote_flights
 ```
 
 4. Map GCS flights directory to the local folder you just created
 ```
-sshfs uav@gcs-vision.local:/home/uav/tagger/flights <path_to_tagger_repo>/remote_flights
+sshfs uav@gcs-vision.local:/home/uav/tagger/flights <path_to_tagger_repo>/../remote_flights
 ```
 
