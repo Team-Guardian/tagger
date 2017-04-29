@@ -62,6 +62,7 @@ class Controller(Observer):
         self.window.taggingTab.currentFlight = self.currentFlight
         self.window.mapTab.currentFlight = self.currentFlight
         self.window.targetsTab.current_flight = self.currentFlight
+        self.window.targetsTab.setContextMenu()
         self.window.ui.tabWidget.setCurrentIndex(TAB_INDICES['TAB_TAGGING'])
         self.loadImages() # Keep this sequentially after the setCurrentTab call. This is a workaround for a \
                           # Qt bug: https://goo.gl/gWXA9Q

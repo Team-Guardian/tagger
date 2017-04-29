@@ -62,8 +62,11 @@ class MapTab(QtWidgets.QWidget, Ui_MapTab, Observer):
         self.addImageToUi(image)
 
     def geolocatePoint(self, x, y):
-        map_width, map_height = self.viewer_map._photo.boundingRect().getRect()[2:]
-        lat, lon = geolocateLatLonFromPixelOnAreamap(self.current_flight.area_map, map_width, map_height, x, y)
+        lat = 0
+        lon = 0
+        if self.current_flight is not None:
+            map_width, map_height = self.viewer_map._photo.boundingRect().getRect()[2:]
+            lat, lon = geolocateLatLonFromPixelOnAreamap(self.current_flight.area_map, map_width, map_height, x, y)
         return lat, lon
 
     def findImagesContainingPoint(self, lat, lon):
