@@ -1,16 +1,16 @@
 from PyQt5 import QtWidgets, QtGui, QtCore
 from contour import Contour
+from db.models import Image
 from ui.ui_mapTab import Ui_MapTab
 from gui.imageListItem import ImageListItem
+from utils.geolocate import geolocateLatLonFromPixelOnAreamap, geolocateLatLonFromPixelOnImage
 from utils.geographicUtilities import Point, PolygonBounds, getFrameBounds
-from utils.geolocate import geolocateLatLonFromPixel
 from mapContextMenu import MapContextMenu
 from observer import *
 
-
 class MapTab(QtWidgets.QWidget, Ui_MapTab, Observer):
-    def __init__(self):
-        super(MapTab, self).__init__()
+    def __init__(self, parent=None):
+        super(MapTab, self).__init__(parent)
         Observer.__init__(self)
 
         self.setupUi(self)
@@ -56,12 +56,17 @@ class MapTab(QtWidgets.QWidget, Ui_MapTab, Observer):
             self.clearLatLonInputFields()
             self.unhideAllImages()
 
+    # paints contours on the map tab every second (approximate telemetry Rx rate)
+    @QtCore.pyqtSlot(Image)
+    def processNewImage(self, image):
+        self.addImageToUi(image)
+
     def geolocatePoint(self, x, y):
         lat = 0
         lon = 0
         if self.current_flight is not None:
             map_width, map_height = self.viewer_map._photo.boundingRect().getRect()[2:]
-            lat, lon = geolocateLatLonFromPixel(self.current_flight.area_map, map_width, map_height, x, y)
+            lat, lon = geolocateLatLonFromPixelOnAreamap(self.current_flight.area_map, map_width, map_height, x, y)
         return lat, lon
 
     def findImagesContainingPoint(self, lat, lon):
@@ -104,10 +109,13 @@ class MapTab(QtWidgets.QWidget, Ui_MapTab, Observer):
 
         # create a new contour for current image
         contour = self.createImageContour(image)
+        contour.updatePolygon()
+
         # pair contour and corresponding image in a dict
         self.image_list_contour_and_item_dict[image] = [item, contour]
 
-        self.updateAndShowContoursOnAreamap(contour)
+        # self.contour_draw_queue.append(contour)
+        self.viewer_map.getScene().addItem(contour)
 
     def currentImageChanged(self, current, _):
         if self.current_contour:
@@ -119,7 +127,6 @@ class MapTab(QtWidgets.QWidget, Ui_MapTab, Observer):
         self.current_contour = self.createImageContour(self.current_image)
         self.updateAndShowContoursOnAreamap(self.current_contour)
         self.highlightCurrentImageContour()
-
 
     # Class utility functions
     def search(self):
@@ -180,20 +187,20 @@ class MapTab(QtWidgets.QWidget, Ui_MapTab, Observer):
         current_area_map = self.current_flight.area_map
 
         site_elevation = image.flight.reference_altitude
-        (img_upper_left_lat, img_upper_left_lon) = geolocateLatLonFromPixel(image, site_elevation, 0, 0)
-        (img_upper_right_lat, img_upper_right_lon) = geolocateLatLonFromPixel(image, site_elevation,
-                                                                              image.width, 0)
-        (img_lower_right_lat, img_lower_right_lon) = geolocateLatLonFromPixel(image, site_elevation,
-                                                                              image.width,
-                                                                              image.height)
-        (img_lower_left_lat, img_lower_left_lon) = geolocateLatLonFromPixel(image, site_elevation,
-                                                                                            0, image.height)
+        (img_upper_left_lat, img_upper_left_lon) = geolocateLatLonFromPixelOnImage(image, site_elevation, 0, 0)
+        (img_upper_right_lat, img_upper_right_lon) = geolocateLatLonFromPixelOnImage(image, site_elevation,
+                                                                                     image.width, 0)
+        (img_lower_right_lat, img_lower_right_lon) = geolocateLatLonFromPixelOnImage(image, site_elevation,
+                                                                                     image.width,
+                                                                                     image.height)
+        (img_lower_left_lat, img_lower_left_lon) = geolocateLatLonFromPixelOnImage(image, site_elevation,
+                                                                                   0, image.height)
 
         # interpolate the location of the image on the minimap (in px)
         contour._topLeft.setX(((img_upper_left_lon - current_area_map.ul_lon) /
-                                (current_area_map.lr_lon - current_area_map.ul_lon)) * map_dims.width())
+                               (current_area_map.lr_lon - current_area_map.ul_lon)) * map_dims.width())
         contour._topLeft.setY(((img_upper_left_lat - current_area_map.ul_lat) /
-                                (current_area_map.lr_lat - current_area_map.ul_lat)) * map_dims.height())
+                               (current_area_map.lr_lat - current_area_map.ul_lat)) * map_dims.height())
 
         contour._topRight.setX(((img_upper_right_lon - current_area_map.ul_lon) /
                                 (current_area_map.lr_lon - current_area_map.ul_lon)) * map_dims.width())
@@ -201,20 +208,16 @@ class MapTab(QtWidgets.QWidget, Ui_MapTab, Observer):
                                 (current_area_map.lr_lat - current_area_map.ul_lat)) * map_dims.height())
 
         contour._bottomRight.setX(((img_lower_right_lon - current_area_map.ul_lon) /
-                                (current_area_map.lr_lon - current_area_map.ul_lon)) * map_dims.width())
+                                   (current_area_map.lr_lon - current_area_map.ul_lon)) * map_dims.width())
         contour._bottomRight.setY(((img_lower_right_lat - current_area_map.ul_lat) /
-                                (current_area_map.lr_lat - current_area_map.ul_lat)) * map_dims.height())
+                                   (current_area_map.lr_lat - current_area_map.ul_lat)) * map_dims.height())
 
         contour._bottomLeft.setX(((img_lower_left_lon - current_area_map.ul_lon) /
-                                (current_area_map.lr_lon - current_area_map.ul_lon)) * map_dims.width())
+                                  (current_area_map.lr_lon - current_area_map.ul_lon)) * map_dims.width())
         contour._bottomLeft.setY(((img_lower_left_lat - current_area_map.ul_lat) /
-                                (current_area_map.lr_lat - current_area_map.ul_lat)) * map_dims.height())
+                                  (current_area_map.lr_lat - current_area_map.ul_lat)) * map_dims.height())
 
         return contour
-
-    def updateAndShowContoursOnAreamap(self, contour):
-        contour.updatePolygon()
-        self.addContourToScene(contour)
 
     def removeOldContourHighlight(self):
         if self.current_image is not None:
@@ -257,6 +260,10 @@ class MapTab(QtWidgets.QWidget, Ui_MapTab, Observer):
         self.enableCurrentItemChangedEvent()  # re-enable the event
 
         self.clearScene()
+
+    def updateOnResize(self):
+        self.viewer_map.fitInView()
+        # self.updateContourPositions() # TODO: IMPORTANT! Implement when merged, make sure the app doesn't crash beacuse all contours get redrawn
 
     # Accessors and mutators of the class variables
     def getCurrentImage(self):

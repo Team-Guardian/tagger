@@ -1,8 +1,9 @@
-from PyQt5 import QtWidgets, QtGui
+from PyQt5 import QtWidgets, QtGui, QtCore
 
 from ui.ui_targetsTab import Ui_TargetsTab
 from observer import Observer
 from db.dbHelper import *
+from db.models import Image
 from gui.tagListItem import TagListItem
 from gui.imageListItem import ImageListItem
 from gui.targetContextMenu import TargetContextMenu
@@ -33,6 +34,10 @@ class TargetsTab(QtWidgets.QWidget, Ui_TargetsTab, Observer):
         self.button_exportTelemetry.clicked.connect(self.exportTelemetry)
 
         self.viewer_targets.getPhotoItem().addObserver(self)
+
+    @QtCore.pyqtSlot(Image)
+    def processNewImage(self, image):
+        self.addImageToUi(image)
 
     def notify(self, event, id, data):
         if event is "TAG_CREATED":
@@ -149,6 +154,9 @@ class TargetsTab(QtWidgets.QWidget, Ui_TargetsTab, Observer):
         self.list_taggedImages.clear()
         self.list_tags.clear()
         self.enableCurrentItemChangedEvent()  # re-enable the event
+
+    def updateOnResize(self):
+        self.viewer_targets.fitInView()
 
     def exportTelemetry(self):
         filename = FLIGHT_DIRECTORY + '{}/{}'.format(self.current_flight.img_path, "gps.csv")

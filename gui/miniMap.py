@@ -1,9 +1,7 @@
 # Math reference: http://stackoverflow.com/questions/2827393/angles-between-two-n-dimensional-vectors-in-python/13849249#13849249
 
 from PyQt5 import QtCore, QtGui, QtWidgets
-import numpy
-from math import sin, cos
-import utils.geolocate
+from utils.geolocate import geolocateLatLonFromPixelOnImage
 from contour import Contour
 
 class MiniMap(QtWidgets.QGraphicsView):
@@ -38,14 +36,15 @@ class MiniMap(QtWidgets.QGraphicsView):
         self.fitInView()
         self.addMapToScene()
 
-    def updateContourOnImageChange(self, image):
-        if self._current_flight.area_map is not None:
-            self.removeContourFromScene()
-            self.findImageCornerPixelCoordinates(image)
-            self._img_contour.updatePolygon()
-            self.addContourToScene()
-        else:
-            print "This flight does not have an associated areamap."
+    def updateContour(self, image):
+        if self._current_flight is not None and image is not None:
+            if self._current_flight.area_map is not None:
+                self.removeContourFromScene()
+                self.findImageCornerPixelCoordinates(image)
+                self._img_contour.updatePolygon()
+                self.addContourToScene()
+            else:
+                print "This flight does not have an associated areamap."
 
     def findImageCornerPixelCoordinates(self, img):
         map_dims = self._map.boundingRect()
@@ -53,13 +52,13 @@ class MiniMap(QtWidgets.QGraphicsView):
         current_area_map = self._current_flight.area_map
 
         site_elevation = img.flight.reference_altitude
-        (img_upper_left_lat, img_upper_left_lon) = utils.geolocate.geolocateLatLonFromPixel(img, site_elevation, 0, 0)
-        (img_upper_right_lat, img_upper_right_lon) = utils.geolocate.geolocateLatLonFromPixel(img, site_elevation,
+        (img_upper_left_lat, img_upper_left_lon) = geolocateLatLonFromPixelOnImage(img, site_elevation, 0, 0)
+        (img_upper_right_lat, img_upper_right_lon) = geolocateLatLonFromPixelOnImage(img, site_elevation,
                                                                                               img.width, 0)
-        (img_lower_right_lat, img_lower_right_lon) = utils.geolocate.geolocateLatLonFromPixel(img, site_elevation,
+        (img_lower_right_lat, img_lower_right_lon) = geolocateLatLonFromPixelOnImage(img, site_elevation,
                                                                                               img.width,
                                                                                               img.height)
-        (img_lower_left_lat, img_lower_left_lon) = utils.geolocate.geolocateLatLonFromPixel(img, site_elevation,
+        (img_lower_left_lat, img_lower_left_lon) = geolocateLatLonFromPixelOnImage(img, site_elevation,
                                                                                             0, img.height)
 
         # interpolate the location of the image on the minimap (in px)
@@ -103,7 +102,7 @@ class MiniMap(QtWidgets.QGraphicsView):
         if not rect.isNull():
             viewrect = self.viewport().rect()
             self._map.setPixmap(self._map.pixmap().scaled(viewrect.width(), viewrect.height(), QtCore.Qt.KeepAspectRatio))
-            self.centerOn(self.viewport().rect().center())
+            # self.centerOn(self.viewport().rect().center())
 
     def createAndSetPlaceholderPixmap(self):
         self._map.setPixmap(self.generatePlaceholderPixmap())
@@ -120,3 +119,10 @@ class MiniMap(QtWidgets.QGraphicsView):
     def reset(self):
         self.clearScene()
         self.createAndSetPlaceholderPixmap()
+
+    def refresh(self, image):
+        if self._current_flight is not None:
+            self.setMinimap(self._current_flight)
+            self.updateContour(image)
+            self.fitInView()
+

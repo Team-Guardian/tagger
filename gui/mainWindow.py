@@ -10,12 +10,16 @@ from setupTab import SetupTab
 from taggingTab import TaggingTab
 from targetsTab import TargetsTab
 from observer import *
-from utils.geolocate import geolocateLatLonFromPixel
+from db.models import Image
+from utils.geolocate import geolocateLatLonFromPixelOnImage
 
 TAB_INDICES = {'TAB_SETUP': 0, 'TAB_TAGGING': 1, 'TAB_TARGETS': 2, 'TAB_MAP': 3}
 
 
 class MainWindow(QtWidgets.QMainWindow, Observable):
+
+    image_added_signal = QtCore.pyqtSignal(Image)
+
     def __init__(self):
         super(MainWindow, self).__init__()
         Observable.__init__(self)
@@ -35,7 +39,7 @@ class MainWindow(QtWidgets.QMainWindow, Observable):
         self.ui.tabWidget.addTab(self.targetsTab, "Targets")
         self.taggingTab.addObserver(self.targetsTab)
 
-        self.mapTab = MapTab()
+        self.mapTab = MapTab(self)
         self.mapTab.viewer_map.viewport().installEventFilter(self)
         self.ui.tabWidget.addTab(self.mapTab, "Map")
 
@@ -45,10 +49,26 @@ class MainWindow(QtWidgets.QMainWindow, Observable):
         self.ui.actionSaveImage.setShortcut(QKeySequence.Save)
         self.ui.actionSaveImage.setShortcutContext(QtCore.Qt.WidgetShortcut)
         self.ui.actionSaveImage.setDisabled(True)
+
+        # keyboard shortcuts
+        # save
         self.saveImageShortcut = QShortcut(QKeySequence("Ctrl+S"), self)
         self.saveImageShortcut.activated.connect(self.saveImage)
 
+        # go to next item in the list of images and mark current image as reviewed
+        self.nextImageInTheListShortcut = QShortcut(QKeySequence(" "), self)
+        self.nextImageInTheListShortcut.activated.connect(self.nextImageInTheList)
+
+        # toggle review marker
+        self.toggleReviewedStatusShortcut = QShortcut(QKeySequence("R"), self)
+        self.toggleReviewedStatusShortcut.activated.connect(self.toggleReviewedStatus)
+
         self.ui.tabWidget.currentChanged.connect(self.tabChangeHandler)
+
+        # self.image_added_signal = QtCore.pyqtSignal(Image)
+        self.image_added_signal.connect(self.taggingTab.processNewImage)
+        self.image_added_signal.connect(self.targetsTab.processNewImage)
+        self.image_added_signal.connect(self.mapTab.processNewImage)
 
     def notify(self, event, id, data):
         if event is "CURRENT_IMG_CHANGED":
@@ -64,7 +84,7 @@ class MainWindow(QtWidgets.QMainWindow, Observable):
                     image = self.taggingTab.getCurrentImage()
                     site_elevation = self.taggingTab.getCurrentFlight().reference_altitude
                     if image:
-                        lat, lon = geolocateLatLonFromPixel(image, site_elevation, point.x(), point.y())
+                        lat, lon = geolocateLatLonFromPixelOnImage(image, site_elevation, point.x(), point.y())
                         self.ui.statusbar.showMessage(
                             'x: %4d, y: %4d, lat: %-3.6f, lon: %-3.6f, alt (MSL): %3.1f, alt (AGL): %3.1f, pitch: %2.3f, roll: %2.3f, yaw: %2.3f' % \
                             (round(point.x()), round(point.y()), lat, lon, image.altitude,
@@ -82,16 +102,9 @@ class MainWindow(QtWidgets.QMainWindow, Observable):
         return QtWidgets.QWidget.eventFilter(self, source, event)
 
     def resizeEvent(self, resizeEvent):
-        openedTab = self.ui.tabWidget.currentWidget()
-        imageViewers = openedTab.findChildren(QtWidgets.QGraphicsView)
-        self.taggingTab.viewer_single.updateScale()
-    
-        # if no PhotoViewers exist in current tab, do nothing
-        if imageViewers == None:
-            pass
-        else:
-            for imgViewer in imageViewers:
-                imgViewer.fitInView()
+        for tabIndex in range(self.ui.tabWidget.count()):  # iterate over each tab
+            current_tab = self.ui.tabWidget.widget(tabIndex)
+            current_tab.updateOnResize()
 
     def tabChangeHandler(self):
         currentTabIndex = self.ui.tabWidget.currentIndex()
@@ -115,3 +128,13 @@ class MainWindow(QtWidgets.QMainWindow, Observable):
     def saveImage(self):
         if self.ui.tabWidget.currentIndex() == TAB_INDICES['TAB_TAGGING']:
             self.taggingTab.saveImage()
+
+    def nextImageInTheList(self):
+        if self.ui.tabWidget.currentIndex() == TAB_INDICES['TAB_TAGGING']:
+            self.taggingTab.markImageAsReviewed()
+            self.taggingTab.nextImage()
+
+    def toggleReviewedStatus(self):
+        # we only want it to be activated from the targets tab
+        if self.ui.tabWidget.currentIndex() == TAB_INDICES['TAB_TAGGING']:
+            self.taggingTab.toggleImageReviewed()
