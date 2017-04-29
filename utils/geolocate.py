@@ -3,15 +3,12 @@ from math import acos, asin, atan2
 import utils.xmlParser
 import numpy
 
-
 def getPixelFromLatLon(image, image_width, image_height, site_elevation, pixel_lat, pixel_lon): #TODO: test
 
     lat_img = radians(image.latitude)
     lon_img = radians(image.longitude)
 
-    intrinsic_matrix = numpy.array([[3446.85229, 0, 1477.50261],
-                                   [0, 3431.11804, 1002.49563],
-                                   [0, 0, 1]], dtype=numpy.float64)
+    intrinsic_matrix = utils.xmlParser.getIntrinsicMatrix(image.flight.intrinsic_matrix)
 
     # choose a reference location inside flight area
     lat_ref = radians(49.903867)
