@@ -5,7 +5,10 @@ from PyQt5.QtCore import QRect
 from ui.ui_taggingTab import Ui_TaggingTab
 from tagDialog import TagDialog
 from db.dbHelper import *
+from db.models import Image
 from observer import *
+from utils.geolocate import geolocateLatLonFromPixelOnImage, getPixelFromLatLon
+from utils.geographicUtilities import *
 from gui.imageListItem import ImageListItem
 from gui.tagTableItem import TagTableItem
 from gui.tagContextMenu import TagContextMenu
@@ -44,6 +47,11 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
         self.not_reviewed_image_count = 0
         self.updateRadioButtonLabels()
 
+    @QtCore.pyqtSlot(Image)
+    def processNewImage(self, image):
+        self.addImageToUi(image)
+
+
     def updateRadioButtonLabels(self):
         self.radioButton_allImages.setText('All Images ({})'.format(self.all_image_count))
         self.radioButton_reviewed.setText('Reviewed ({})'.format(self.reviewed_image_count))
@@ -75,8 +83,6 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
         self.radioButton_notReviewed.clicked.connect(self.notReviewedButtonToggled)
 
         self.button_toggleReviewed.clicked.connect(self.toggleImageReviewed)
-        self.button_previous.clicked.connect(self.previousImage)
-        self.button_next.clicked.connect(self.nextImage)
         self.button_addImage.clicked.connect(self.addImage)
 
     def addTag(self):
@@ -174,7 +180,7 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
     def addMarker(self, tag):
         pu = self.tagging_tab_context_menu.pixel_x_invocation_coord
         pv = self.tagging_tab_context_menu.pixel_y_invocation_coord
-        lat, lon = geolocateLatLonFromPixel(self.currentImage, self.currentFlight.reference_altitude, pu, pv)
+        lat, lon = geolocateLatLonFromPixelOnImage(self.currentImage, self.currentFlight.reference_altitude, pu, pv)
         m = create_marker(tag=tag, image=self.currentImage, latitude=lat, longitude=lon)
         m.tag.num_occurrences += 1
         m.tag.save()
@@ -269,7 +275,22 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
 
         self.list_images.setFocus()
         self.updateList()
-        self.nextImage()
+
+    def markImageAsReviewed(self):
+        item = self.list_images.currentItem()
+        image = item.getImage()
+
+        if item:
+            if not image.is_reviewed:
+                image.is_reviewed = True
+                self.reviewed_image_count += 1
+                self.not_reviewed_image_count -= 1
+                image.save()
+                font = item.font()
+                font.setBold(False)
+                item.setFont(font)
+
+        self.updateRadioButtonLabels()
 
     def updateList(self):
         current_button = self.image_status_buttons.checkedButton()
@@ -320,8 +341,8 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
             self.updateTagMarkerCountInUi(tag)
             
         # update widgets
-        self.minimap.updateContourOnImageChange(self.currentImage)
-        self.openImage(FLIGHT_DIRECTORY + '{}/{}'.format(self.currentFlight.img_path, self.currentImage.filename), self.viewer_single)
+        self.minimap.updateContour(self.currentImage)
+        self.openImage('./flights/{}/{}'.format(self.currentFlight.img_path, self.currentImage.filename), self.viewer_single)
 
         self.notifyObservers("CURRENT_IMG_CHANGED", None, None)
 
@@ -415,6 +436,10 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
 
         # clear the photo viewer
         self.viewer_single.setPhoto(None)
+
+    def updateOnResize(self):
+        self.viewer_single.fitInView()
+        self.minimap.refresh(self.currentImage)
 
     def disableCurrentImageChangedEvent(self):
         self.list_images.currentItemChanged.disconnect(self.currentImageChanged)

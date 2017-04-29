@@ -1,5 +1,5 @@
 import sys
-from PyQt5 import QtWidgets
+from PyQt5 import QtWidgets, QtCore
 
 from db.dbHelper import *
 from gui.mainWindow import MainWindow, TAB_INDICES
@@ -49,9 +49,10 @@ class Controller(Observer):
         elif event is "IMAGE_ADDED":
             new_image = data
             self.images.append(new_image)
-            self.window.taggingTab.addImageToUi(new_image)
-            self.window.targetsTab.addImageToUi(new_image)
-            self.window.mapTab.addImageToUi(new_image)
+            self.window.image_added_signal.emit(new_image)
+            # self.window.taggingTab.addImageToUi(new_image)
+            # self.window.targetsTab.addImageToUi(new_image)
+            # self.window.mapTab.addImageToUi(new_image)
 
     def loadFlight(self, id): # TODO: this function does more than the name implies
         self.currentFlight = self.flights[id]
