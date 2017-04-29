@@ -119,3 +119,10 @@ class MiniMap(QtWidgets.QGraphicsView):
     def reset(self):
         self.clearScene()
         self.createAndSetPlaceholderPixmap()
+
+    def refresh(self, image):
+        if self._current_flight is not None:
+            self.setMinimap(self._current_flight)
+            self.updateContour(image)
+            self.fitInView()
+

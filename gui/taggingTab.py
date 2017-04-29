@@ -413,8 +413,7 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
 
     def updateOnResize(self):
         self.viewer_single.fitInView()
-        self.minimap.fitInView()
-        self.minimap.updateContour(self.currentImage)
+        self.minimap.refresh(self.currentImage)
 
     def disableCurrentImageChangedEvent(self):
         self.list_images.currentItemChanged.disconnect(self.currentImageChanged)
