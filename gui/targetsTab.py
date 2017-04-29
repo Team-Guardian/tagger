@@ -157,7 +157,6 @@ class TargetsTab(QtWidgets.QWidget, Ui_TargetsTab, Observer):
 
     def updateOnResize(self):
         self.viewer_targets.fitInView()
-        # self.currentImageChanged() # TODO: merge and uncomment
 
     def exportTelemetry(self):
         filename = FLIGHT_DIRECTORY + '{}/{}'.format(self.current_flight.img_path, "gps.csv")

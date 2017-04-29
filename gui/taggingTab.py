@@ -41,15 +41,16 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
 
         self.viewer_single.getPhotoItem().addObserver(self)
 
-    @QtCore.pyqtSlot(Image)
-    def processNewImage(self, image):
-        self.addImageToUi(image)
-
         # retranslate radio buttons to display image count
         self.all_image_count = 0
         self.reviewed_image_count = 0
         self.not_reviewed_image_count = 0
         self.updateRadioButtonLabels()
+
+    @QtCore.pyqtSlot(Image)
+    def processNewImage(self, image):
+        self.addImageToUi(image)
+
 
     def updateRadioButtonLabels(self):
         self.radioButton_allImages.setText('All Images ({})'.format(self.all_image_count))
@@ -281,10 +282,14 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
 
         if item:
             image.is_reviewed = True
+            self.reviewed_image_count += 1
+            self.not_reviewed_image_count -= 1
             image.save()
             font = item.font()
             font.setBold(False)
             item.setFont(font)
+
+        self.updateRadioButtonLabels()
 
     def updateList(self):
         current_button = self.image_status_buttons.checkedButton()
