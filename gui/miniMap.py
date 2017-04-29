@@ -102,7 +102,7 @@ class MiniMap(QtWidgets.QGraphicsView):
         if not rect.isNull():
             viewrect = self.viewport().rect()
             self._map.setPixmap(self._map.pixmap().scaled(viewrect.width(), viewrect.height(), QtCore.Qt.KeepAspectRatio))
-            self.centerOn(self.viewport().rect().center())
+            # self.centerOn(self.viewport().rect().center())
 
     def createAndSetPlaceholderPixmap(self):
         self._map.setPixmap(self.generatePlaceholderPixmap())
