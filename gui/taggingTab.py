@@ -42,10 +42,11 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
         self.all_image_count = 0
         self.reviewed_image_count = 0
         self.not_reviewed_image_count = 0
+        self.all_image_row = 0
         self.updateRadioButtonLabels()
 
     def updateRadioButtonLabels(self):
-        self.radioButton_allImages.setText('All Images ({})'.format(self.all_image_count))
+        self.radioButton_allImages.setText('All Images ({}/{})'.format(self.all_image_row, self.all_image_count))
         self.radioButton_reviewed.setText('Reviewed ({})'.format(self.reviewed_image_count))
         self.radioButton_notReviewed.setText('Not Reviewed ({})'.format(self.not_reviewed_image_count))
 
@@ -310,6 +311,9 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
         # update current image
         self.currentImage = current.getImage()
         self.viewer_single.getScale().setCurrentImage(self.currentImage)
+
+        self.all_image_current_row = self.list_images.currentRow()
+        self.updateRadioButtonLabels()
 
         # refresh image reviewed/not reviewed state
         self.updateImageList()
