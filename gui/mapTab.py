@@ -271,3 +271,7 @@ class MapTab(QtWidgets.QWidget, Ui_MapTab, Observer):
 
     def getCurrentFlight(self):
         return self.current_flight
+
+    def updateAndShowContoursOnAreamap(self, contour):
+        contour.updatePolygon()
+        self.addContourToScene(contour)
