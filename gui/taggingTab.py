@@ -38,6 +38,17 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
 
         self.viewer_single.getPhotoItem().addObserver(self)
 
+        # retranslate radio buttons to display image count
+        self.all_image_count = 0
+        self.reviewed_image_count = 0
+        self.not_reviewed_image_count = 0
+        self.updateRadioButtonLabels()
+
+    def updateRadioButtonLabels(self):
+        self.radioButton_allImages.setText('All Images ({})'.format(self.all_image_count))
+        self.radioButton_reviewed.setText('Reviewed ({})'.format(self.reviewed_image_count))
+        self.radioButton_notReviewed.setText('Not Reviewed ({})'.format(self.not_reviewed_image_count))
+
     def notify(self, event, id, data):
         if event is "MARKER_CREATE":
             self.addMarker(data)
@@ -235,23 +246,26 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
         if self.radioButton_reviewed.isChecked():
             self.reviewedButtonToggled()
 
-        if not image.is_reviewed:
-            font = item.font()
-            font.setBold(not font.bold())
-            item.setFont(font)
-
     def toggleImageReviewed(self):
         item = self.list_images.currentItem()
         image = item.getImage()
 
         if item:
-            font = item.font()
-            image.is_reviewed = True
-            if not font.bold():
+            list_item_font = item.font()
+            if image.is_reviewed:
                 image.is_reviewed = False
+                self.not_reviewed_image_count += 1
+                self.reviewed_image_count -= 1
+                self.updateRadioButtonLabels()
+                list_item_font.setBold(True)
+            elif not image.is_reviewed:
+                image.is_reviewed = True
+                self.not_reviewed_image_count -= 1
+                self.reviewed_image_count += 1
+                self.updateRadioButtonLabels()
+                list_item_font.setBold(False)
             image.save()
-            font.setBold(not font.bold())
-            item.setFont(font)
+            item.setFont(list_item_font)
 
         self.list_images.setFocus()
         self.updateList()
@@ -269,13 +283,18 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
 
     def addImageToUi(self, image):
         item = ImageListItem(image.filename, image)
-        self.list_images.addItem(item)
         self.image_list_item_dict[image] = item
+        font = item.font()
         if not image.is_reviewed:
-            # TODO: The three lines below trigger a warning on the first image from watcher.
-            font = item.font()
-            font.setBold(not font.bold())
-            item.setFont(font)
+            font.setBold(True)
+            self.not_reviewed_image_count += 1
+        elif image.is_reviewed:
+            font.setBold(False)
+            self.reviewed_image_count += 1
+        item.setFont(font)
+        self.list_images.addItem(item)
+        self.all_image_count += 1
+        self.updateRadioButtonLabels()
 
     def goToImage(self, selected_image):
         item = self.image_list_item_dict.get(selected_image)
