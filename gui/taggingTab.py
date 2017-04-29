@@ -281,13 +281,14 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
         image = item.getImage()
 
         if item:
-            image.is_reviewed = True
-            self.reviewed_image_count += 1
-            self.not_reviewed_image_count -= 1
-            image.save()
-            font = item.font()
-            font.setBold(False)
-            item.setFont(font)
+            if not image.is_reviewed:
+                image.is_reviewed = True
+                self.reviewed_image_count += 1
+                self.not_reviewed_image_count -= 1
+                image.save()
+                font = item.font()
+                font.setBold(False)
+                item.setFont(font)
 
         self.updateRadioButtonLabels()
 
