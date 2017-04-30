@@ -13,18 +13,20 @@ def createNestMarkersFromCSV(path_to_file, flight):
 
     with open(path_to_file) as f:
         for i, line in enumerate(f):
-            lat, lon, species = line.split(',')
-            nests.append({'lat': lat, 'lon': lon, 'species': species})
+            # skip first line (header)
+            if i >= 1:
+                lat, lon, species = line.split(',')
+                nests.append({'lat': float(lat), 'lon': float(lon), 'species': species.rstrip() })
 
     for nest in nests:
-        tag = ensureTagExists('Nest', nest.species)
-        if tag is not in new_tags:
+        tag = ensureTagExists('Nest', nest['species'])
+        if not tag in new_tags:
             new_tags.append(tag)
-        point = Point(nest.lat, nest.lon)
+        point = Point(nest['lat'], nest['lon'])
         images_containing_point = getImagesContainingPoint(images, point, flight.reference_altitude)
         if len(images_containing_point) is not 0:
             image = images_containing_point[0]
-            new_markers.append(create_marker(tag, image, nest.lat, nest.lon))
+            new_markers.append(create_marker(tag, image, nest['lat'], nest['lon']))
 
     return new_tags, new_markers
 

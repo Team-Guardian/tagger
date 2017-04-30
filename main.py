@@ -43,6 +43,8 @@ class Controller(Observer):
             self.loadFlight(id)
         elif event is "TAG_CREATED":
             self.tags.append(data)
+        elif event is "TAG_CREATED_FROM_CSV":
+            self.tags.append(data)
         elif event is "TAG_DELETED":
             self.tags.remove(data)
             delete_tag(data) # This also deletes all the markers associated with this tag (Cascaded delete)

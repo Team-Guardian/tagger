@@ -1,7 +1,7 @@
 from PyQt5 import QtWidgets, QtGui, QtCore
 
 from ui.ui_targetsTab import Ui_TargetsTab
-from observer import Observer
+from observer import Observer, Observable
 from db.dbHelper import *
 from db.models import Image
 from gui.tagListItem import TagListItem
@@ -10,14 +10,15 @@ from gui.targetContextMenu import TargetContextMenu
 from utils.geographicUtilities import exportAllTelemetry
 from utils.imageInfo import FLIGHT_DIRECTORY
 from utils.geographicUtilities import getFrameBounds, Point
-
+from utils.nestUtils import createNestMarkersFromCSV
 
 TAB_INDICES = {'TAB_SETUP': 0, 'TAB_TAGGING': 1, 'TAB_TARGETS': 2, 'TAB_MAP': 3}
 
-class TargetsTab(QtWidgets.QWidget, Ui_TargetsTab, Observer):
+class TargetsTab(QtWidgets.QWidget, Ui_TargetsTab, Observer, Observable):
     def __init__(self):
         super(TargetsTab, self).__init__()
         Observer.__init__(self)
+        Observable.__init__(self)
 
         self.setupUi(self)
         self.connectButtons()
@@ -31,6 +32,7 @@ class TargetsTab(QtWidgets.QWidget, Ui_TargetsTab, Observer):
 
         self.targets_tab_context_menu = TargetContextMenu()
         self.viewer_targets._photo.setTabContextMenu(self.targets_tab_context_menu)
+        self.button_importNestsLocation.clicked.connect(self.importNestsLocation)
         self.button_exportTelemetry.clicked.connect(self.exportTelemetry)
 
         self.viewer_targets.getPhotoItem().addObserver(self)
@@ -161,3 +163,11 @@ class TargetsTab(QtWidgets.QWidget, Ui_TargetsTab, Observer):
     def exportTelemetry(self):
         filename = FLIGHT_DIRECTORY + '{}/{}'.format(self.current_flight.img_path, "gps.csv")
         exportAllTelemetry(self.current_flight, filename)
+
+    def importNestsLocation(self):
+        path_to_file = QtWidgets.QFileDialog.getOpenFileName(self, "Select CSV with Nest Locations", './', "CSV Files (*.csv)")
+        tags, markers = createNestMarkersFromCSV(path_to_file[0], self.current_flight)
+        update_num_occurrences()
+        for nest_tag in tags:
+            self.addTagToUi(nest_tag)
+            self.notifyObservers("TAG_CREATED_FROM_CSV", None, nest_tag)
