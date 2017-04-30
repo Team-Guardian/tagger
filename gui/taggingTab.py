@@ -52,7 +52,6 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
     def processNewImage(self, image):
         self.addImageToUi(image)
 
-
     def updateRadioButtonLabels(self):
         self.radioButton_allImages.setText('All Images ({}/{})'.format(self.all_image_current_row, self.all_image_count))
         self.radioButton_reviewed.setText('Reviewed ({})'.format(self.reviewed_image_count))
@@ -72,6 +71,9 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
         elif event is "MARKER_PARENT_IMAGE_CHANGE":
             if data in self.image_list_item_dict:
                 self.list_images.setCurrentItem(self.image_list_item_dict.get(data))
+        elif event is "TAG_CREATED_FROM_CSV":
+            self.addTagToUi(data)
+            self.updateTagMarkerCountInUi(data)
 
     def connectButtons(self):
         self.button_addTag.clicked.connect(self.addTag)
@@ -170,8 +172,8 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
 
     def removeTag(self):
         row = self.list_tags.currentRow()
-        tag = self.list_tags.item(row, 0).getTag()
         if row >= 0:
+            tag = self.list_tags.item(row, 0).getTag()
             self.list_tags.removeRow(row)
             self.tagging_tab_context_menu.removeTagItem(tag)
             self.deleteMarkersFromUi(tag=tag)
@@ -216,7 +218,7 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
         for rowIndex in range(self.list_tags.rowCount()):
             tableTag = self.list_tags.item(rowIndex, TAG_TABLE_INDICES['COUNT']).getTag()
             if tableTag == tag:
-                self.list_tags.setItem(rowIndex, TAG_TABLE_INDICES['COUNT'], TagTableItem(str(tag.num_occurrences), tag))
+                self.list_tags.setItem(rowIndex, TAG_TABLE_INDICES['COUNT'], TagTableItem(str(tableTag.num_occurrences), tableTag))
 
     def deleteMarkersFromUi(self, tag=None):
         sceneObjects = self.viewer_single.getScene().items()

@@ -38,6 +38,7 @@ class MainWindow(QtWidgets.QMainWindow, Observable):
         self.targetsTab = TargetsTab()
         self.ui.tabWidget.addTab(self.targetsTab, "Targets")
         self.taggingTab.addObserver(self.targetsTab)
+        self.targetsTab.addObserver(self.taggingTab)
 
         self.mapTab = MapTab(self)
         self.mapTab.viewer_map.viewport().installEventFilter(self)

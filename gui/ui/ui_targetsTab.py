@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'gui/ui/ui_targetsTab.ui'
+# Form implementation generated from reading ui file 'ui_targetsTab.ui'
 #
 # Created by: PyQt5 UI code generator 5.5.1
 #
@@ -36,6 +36,9 @@ class Ui_TargetsTab(object):
         self.list_taggedImages.setObjectName("list_taggedImages")
         self.verticalLayout_5.addWidget(self.list_taggedImages)
         self.verticalLayout_4.addWidget(self.groupBox_4)
+        self.button_importNestsLocation = QtWidgets.QPushButton(TargetsTab)
+        self.button_importNestsLocation.setObjectName("button_importNestsLocation")
+        self.verticalLayout_4.addWidget(self.button_importNestsLocation)
         self.button_exportTelemetry = QtWidgets.QPushButton(TargetsTab)
         self.button_exportTelemetry.setObjectName("button_exportTelemetry")
         self.verticalLayout_4.addWidget(self.button_exportTelemetry)
@@ -59,6 +62,7 @@ class Ui_TargetsTab(object):
         self.groupBox_5.setTitle(_translate("TargetsTab", "Select Tag"))
         self.groupBox_4.setTitle(_translate("TargetsTab", "Images with Selected Tag"))
         self.line_searchImages.setPlaceholderText(_translate("TargetsTab", "Search image by name"))
+        self.button_importNestsLocation.setText(_translate("TargetsTab", "Import Nests Location"))
         self.button_exportTelemetry.setText(_translate("TargetsTab", "Export Telemetry"))
 
 from gui.photoViewer import PhotoViewer
