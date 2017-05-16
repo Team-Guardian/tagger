@@ -52,7 +52,8 @@ class SetupTab(QtWidgets.QWidget, Ui_SetupTab, Observable):
                                                              corners_geo[3][1], corners_geo[3][0])
 
         f = create_flight(location, elevation, intrinsic_matrix + '.xml', date, am)
-        self.notifyObservers("FLIGHT_CREATED", f.img_path, f)
+        flight_list_id = '{} {}'.format(f.location, str(f.date))
+        self.notifyObservers("FLIGHT_CREATED", flight_list_id, f)
 
     def selectAreaMap(self):
         filepath = QtWidgets.QFileDialog.getOpenFileName(self, "Select Area Map to Load", "./area_maps",
