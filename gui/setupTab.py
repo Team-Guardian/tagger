@@ -7,8 +7,12 @@ from observer import Observable
 from utils.imageInfo import *
 from db.dbHelper import *
 
-
 class SetupTab(QtWidgets.QWidget, Ui_SetupTab, Observable):
+
+    # create signals coming from this tab
+    flight_load_signal = QtCore.pyqtSignal(str)
+    flight_create_signal = QtCore.pyqtSignal(str, Flight)
+
     def __init__(self):
         super(SetupTab, self).__init__()
         Observable.__init__(self)
@@ -32,7 +36,7 @@ class SetupTab(QtWidgets.QWidget, Ui_SetupTab, Observable):
         self.combo_flights.addItem(flight.location + " " + str(flight.date))
 
     def loadFlight(self):
-        self.notifyObservers("FLIGHT_LOAD", self.combo_flights.currentText(), None)
+        self.flight_load_signal.emit(self.combo_flights.currentText())
 
     def createFlight(self):
         location = self.line_locationName.text()
@@ -53,7 +57,7 @@ class SetupTab(QtWidgets.QWidget, Ui_SetupTab, Observable):
 
         f = create_flight(location, elevation, intrinsic_matrix + '.xml', date, am)
         flight_list_id = '{} {}'.format(f.location, str(f.date))
-        self.notifyObservers("FLIGHT_CREATED", flight_list_id, f)
+        self.flight_create_signal.emit(flight_list_id, f)
 
     def selectAreaMap(self):
         filepath = QtWidgets.QFileDialog.getOpenFileName(self, "Select Area Map to Load", "./area_maps",
