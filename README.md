@@ -41,33 +41,33 @@ exit
 sudo service postgresql restart
 ```
 ## 3. Creating Database Schema
+
 In in the root of the project folder **tagger**
 ```
-python manage.py makemigrations
 python manage.py migrate
 ```
 ## 4. Celebrate :beers: :beers:
 
 # How to Set Up a Slave Tagger on a Local Area Network
 
-1. Install dependencies
+## 1. Install dependencies
 ```
 sudo apt-get update
 sudo apt-get install sshfs openssh-server
 ```
 
-2. Configure user groups
+## 2. Configure user groups
 ```
 sudo groupadd fuse
 sudo adduser <my_user> fuse
 ```
 
-3. Create a destination directory for mapping in your tagger repo root directory
+## 3. Create a destination directory for mapping in your tagger repo root directory
 ```
 mkdir <path_to_tagger_repo>/remote_flights
 ```
 
-4. Map GCS flights directory to the local folder you just created
+## 4. Map GCS flights directory to the local folder you just created
 ```
 sshfs uav@gcs-vision.local:/home/uav/tagger/flights <path_to_tagger_repo>/remote_flights
 ```
