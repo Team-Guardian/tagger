@@ -40,6 +40,7 @@ exit
 ```
 sudo service postgresql restart
 ```
+
 ## 3. Creating Database Schema
 
 In in the root of the project folder **tagger**
