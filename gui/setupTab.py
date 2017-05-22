@@ -46,7 +46,7 @@ class SetupTab(QtWidgets.QWidget, Ui_SetupTab, Observable):
         area_map = self.line_areaMap.text()
         intrinsic_matrix = self.line_intrinsicMatrix.text()
 
-        if AreaMap.objects.filter(name=area_map).exists():
+        if AreaMap.objects.filter(name=area_map).exists(): # TODO: change this DB call
             am = AreaMap.objects.filter(name=area_map).last()
         else:
             corners_geo = loadGeotiff('./area_maps/{}'.format(area_map))

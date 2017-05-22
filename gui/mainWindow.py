@@ -19,6 +19,7 @@ TAB_INDICES = {'TAB_SETUP': 0, 'TAB_TAGGING': 1, 'TAB_TARGETS': 2, 'TAB_MAP': 3}
 class MainWindow(QtWidgets.QMainWindow, Observable):
 
     image_added_signal = QtCore.pyqtSignal(Image)
+    reset_application_signal = QtCore.pyqtSignal()
 
     def __init__(self):
         super(MainWindow, self).__init__()
@@ -64,11 +65,6 @@ class MainWindow(QtWidgets.QMainWindow, Observable):
         self.toggleReviewedStatusShortcut.activated.connect(self.toggleReviewedStatus)
 
         self.ui.tabWidget.currentChanged.connect(self.tabChangeHandler)
-
-        # self.image_added_signal = QtCore.pyqtSignal(Image)
-        self.image_added_signal.connect(self.taggingTab.processNewImage)
-        self.image_added_signal.connect(self.targetsTab.processNewImage)
-        self.image_added_signal.connect(self.mapTab.processNewImage)
 
     def notify(self, event, id, data):
         if event is "CURRENT_IMG_CHANGED":
@@ -117,7 +113,7 @@ class MainWindow(QtWidgets.QMainWindow, Observable):
                 self.ui.actionSaveImage.setEnabled(True)
 
     def resetGui(self):
-        self.notifyObservers("RESET", None, None)
+        self.reset_application_signal.emit()
 
     def resetTabs(self):
         for tabIndex in range(self.ui.tabWidget.count()): # iterate over each tab

@@ -28,14 +28,22 @@ class Controller(Observer):
             self.window.setupTab.addFlightToUi(flight)
 
         # connect signals
+        # Main Window
+        self.window.image_added_signal.connect(self.window.taggingTab.processNewImage)
+        self.window.image_added_signal.connect(self.window.targetsTab.processNewImage)
+        self.window.image_added_signal.connect(self.window.mapTab.processNewImage)
+        self.window.reset_application_signal.connect(self.processReset)
+        # from Setup Tab
         self.window.setupTab.flight_load_signal.connect(self.processFlightLoad)
         self.window.setupTab.flight_create_signal.connect(self.processFlightCreated)
+        # from Tagging Tab
+
+        # from Targets Tab
+
+        # from Map Tab
 
     def notify(self, event, id, data):
-        if event is "RESET":
-            self.resetWatcher()
-            self.window.resetTabs()
-        elif event is "TAG_CREATED":
+        if event is "TAG_CREATED":
             self.tags.append(data)
         elif event is "TAG_DELETED":
             self.tags.remove(data)
@@ -48,7 +56,6 @@ class Controller(Observer):
             # self.window.targetsTab.addImageToUi(new_image)
             # self.window.mapTab.addImageToUi(new_image)
 
-    # Slot to handle FLIGHT_LOAD event
     @QtCore.pyqtSlot(str)
     def processFlightLoad(self, flight_id):
         self.resetWatcher()
@@ -62,6 +69,11 @@ class Controller(Observer):
         self.flights[flight_id] = flight
         self.window.setupTab.addFlightToUi(flight)
         self.loadFlight(flight_id)
+
+    @QtCore.pyqtSlot(None)
+    def processReset(self):
+        self.resetWatcher()
+        self.window.resetTabs()
 
     def loadFlight(self, id): # TODO: this function does more than the name implies
         self.currentFlight = self.flights[id]
