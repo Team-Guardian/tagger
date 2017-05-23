@@ -1,13 +1,16 @@
-from PyQt5 import QtWidgets
+from PyQt5 import QtCore, QtWidgets
 from db.models import Tag
 
 class TagContextMenu(QtWidgets.QMenu):
+
+    create_marker_signal = QtCore.pyqtSignal(Tag)
+
     def __init__(self, parent=None, title=""):
         super(TagContextMenu, self).__init__(parent)
 
         # add default action
         self.default_action_handle = self.resetAndSetDefaultActionHandle()
-        self.action_message_dict = {}
+        self.action_signal_dict = {}
         self.action_data_dict = {}
 
         self.pixel_x_invocation_coord = None
@@ -16,7 +19,7 @@ class TagContextMenu(QtWidgets.QMenu):
     def addTagToContextMenu(self, new_tag):
         new_action = self.addAction('{}, {}'.format(new_tag.type, new_tag.subtype))
         self.action_data_dict[new_action] = new_tag
-        self.action_message_dict[new_action] = "MARKER_CREATE"
+        self.action_signal_dict[new_action] = self.create_marker_signal
         if len(self.actions()) > 1:
             self.default_action_handle.setVisible(False)
 
@@ -32,7 +35,7 @@ class TagContextMenu(QtWidgets.QMenu):
                 action_to_remove = action
         if action_to_remove is not None:
             del self.action_data_dict[action_to_remove]
-            del self.action_message_dict[action_to_remove]
+            del self.action_signal_dict[action_to_remove]
             self.removeAction(action_to_remove)
 
         if len(self.actions()) == 1:
@@ -52,7 +55,7 @@ class TagContextMenu(QtWidgets.QMenu):
         self.clear()
         self.default_action_handle = self.resetAndSetDefaultActionHandle()
         self.action_data_dict = {}
-        self.action_message_dict = {}
+        self.action_signal_dict = {}
 
     def resetAndSetDefaultActionHandle(self):
         default_action_handle = self.addAction("(No tags)")

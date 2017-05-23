@@ -22,6 +22,13 @@ from utils.geographicUtilities import *
 TAG_TABLE_INDICES = {'TYPE': 0, 'SUBTYPE': 1, 'COUNT': 2, 'SYMBOL': 3}
 
 class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
+
+    tag_created_signal = QtCore.pyqtSignal(Tag)
+    tag_edited_signal = QtCore.pyqtSignal(Tag)
+    tag_deleted_signal = QtCore.pyqtSignal(Tag)
+    current_image_changed_signal = QtCore.pyqtSignal()
+    marker_created_signal = QtCore.pyqtSignal(Marker)
+
     def __init__(self):
         super(TaggingTab, self).__init__()
         Observable.__init__(self)
@@ -39,8 +46,6 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
         self.tagging_tab_context_menu = TagContextMenu()
         self.viewer_single._photo.setTabContextMenu(self.tagging_tab_context_menu)
 
-        self.viewer_single.getPhotoItem().addObserver(self)
-
         # retranslate radio buttons to display image count
         self.all_image_count = 0
         self.reviewed_image_count = 0
@@ -52,26 +57,26 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
     def processNewImage(self, image):
         self.addImageToUi(image)
 
+    @QtCore.pyqtSlot(Tag)
+    def processCreateMarker(self, markers_tag):
+        self.addMarker(markers_tag)
+
+    def processMarkerDeleted(self, deleted_marker_item):
+        self.viewer_single.getScene().removeItem(deleted_marker_item)
+        marker_to_delete = deleted_marker_item.getMarker()
+        marker_to_delete.tag.num_occurrences -= 1
+        marker_to_delete.tag.save()
+        self.updateTagMarkerCountInUi(marker_to_delete.tag)
+        delete_marker(marker_to_delete)
+
+    def processMarkerParentImageChange(self, image_changed_to):
+        if image_changed_to in self.image_list_item_dict:
+            self.list_images.setCurrentItem(self.image_list_item_dict.get(image_changed_to))
 
     def updateRadioButtonLabels(self):
         self.radioButton_allImages.setText('All Images ({}/{})'.format(self.all_image_current_row, self.all_image_count))
         self.radioButton_reviewed.setText('Reviewed ({})'.format(self.reviewed_image_count))
         self.radioButton_notReviewed.setText('Not Reviewed ({})'.format(self.not_reviewed_image_count))
-
-    def notify(self, event, id, data):
-        if event is "MARKER_CREATE":
-            self.addMarker(data)
-        elif event is "MARKER_DELETED":
-            self.viewer_single.getScene().removeItem(data)
-            marker_to_delete = data.getMarker()
-            marker_to_delete.tag.num_occurrences -= 1
-            marker_to_delete.tag.save()
-            self.updateTagMarkerCountInUi(marker_to_delete.tag)
-            delete_marker(marker_to_delete)
-            self.notifyObservers("MARKER_DELETED", None, marker_to_delete)
-        elif event is "MARKER_PARENT_IMAGE_CHANGE":
-            if data in self.image_list_item_dict:
-                self.list_images.setCurrentItem(self.image_list_item_dict.get(data))
 
     def connectButtons(self):
         self.button_addTag.clicked.connect(self.addTag)
@@ -98,9 +103,9 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
                 subtype = self.tag_dialog.subtype.text()
                 count = "0"
                 icon = self.tag_dialog.icons.currentText()
-                t = create_tag(type=tagType, subtype=subtype, symbol=icon, num_occurrences=int(count))
-                self.addTagToUi(t)
-                self.notifyObservers("TAG_CREATED", None, t)
+                tag = create_tag(type=tagType, subtype=subtype, symbol=icon, num_occurrences=int(count))
+                self.addTagToUi(tag)
+                self.tag_created_signal.emit(tag)
 
     def addTagToUi(self, tag):
         row = self.list_tags.rowCount()
@@ -163,20 +168,20 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
 
                     # update tag in context menu
                     self.tagging_tab_context_menu.updateTagItem(tag)
-
-                    self.notifyObservers("TAG_EDITED", None, tag)
+                    self.tag_edited_signal.emit(tag)
             else:
                 self.tag_dialog.removeIcon(icon) # Remove the current symbol if it hasn't been changed
 
     def removeTag(self):
-        row = self.list_tags.currentRow()
-        tag = self.list_tags.item(row, 0).getTag()
-        if row >= 0:
+        if self.list_tags.rowCount() > 0:
+            row = self.list_tags.currentRow()
+            tag = self.list_tags.item(row, 0).getTag()
+
             self.list_tags.removeRow(row)
             self.tagging_tab_context_menu.removeTagItem(tag)
             self.deleteMarkersFromUi(tag=tag)
             self.tag_dialog.addIcon(tag.symbol)
-            self.notifyObservers("TAG_DELETED", None, tag)
+            self.tag_deleted_signal.emit(tag)
 
     def addMarker(self, tag):
         pu = self.tagging_tab_context_menu.pixel_x_invocation_coord
@@ -190,14 +195,17 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
         self.updateTagMarkerCountInUi(tag)
 
         self.addMarkerToUi(pu, pv, m, 1.0) # 1.0 means fully opaque for markers created in current image
-        self.notifyObservers("MARKER_CREATED", None, m)
+        self.marker_created_signal.emit(m)
 
     def addMarkerToUi(self, x, y, marker, opacity):
         # Create MarkerItem
         image_width = self.currentImage.width
         initial_zoom = self.viewer_single.zoomFactor()
         marker = MarkerItem(marker, current_image=self.currentImage, initial_zoom=initial_zoom)
-        marker.addObserver(self)
+
+        # connect signals to handlers; signals are deleted when object is deleted
+        marker.setMarkerDeletedHandler(self.processMarkerDeleted)
+        marker.setMarkerParentImageChangeHandler(self.processMarkerParentImageChange)
 
         # Correctly position the MarkerItem graphic on the UI
         markerXPos = x - marker.pixmap().size().width() / 2  # To position w.r.t. center of pixMap
@@ -228,7 +236,6 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
                         marker_to_delete_from_ui = item.getMarker()
                         marker_to_delete_from_ui.tag.num_occurrences -= 1
                         marker_to_delete_from_ui.tag.save()
-                        self.notifyObservers("MARKER_DELETED", None, marker_to_delete_from_ui)
                 else:
                     self.viewer_single.getScene().removeItem(item)
 
@@ -348,7 +355,7 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
         self.minimap.updateContour(self.currentImage)
         self.openImage('./flights/{}/{}'.format(self.currentFlight.img_path, self.currentImage.filename), self.viewer_single)
 
-        self.notifyObservers("CURRENT_IMG_CHANGED", None, None)
+        self.current_image_changed_signal.emit()
 
         # udpate scale
         self.viewer_single.updateScale()

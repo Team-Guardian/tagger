@@ -37,29 +37,29 @@ class MapTab(QtWidgets.QWidget, Ui_MapTab, Observer):
         self.button_search.clicked.connect(self.search)
         self.list_allImages.currentItemChanged.connect(self.currentImageChanged)
 
-        self.viewer_map.getPhotoItem().addObserver(self)
-
-    def notify(self, event, id, data):
-        if event is "FIND_IMAGES":
-            point_pixel_x_coord = self.map_context_menu.pixel_x_invocation_coord
-            point_pixel_y_coord = self.map_context_menu.pixel_y_invocation_coord
-            point_lat, point_lon = self.geolocatePoint(point_pixel_x_coord, point_pixel_y_coord)
-            self.findImagesContainingPoint(point_lat, point_lon)
-
-        elif event is "COPY_LAT_LON":
-            point_pixel_x_coord = self.map_context_menu.pixel_x_invocation_coord
-            point_pixel_y_coord = self.map_context_menu.pixel_y_invocation_coord
-            point_lat, point_lon = self.geolocatePoint(point_pixel_x_coord, point_pixel_y_coord)
-            self.copyPointLatLonToClipboard(point_lat, point_lon)
-
-        elif event is "RESET_FILTERS":
-            self.clearLatLonInputFields()
-            self.unhideAllImages()
-
     # paints contours on the map tab every second (approximate telemetry Rx rate)
     @QtCore.pyqtSlot(Image)
     def processNewImage(self, image):
         self.addImageToUi(image)
+
+    @QtCore.pyqtSlot()
+    def processFindImages(self):
+        point_pixel_x_coord = self.map_context_menu.pixel_x_invocation_coord
+        point_pixel_y_coord = self.map_context_menu.pixel_y_invocation_coord
+        point_lat, point_lon = self.geolocatePoint(point_pixel_x_coord, point_pixel_y_coord)
+        self.findImagesContainingPoint(point_lat, point_lon)
+
+    @QtCore.pyqtSlot()
+    def processCopyLatLon(self):
+        point_pixel_x_coord = self.map_context_menu.pixel_x_invocation_coord
+        point_pixel_y_coord = self.map_context_menu.pixel_y_invocation_coord
+        point_lat, point_lon = self.geolocatePoint(point_pixel_x_coord, point_pixel_y_coord)
+        self.copyPointLatLonToClipboard(point_lat, point_lon)
+
+    @QtCore.pyqtSlot()
+    def processResetFilters(self):
+        self.clearLatLonInputFields()
+        self.unhideAllImages()
 
     def geolocatePoint(self, x, y):
         lat = 0

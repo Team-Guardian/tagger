@@ -66,9 +66,9 @@ class MainWindow(QtWidgets.QMainWindow, Observable):
 
         self.ui.tabWidget.currentChanged.connect(self.tabChangeHandler)
 
-    def notify(self, event, id, data):
-        if event is "CURRENT_IMG_CHANGED":
-            self.ui.actionSaveImage.setEnabled(True)
+    @QtCore.pyqtSlot()
+    def processCurrentImageChanged(self):
+        self.ui.actionSaveImage.setEnabled(True)
 
     # handles events from widgets we have registered with
     # use installEventFilter() on a widget to register

@@ -1,19 +1,21 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
-from observer import *
 from tagDialog import ICON_DIRECTORY
-from db.models import Marker
-
+from db.models import Marker, Image
 
 # This sub-class is used to display markers for targets.
-class MarkerItem(QtWidgets.QGraphicsPixmapItem, Observable):
+class MarkerItem(QtWidgets.QGraphicsPixmapItem):
+
     def __init__(self, marker, current_image, initial_zoom, parent=None):
         super(MarkerItem, self).__init__(parent)
-        Observable.__init__(self)
 
         self.marker = marker
         self.context_menu = QtWidgets.QMenu()
         self.delete_marker_handle = self.context_menu.addAction("Delete Marker")
         self.go_to_parent_image_handle = None
+
+        # pseudo-slots because QGraphicsPixmapItem is not a QObject and does not have signals
+        self.marker_deleted_handler = None
+        self.marker_parent_image_change_handler = None
 
         if marker.image != current_image:
             self.go_to_parent_image_handle = self.context_menu.addAction("Go To Parent Image")
@@ -28,6 +30,12 @@ class MarkerItem(QtWidgets.QGraphicsPixmapItem, Observable):
         self.setPixmap(pixMap)
         self.setScale(initial_zoom_level)
 
+    def setMarkerDeletedHandler(self, handler_function):
+        self.marker_deleted_handler = handler_function
+
+    def setMarkerParentImageChangeHandler(self, handler_function):
+        self.marker_parent_image_change_handler = handler_function
+
     def notify(self, event, id, data):
         if event is "SCENE_ZOOM" :
             self.setScale(self.scale()*data)
@@ -39,9 +47,9 @@ class MarkerItem(QtWidgets.QGraphicsPixmapItem, Observable):
             action = self.context_menu.exec_(event.screenPos())
             if action == self.delete_marker_handle:
                 self.marker = self.getMarker()
-                self.notifyObservers("MARKER_DELETED", None, self)
+                self.marker_deleted_handler(self)
             elif action == self.go_to_parent_image_handle:
-                self.notifyObservers("MARKER_PARENT_IMAGE_CHANGE", None, self.marker.image)
+                self.marker_parent_image_change_handler(self.marker.image)
 
     def getMarker(self):
         self.synchronizeWithDatabase()
