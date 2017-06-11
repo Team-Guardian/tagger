@@ -1,3 +1,5 @@
+import traceback
+
 from PyQt5 import QtWidgets, QtGui, QtCore
 from PyQt5.QtWidgets import QDialog
 from PyQt5.QtGui import QPixmap
@@ -5,10 +7,6 @@ from PyQt5.QtCore import QRect
 from ui.ui_taggingTab import Ui_TaggingTab
 from tagDialog import TagDialog
 from db.dbHelper import *
-from db.models import Image
-from observer import *
-from utils.geolocate import geolocateLatLonFromPixelOnImage, getPixelFromLatLon
-from utils.geographicUtilities import *
 from gui.imageListItem import ImageListItem
 from gui.tagTableItem import TagTableItem
 from gui.tagContextMenu import TagContextMenu
@@ -21,17 +19,17 @@ from utils.geographicUtilities import *
 
 TAG_TABLE_INDICES = {'TYPE': 0, 'SUBTYPE': 1, 'COUNT': 2, 'SYMBOL': 3}
 
-class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
+class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab):
 
     tag_created_signal = QtCore.pyqtSignal(Tag)
     tag_edited_signal = QtCore.pyqtSignal(Tag)
     tag_deleted_signal = QtCore.pyqtSignal(Tag)
     current_image_changed_signal = QtCore.pyqtSignal()
     marker_created_signal = QtCore.pyqtSignal(Marker)
+    image_manually_added_signal = QtCore.pyqtSignal(Image)
 
     def __init__(self):
         super(TaggingTab, self).__init__()
-        Observable.__init__(self)
 
         self.currentFlight = None
         self.currentImage = None
@@ -54,7 +52,7 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
         self.updateRadioButtonLabels()
 
     @QtCore.pyqtSlot(Image)
-    def processNewImage(self, image):
+    def processImageAdded(self, image):
         self.addImageToUi(image)
 
     @QtCore.pyqtSlot(Tag)
@@ -74,7 +72,10 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
             self.list_images.setCurrentItem(self.image_list_item_dict.get(image_changed_to))
 
     def updateRadioButtonLabels(self):
-        self.radioButton_allImages.setText('All Images ({}/{})'.format(self.all_image_current_row, self.all_image_count))
+        if self.all_image_current_row == 0:
+            self.radioButton_allImages.setText('All Images (-/{})'.format(self.all_image_count))
+        else:
+            self.radioButton_allImages.setText('All Images ({}/{})'.format(self.all_image_current_row, self.all_image_count))
         self.radioButton_reviewed.setText('Reviewed ({})'.format(self.reviewed_image_count))
         self.radioButton_notReviewed.setText('Not Reviewed ({})'.format(self.not_reviewed_image_count))
 
@@ -243,7 +244,6 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
         for row_num in range(self.list_images.count()):
             item = self.list_images.item(row_num)
             image = item.getImage()
-            image.refresh_from_db()
 
             font = item.font()
             if not image.is_reviewed:
@@ -262,7 +262,17 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
 
     def toggleImageReviewed(self):
         item = self.list_images.currentItem()
-        image = item.getImage()
+
+        try:
+            image = item.getImage()
+        except AttributeError:
+            exception_notification = QtWidgets.QMessageBox()
+            exception_notification.setIcon(QtWidgets.QMessageBox.Warning)
+            exception_notification.setText('Error: taggingTab.py. No image selected')
+            exception_notification.setWindowTitle('Error!')
+            exception_notification.setDetailedText('{}'.format(traceback.format_exc()))
+            exception_notification.exec_()
+            return
 
         if item:
             list_item_font = item.font()
@@ -308,7 +318,8 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
         paths = QtWidgets.QFileDialog.getOpenFileNames(self, "Select images", ".", "Images (*.jpg)")[0]
         for path in paths:
             image = processNewImage(path, self.currentFlight)
-            self.notifyObservers("IMAGE_ADDED", None, image)
+            if image is not None:
+                self.image_manually_added_signal.emit(image)
 
     def addImageToUi(self, image):
         item = ImageListItem(image.filename, image)
@@ -345,11 +356,6 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
 
         # refresh image reviewed/not reviewed state
         self.updateImageList()
-
-        # attempt to refresh tag counts
-        update_num_occurrences()
-        for tag in get_all_tags():
-            self.updateTagMarkerCountInUi(tag)
             
         # update widgets
         self.minimap.updateContour(self.currentImage)
@@ -447,6 +453,13 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab, Observable):
 
         # clear the photo viewer
         self.viewer_single.setPhoto(None)
+
+        # reset image count
+        self.all_image_count = 0
+        self.reviewed_image_count = 0
+        self.not_reviewed_image_count = 0
+        self.all_image_current_row = 0
+        self.updateRadioButtonLabels()
 
     def updateOnResize(self):
         self.viewer_single.fitInView()
