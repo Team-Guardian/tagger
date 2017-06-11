@@ -3,11 +3,10 @@
 from PyQt5 import QtWidgets, QtCore
 from PyQt5.QtCore import QDate
 from ui.ui_setupTab import Ui_SetupTab
-from observer import Observable
 from utils.imageInfo import *
 from db.dbHelper import *
 
-class SetupTab(QtWidgets.QWidget, Ui_SetupTab, Observable):
+class SetupTab(QtWidgets.QWidget, Ui_SetupTab):
 
     # create signals coming from this tab
     flight_load_signal = QtCore.pyqtSignal(str)
@@ -15,7 +14,6 @@ class SetupTab(QtWidgets.QWidget, Ui_SetupTab, Observable):
 
     def __init__(self):
         super(SetupTab, self).__init__()
-        Observable.__init__(self)
 
         self.setupUi(self)
         self.connectButtons()
@@ -40,7 +38,16 @@ class SetupTab(QtWidgets.QWidget, Ui_SetupTab, Observable):
 
     def createFlight(self):
         location = self.line_locationName.text()
-        elevation = float(self.line_siteElevation.text())
+        try:
+            elevation = float(self.line_siteElevation.text())
+        except ValueError:
+            exception_notification = QtWidgets.QMessageBox()
+            exception_notification.setIcon(QtWidgets.QMessageBox.Warning)
+            exception_notification.setText('Error: setupTab.py. Invalid elevation value; no flight created')
+            exception_notification.setWindowTitle('Error!')
+            exception_notification.setDetailedText('{}'.format(traceback.format_exc()))
+            exception_notification.exec_()
+            return
         date_string = self.edit_flightDate.text()
         date = datetime.datetime.strptime(date_string, '%Y-%m-%d').date()
         area_map = self.line_areaMap.text()

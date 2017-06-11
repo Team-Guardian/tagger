@@ -5,7 +5,10 @@ from osgeo import gdal, osr
 import pyexiv2
 import ntpath
 import os
+import traceback
+from django.db.utils import IntegrityError
 from db.dbHelper import create_image
+from PyQt5 import QtWidgets, QtCore
 
 FLIGHT_DIRECTORY = "./flights/"
 
@@ -13,15 +16,34 @@ FLIGHT_DIRECTORY = "./flights/"
 # reads exif information, creates db entry, moves file to flight directory
 def processNewImage(path, flight):
     if not flight:
-        raise Exception("Need a flight to process an image")
+        try:
+            raise Exception("Need a flight to process an image")
+        except Exception:
+            exception_notification = QtWidgets.QMessageBox()
+            exception_notification.setIcon(QtWidgets.QMessageBox.Warning)
+            exception_notification.setText('Error: imageInfo.py. Need a flight to process an image')
+            exception_notification.setWindowTitle('Error!')
+            exception_notification.setDetailedText('{}'.format(traceback.format_exc()))
+            exception_notification.exec_()
 
     sourceDirectory, imgFilename = GetDirectoryAndFilenameFromFullPath(path)
     imageData = getExifDataFromImage(path)
+    if imageData is None:
+        return None
+
     try:
         image = create_image(filename=imgFilename, width=imageData['width'], height=imageData['height'],
                         flight=flight,latitude=imageData['latitude'],
                         longitude=imageData['longitude'], altitude=imageData['altitude'],
                         roll=imageData['roll'], pitch=imageData['pitch'], yaw=imageData['yaw'])
+    except IntegrityError:
+        exception_notification = QtWidgets.QMessageBox()
+        exception_notification.setIcon(QtWidgets.QMessageBox.Warning)
+        exception_notification.setText('Error: imageInfo.py. Image with the same name already exists')
+        exception_notification.setWindowTitle('Error!')
+        exception_notification.setDetailedText('{}'.format(traceback.format_exc()))
+        exception_notification.exec_()
+        return None
     except Exception as e:
         raise e
 
@@ -47,7 +69,16 @@ def getExifDataFromImage(path_to_image):
     exif.read()
     
     imageData['width'], imageData['height'] = exif.dimensions
-    telemetry = exif['Exif.Photo.UserComment'].raw_value.split()
+    try:
+        telemetry = exif['Exif.Photo.UserComment'].raw_value.split()
+    except KeyError:
+        exception_notification = QtWidgets.QMessageBox()
+        exception_notification.setIcon(QtWidgets.QMessageBox.Warning)
+        exception_notification.setText('Error: imageInfo.py. Invalid exif data in the added image')
+        exception_notification.setWindowTitle('Error!')
+        exception_notification.setDetailedText('{}'.format(traceback.format_exc()))
+        exception_notification.exec_()
+        return None
     
     # degrees, degrees, metres
     imageData['latitude'], imageData['longitude'], imageData['altitude'] = [float(x) for x in telemetry[0:3]]

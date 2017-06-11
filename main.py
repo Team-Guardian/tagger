@@ -3,13 +3,11 @@ from PyQt5 import QtWidgets, QtCore
 
 from db.dbHelper import *
 from gui.mainWindow import MainWindow, TAB_INDICES
-from observer import *
 from watcher import Watcher
 
 
-class Controller(Observer):
+class Controller():
     def __init__(self):
-        super(Controller, self).__init__()
         self.flights = get_all_flights()
         self.currentFlight = None
         self.imageWatcher = Watcher()
@@ -17,10 +15,7 @@ class Controller(Observer):
         self.images = []
 
         self.window = MainWindow()
-        self.window.addObserver(self)
         self.window.show()
-        self.window.setupTab.addObserver(self)
-        self.window.taggingTab.addObserver(self)
         self.imageWatcher.event_handler.addImageAddedEventHandler(self.processImageAdded)
 
         # populate lists
@@ -29,9 +24,9 @@ class Controller(Observer):
 
         # connect signals
         # Watcher
-        self.window.image_added_signal.connect(self.window.taggingTab.processNewImage)
-        self.window.image_added_signal.connect(self.window.targetsTab.processNewImage)
-        self.window.image_added_signal.connect(self.window.mapTab.processNewImage)
+        self.window.image_added_signal.connect(self.window.taggingTab.processImageAdded)
+        self.window.image_added_signal.connect(self.window.targetsTab.processImageAdded)
+        self.window.image_added_signal.connect(self.window.mapTab.processImageAdded)
 
         # Main Window
         self.window.reset_application_signal.connect(self.processReset)
@@ -50,6 +45,8 @@ class Controller(Observer):
         self.window.taggingTab.tag_edited_signal.connect(self.window.targetsTab.processTagEdited)
 
         self.window.taggingTab.tag_deleted_signal.connect(self.window.targetsTab.processTagDeleted)
+
+        self.window.taggingTab.image_manually_added_signal.connect(self.processImageAdded)
         # Note: processTagDeleted in Controller MUST be invoked after all other handlers have finished processing the event
         #       This ensures that the object exists while references are made to it. Registering slots in this order ensures that
         self.window.taggingTab.tag_deleted_signal.connect(self.processTagDeleted)
@@ -79,7 +76,7 @@ class Controller(Observer):
     def processFlightCreated(self, flight_id, flight):
         self.flights[flight_id] = flight
         self.window.setupTab.addFlightToUi(flight)
-        self.loadFlight(flight_id)
+        self.processFlightLoad(flight_id)
 
     @QtCore.pyqtSlot()
     def processReset(self):

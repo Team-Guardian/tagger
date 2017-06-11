@@ -2,9 +2,7 @@ import ntpath
 import time
 import threading
 import os
-from PyQt5 import QtCore
 from db.models import Image
-from observer import Observable as GuiObservable
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 from utils.imageInfo import processNewImage, GetDirectoryAndFilenameFromFullPath
@@ -65,5 +63,6 @@ class FileCreatedEventHandler(FileSystemEventHandler):
 
         if any(fileName.endswith(end) for end in ['.jpg', '.jpeg', '.JPG', '.JPEG']):
             image = processNewImage(path, self.flight)
-            self.image_added_event_handler(image)
+            if image is not None:
+                self.image_added_event_handler(image)
 
