@@ -1,5 +1,4 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
-from observer import Observer
 from utils.geolocate import geolocateLatLonFromPixelOnImage
 from math import cos, asin, sqrt
 
@@ -14,7 +13,7 @@ DEFAULT_PEN_WIDTH = 6
 
 ROUNDING_FACTOR = 2
 
-class Scale(Observer):
+class Scale():
     def __init__(self):
         # lines that make up the scale
         self.horizontal_line = QtWidgets.QGraphicsLineItem()

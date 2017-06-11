@@ -6,12 +6,10 @@ from gui.imageListItem import ImageListItem
 from utils.geolocate import geolocateLatLonFromPixelOnAreamap, geolocateLatLonFromPixelOnImage
 from utils.geographicUtilities import Point, PolygonBounds, getFrameBounds
 from mapContextMenu import MapContextMenu
-from observer import *
 
-class MapTab(QtWidgets.QWidget, Ui_MapTab, Observer):
+class MapTab(QtWidgets.QWidget, Ui_MapTab):
     def __init__(self, parent=None):
         super(MapTab, self).__init__(parent)
-        Observer.__init__(self)
 
         self.setupUi(self)
 
@@ -39,7 +37,7 @@ class MapTab(QtWidgets.QWidget, Ui_MapTab, Observer):
 
     # paints contours on the map tab every second (approximate telemetry Rx rate)
     @QtCore.pyqtSlot(Image)
-    def processNewImage(self, image):
+    def processImageAdded(self, image):
         self.addImageToUi(image)
 
     @QtCore.pyqtSlot()

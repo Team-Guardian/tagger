@@ -9,21 +9,19 @@ from mapTab import MapTab
 from setupTab import SetupTab
 from taggingTab import TaggingTab
 from targetsTab import TargetsTab
-from observer import *
 from db.models import Image
 from utils.geolocate import geolocateLatLonFromPixelOnImage
 
 TAB_INDICES = {'TAB_SETUP': 0, 'TAB_TAGGING': 1, 'TAB_TARGETS': 2, 'TAB_MAP': 3}
 
 
-class MainWindow(QtWidgets.QMainWindow, Observable):
+class MainWindow(QtWidgets.QMainWindow):
 
     image_added_signal = QtCore.pyqtSignal(Image)
     reset_application_signal = QtCore.pyqtSignal()
 
     def __init__(self):
         super(MainWindow, self).__init__()
-        Observable.__init__(self)
 
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
@@ -32,13 +30,11 @@ class MainWindow(QtWidgets.QMainWindow, Observable):
         self.ui.tabWidget.addTab(self.setupTab, "Setup")
 
         self.taggingTab = TaggingTab()
-        self.taggingTab.addObserver(self)
         self.taggingTab.viewer_single.viewport().installEventFilter(self)
         self.ui.tabWidget.addTab(self.taggingTab, "Tagging")
 
         self.targetsTab = TargetsTab()
         self.ui.tabWidget.addTab(self.targetsTab, "Targets")
-        self.taggingTab.addObserver(self.targetsTab)
 
         self.mapTab = MapTab(self)
         self.mapTab.viewer_map.viewport().installEventFilter(self)

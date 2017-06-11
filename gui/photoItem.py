@@ -25,6 +25,10 @@ class PhotoItem(QtWidgets.QGraphicsPixmapItem):
                 if current_action is not None:
                     signal = self.tab_context_menu.action_signal_dict.get(current_action)
                     data = self.tab_context_menu.action_data_dict.get(current_action)
-                    signal.emit(data)
+                    # if no data to send, call emit with no arguments to avoid errors
+                    if data is None:
+                        signal.emit()
+                    else:
+                        signal.emit(data)
             else:
                 print 'Error: photoItem.py. Context menu is not set'

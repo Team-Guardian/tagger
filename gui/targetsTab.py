@@ -1,7 +1,6 @@
 from PyQt5 import QtWidgets, QtGui, QtCore
 
 from ui.ui_targetsTab import Ui_TargetsTab
-from observer import Observer
 from db.dbHelper import *
 from db.models import Image
 from gui.tagListItem import TagListItem
@@ -14,10 +13,9 @@ from utils.geographicUtilities import getFrameBounds, Point
 
 TAB_INDICES = {'TAB_SETUP': 0, 'TAB_TAGGING': 1, 'TAB_TARGETS': 2, 'TAB_MAP': 3}
 
-class TargetsTab(QtWidgets.QWidget, Ui_TargetsTab, Observer):
+class TargetsTab(QtWidgets.QWidget, Ui_TargetsTab):
     def __init__(self):
         super(TargetsTab, self).__init__()
-        Observer.__init__(self)
 
         self.setupUi(self)
         self.connectButtons()
@@ -34,7 +32,7 @@ class TargetsTab(QtWidgets.QWidget, Ui_TargetsTab, Observer):
         self.button_exportTelemetry.clicked.connect(self.exportTelemetry)
 
     @QtCore.pyqtSlot(Image)
-    def processNewImage(self, image):
+    def processImageAdded(self, image):
         self.addImageToUi(image)
 
     @QtCore.pyqtSlot(Tag)
