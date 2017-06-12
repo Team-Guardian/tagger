@@ -45,6 +45,7 @@ sudo service postgresql restart
 
 In in the root of the project folder **tagger**
 ```
+python manage.py makemigrations
 python manage.py migrate
 ```
 ## 4. Celebrate :beers: :beers:
