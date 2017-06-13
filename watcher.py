@@ -41,7 +41,7 @@ class FileCreatedEventHandler(FileSystemEventHandler):
 
     def __init__(self, observer):
         super(FileSystemEventHandler, self).__init__()
-        self.image_added_event_handler = None
+        self.new_image_added_handler = None
         self.observer = observer
         self.watched_dir = None
         self.flight = None
@@ -53,8 +53,8 @@ class FileCreatedEventHandler(FileSystemEventHandler):
     def changeTargetFlight(self, new_flight):
         self.flight = new_flight
 
-    def addImageAddedEventHandler(self, handler):
-        self.image_added_event_handler = handler
+    def setNewImageAddedHandler(self, handler):
+        self.new_image_added_handler = handler
 
     def on_created(self, event):
         path = event.src_path
@@ -62,7 +62,5 @@ class FileCreatedEventHandler(FileSystemEventHandler):
         directory, fileName = GetDirectoryAndFilenameFromFullPath(path)
 
         if any(fileName.endswith(end) for end in ['.jpg', '.jpeg', '.JPG', '.JPEG']):
-            image = processNewImage(path, self.flight)
-            if image is not None:
-                self.image_added_event_handler(image)
+            self.new_image_added_handler(path)
 

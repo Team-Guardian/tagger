@@ -11,12 +11,19 @@ class SetupTab(QtWidgets.QWidget, Ui_SetupTab):
     # create signals coming from this tab
     flight_load_signal = QtCore.pyqtSignal(str)
     flight_create_signal = QtCore.pyqtSignal(str, Flight)
+    turn_on_watcher_signal = QtCore.pyqtSignal()
+    turn_off_watcher_signal = QtCore.pyqtSignal()
 
     def __init__(self):
         super(SetupTab, self).__init__()
 
         self.setupUi(self)
         self.connectButtons()
+
+        self.checkbox_folderWatcher.setCheckState(QtCore.Qt.Checked)
+        self.checkbox_interopSupport.setCheckState(QtCore.Qt.Unchecked)
+        self.connectCheckboxes()
+
         self.edit_flightDate.setDate(QDate.currentDate())
 
     def connectButtons(self):
@@ -26,9 +33,23 @@ class SetupTab(QtWidgets.QWidget, Ui_SetupTab):
         self.button_browseWatchDirectory.clicked.connect(self.selectWatchDirectory)
         self.button_selectIntrinsicMatrix.clicked.connect(self.selectIntrinsicMatrix)
 
+    def connectCheckboxes(self):
+        self.checkbox_folderWatcher.stateChanged.connect(self.folderWatcherCheckboxPressed)
+        self.checkbox_interopSupport.stateChanged.connect(self.interopSupportCheckboxPressed)
+
     def enableSelectingAndCreatingFlights(self):
         self.group_openExistingFlight.setEnabled(True)
         self.group_createNewFlight.setEnabled(True)
+
+    def disableSelectingAndCreatingFlights(self):
+        self.group_openExistingFlight.setEnabled(False)
+        self.group_createNewFlight.setEnabled(False)
+
+    def enableSelectingWatcherFolder(self):
+        self.button_browseWatchDirectory.setEnabled(True)
+
+    def disableSelectingWatcherFolder(self):
+        self.button_browseWatchDirectory.setEnabled(False)
 
     def addFlightToUi(self, flight):
         self.combo_flights.addItem(flight.location + " " + str(flight.date))
@@ -86,6 +107,22 @@ class SetupTab(QtWidgets.QWidget, Ui_SetupTab):
         file_info = QtCore.QFileInfo(filepath[0])
         filename = file_info.baseName()
         self.line_intrinsicMatrix.setText(filename)
+
+    def folderWatcherCheckboxPressed(self):
+        checkbox_state = self.checkbox_folderWatcher.checkState()
+        if checkbox_state == QtCore.Qt.Checked:
+            self.disableSelectingAndCreatingFlights()
+            self.enableSelectingWatcherFolder()
+            self.turn_on_watcher_signal.emit()
+        elif checkbox_state == QtCore.Qt.Unchecked:
+            self.line_watchDirectory.setText('')
+            self.enableSelectingAndCreatingFlights()
+            self.disableSelectingWatcherFolder()
+            self.turn_off_watcher_signal.emit()
+
+    def interopSupportCheckboxPressed(self):
+        print 'Interop checkbox pressed'
+        pass
 
     def resetTab(self):
         self.group_createNewFlight.setEnabled(False)

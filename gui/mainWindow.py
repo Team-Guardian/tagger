@@ -19,6 +19,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
     image_added_signal = QtCore.pyqtSignal(Image)
     reset_application_signal = QtCore.pyqtSignal()
+    new_image_discovered_by_watcher_signal = QtCore.pyqtSignal(str)
 
     def __init__(self):
         super(MainWindow, self).__init__()

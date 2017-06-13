@@ -1,9 +1,11 @@
 import sys
+import traceback
 from PyQt5 import QtWidgets, QtCore
 
 from db.dbHelper import *
 from gui.mainWindow import MainWindow, TAB_INDICES
 from watcher import Watcher
+from utils.imageInfo import processNewImage
 
 
 class Controller():
@@ -16,7 +18,7 @@ class Controller():
 
         self.window = MainWindow()
         self.window.show()
-        self.imageWatcher.event_handler.addImageAddedEventHandler(self.processImageAdded)
+        self.imageWatcher.event_handler.setNewImageAddedHandler(self.postNewImageDiscoveredByWatcherSignal)
 
         # populate lists
         for flight in self.flights.values():
@@ -30,10 +32,15 @@ class Controller():
 
         # Main Window
         self.window.reset_application_signal.connect(self.processReset)
+        self.window.new_image_discovered_by_watcher_signal.connect(self.processNewImageInWatchedFolder,
+                                                                     type=QtCore.Qt.QueuedConnection)
 
         # from Setup Tab
         self.window.setupTab.flight_load_signal.connect(self.processFlightLoad)
         self.window.setupTab.flight_create_signal.connect(self.processFlightCreated)
+
+        self.window.setupTab.turn_off_watcher_signal.connect(self.processDisableWatcher)
+        self.window.setupTab.turn_on_watcher_signal.connect(self.processEnableWatcher, type=QtCore.Qt.QueuedConnection)
 
         # from Tagging Tab
         self.window.taggingTab.tagging_tab_context_menu.create_marker_signal.connect(self.window.taggingTab.processCreateMarker)
@@ -64,6 +71,17 @@ class Controller():
         self.images.append(new_image)
         self.window.image_added_signal.emit(new_image)
 
+    # Thread-safe way of notifying the main Qt thread that a watcher discovered a new image
+    def postNewImageDiscoveredByWatcherSignal(self, path_to_image):
+        self.window.new_image_discovered_by_watcher_signal.emit(path_to_image)
+
+    # Handles image discovered event once the program enters the main thread
+    @QtCore.pyqtSlot(str)
+    def processNewImageInWatchedFolder(self, path_to_image):
+        image = processNewImage(path_to_image, self.currentFlight)
+        if image is not None:
+            self.processImageAdded(image)
+
     @QtCore.pyqtSlot(str)
     def processFlightLoad(self, flight_id):
         self.resetWatcher()
@@ -92,9 +110,19 @@ class Controller():
         self.tags.remove(deleted_tag)
         delete_tag(deleted_tag)  # This also deletes all the markers associated with this tag (Cascaded delete)
 
+    @QtCore.pyqtSlot()
+    def processEnableWatcher(self):
+        if self.currentFlight is not None:
+            self.window.setupTab.button_browseWatchDirectory.click()
+            self.startWatcher()
+
+    @QtCore.pyqtSlot()
+    def processDisableWatcher(self):
+        self.resetWatcher()
+
     def loadFlight(self, id): # TODO: this function does more than the name implies
         self.currentFlight = self.flights[id]
-        self.imageWatcher.startWatching(self.currentFlight, self.window.setupTab.line_watchDirectory.text())
+        self.startWatcher()
         self.loadTags()
         self.loadMap(self.currentFlight)
         self.window.taggingTab.currentFlight = self.currentFlight
@@ -104,6 +132,17 @@ class Controller():
         self.window.ui.tabWidget.setCurrentIndex(TAB_INDICES['TAB_TAGGING'])
         self.loadImages() # Keep this sequentially after the setCurrentTab call. This is a workaround for a \
                           # Qt bug: https://goo.gl/gWXA9Q
+
+    def startWatcher(self):
+        try:
+            self.imageWatcher.startWatching(self.currentFlight, self.window.setupTab.line_watchDirectory.text())
+        except OSError:
+            exception_notification = QtWidgets.QMessageBox()
+            exception_notification.setIcon(QtWidgets.QMessageBox.Warning)
+            exception_notification.setText('Error: main.py. Invalid watch directory')
+            exception_notification.setWindowTitle('Error!')
+            exception_notification.setDetailedText('{}'.format(traceback.format_exc()))
+            exception_notification.exec_()
 
     def loadTags(self):
         self.tags = get_all_tags()
