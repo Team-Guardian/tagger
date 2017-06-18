@@ -32,16 +32,16 @@ class Controller():
         for flight in self.flights.values():
             self.window.setupTab.addFlightToUi(flight)
 
-        # connect signals
-        # Watcher
-        self.window.image_added_signal.connect(self.window.taggingTab.processImageAdded)
-        self.window.image_added_signal.connect(self.window.targetsTab.processImageAdded)
-        self.window.image_added_signal.connect(self.window.mapTab.processImageAdded)
+        # All the signals are connected through the Controller class that acts as a hub
 
-        # Main Window
+        # from Main Window
         self.window.reset_application_signal.connect(self.processReset)
         self.window.new_image_discovered_by_watcher_signal.connect(self.processNewImageInWatchedFolder,
                                                                      type=QtCore.Qt.QueuedConnection)
+
+        self.window.image_added_signal.connect(self.window.taggingTab.processImageAdded)
+        self.window.image_added_signal.connect(self.window.targetsTab.processImageAdded)
+        self.window.image_added_signal.connect(self.window.mapTab.processImageAdded)
 
         # from Setup Tab
         self.window.setupTab.flight_load_signal.connect(self.processFlightLoad)
@@ -49,6 +49,9 @@ class Controller():
 
         self.window.setupTab.turn_off_watcher_signal.connect(self.processDisableWatcher)
         self.window.setupTab.turn_on_watcher_signal.connect(self.processEnableWatcher, type=QtCore.Qt.QueuedConnection)
+
+        self.window.setupTab.interop_credentials_entered_signal.connect(self.processInteropCredentialsEntered)
+        self.window.setupTab.interop_disable_signal.connect(self.processInteropDisable)
 
         # from Tagging Tab
         self.window.taggingTab.tagging_tab_context_menu.create_marker_signal.connect(self.window.taggingTab.processCreateMarker)
@@ -127,6 +130,17 @@ class Controller():
     @QtCore.pyqtSlot()
     def processDisableWatcher(self):
         self.resetWatcher()
+
+
+    @QtCore.pyqtSlot(str, str, str, str)
+    def processInteropCredentialsEntered(self, ip_address, port_number, username, password):
+        server = '{}:{}'.format(ip_address, port_number)
+        interop_client = Client(server, username, password)
+        print interop_client.get_missions()
+
+    @QtCore.pyqtSlot()
+    def processInteropDisable(self):
+        pass
 
     def loadFlight(self, id): # TODO: this function does more than the name implies
         self.currentFlight = self.flights[id]

@@ -1,0 +1,91 @@
+# -*- coding: utf-8 -*-
+
+# Form implementation generated from reading ui file 'ui_interopCredentialPrompt.ui'
+#
+# Created by: PyQt5 UI code generator 5.5.1
+#
+# WARNING! All changes made in this file will be lost!
+
+from PyQt5 import QtCore, QtGui, QtWidgets
+
+class Ui_Dialog(object):
+    def setupUi(self, Dialog):
+        Dialog.setObjectName("Dialog")
+        Dialog.resize(400, 300)
+        Dialog.setSizeGripEnabled(False)
+        self.buttonBox = QtWidgets.QDialogButtonBox(Dialog)
+        self.buttonBox.setGeometry(QtCore.QRect(30, 240, 341, 32))
+        self.buttonBox.setOrientation(QtCore.Qt.Horizontal)
+        self.buttonBox.setStandardButtons(QtWidgets.QDialogButtonBox.Cancel|QtWidgets.QDialogButtonBox.Ok)
+        self.buttonBox.setObjectName("buttonBox")
+        self.verticalLayoutWidget = QtWidgets.QWidget(Dialog)
+        self.verticalLayoutWidget.setGeometry(QtCore.QRect(10, 10, 381, 211))
+        self.verticalLayoutWidget.setObjectName("verticalLayoutWidget")
+        self.verticalLayout = QtWidgets.QVBoxLayout(self.verticalLayoutWidget)
+        self.verticalLayout.setObjectName("verticalLayout")
+        self.horizontalLayout_3 = QtWidgets.QHBoxLayout()
+        self.horizontalLayout_3.setObjectName("horizontalLayout_3")
+        self.label_ipAddress = QtWidgets.QLabel(self.verticalLayoutWidget)
+        self.label_ipAddress.setObjectName("label_ipAddress")
+        self.horizontalLayout_3.addWidget(self.label_ipAddress)
+        self.lineEdit_ipAddress = QtWidgets.QLineEdit(self.verticalLayoutWidget)
+        self.lineEdit_ipAddress.setObjectName("lineEdit_ipAddress")
+        self.horizontalLayout_3.addWidget(self.lineEdit_ipAddress)
+        self.horizontalLayout_3.setStretch(0, 1)
+        self.horizontalLayout_3.setStretch(1, 4)
+        self.verticalLayout.addLayout(self.horizontalLayout_3)
+        self.horizontalLayout_4 = QtWidgets.QHBoxLayout()
+        self.horizontalLayout_4.setObjectName("horizontalLayout_4")
+        self.label_port = QtWidgets.QLabel(self.verticalLayoutWidget)
+        self.label_port.setObjectName("label_port")
+        self.horizontalLayout_4.addWidget(self.label_port)
+        self.lineEdit_port = QtWidgets.QLineEdit(self.verticalLayoutWidget)
+        self.lineEdit_port.setObjectName("lineEdit_port")
+        self.horizontalLayout_4.addWidget(self.lineEdit_port)
+        self.horizontalLayout_4.setStretch(0, 1)
+        self.horizontalLayout_4.setStretch(1, 4)
+        self.verticalLayout.addLayout(self.horizontalLayout_4)
+        self.horizontalLayout_2 = QtWidgets.QHBoxLayout()
+        self.horizontalLayout_2.setObjectName("horizontalLayout_2")
+        self.label_username = QtWidgets.QLabel(self.verticalLayoutWidget)
+        self.label_username.setObjectName("label_username")
+        self.horizontalLayout_2.addWidget(self.label_username)
+        self.lineEdit_username = QtWidgets.QLineEdit(self.verticalLayoutWidget)
+        self.lineEdit_username.setText("")
+        self.lineEdit_username.setObjectName("lineEdit_username")
+        self.horizontalLayout_2.addWidget(self.lineEdit_username)
+        self.horizontalLayout_2.setStretch(0, 1)
+        self.horizontalLayout_2.setStretch(1, 4)
+        self.verticalLayout.addLayout(self.horizontalLayout_2)
+        self.horizontalLayout_5 = QtWidgets.QHBoxLayout()
+        self.horizontalLayout_5.setObjectName("horizontalLayout_5")
+        self.label_password = QtWidgets.QLabel(self.verticalLayoutWidget)
+        self.label_password.setObjectName("label_password")
+        self.horizontalLayout_5.addWidget(self.label_password)
+        self.lineEdit_password = QtWidgets.QLineEdit(self.verticalLayoutWidget)
+        self.lineEdit_password.setText("")
+        self.lineEdit_password.setObjectName("lineEdit_password")
+        self.horizontalLayout_5.addWidget(self.lineEdit_password)
+        self.horizontalLayout_5.setStretch(0, 1)
+        self.horizontalLayout_5.setStretch(1, 4)
+        self.verticalLayout.addLayout(self.horizontalLayout_5)
+
+        self.retranslateUi(Dialog)
+        self.buttonBox.accepted.connect(Dialog.accept)
+        self.buttonBox.rejected.connect(Dialog.reject)
+        QtCore.QMetaObject.connectSlotsByName(Dialog)
+
+    def retranslateUi(self, Dialog):
+        _translate = QtCore.QCoreApplication.translate
+        Dialog.setWindowTitle(_translate("Dialog", "Dialog"))
+        self.label_ipAddress.setText(_translate("Dialog", "IP Address"))
+        self.lineEdit_ipAddress.setText(_translate("Dialog", "http://192.168.0.198"))
+        self.lineEdit_ipAddress.setPlaceholderText(_translate("Dialog", "http://192.168.0.198"))
+        self.label_port.setText(_translate("Dialog", "Port #"))
+        self.lineEdit_port.setText(_translate("Dialog", "8000"))
+        self.lineEdit_port.setPlaceholderText(_translate("Dialog", "8000"))
+        self.label_username.setText(_translate("Dialog", "Username"))
+        self.lineEdit_username.setPlaceholderText(_translate("Dialog", "testuser"))
+        self.label_password.setText(_translate("Dialog", "Password"))
+        self.lineEdit_password.setPlaceholderText(_translate("Dialog", "testpass"))
+

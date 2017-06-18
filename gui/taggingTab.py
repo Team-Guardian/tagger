@@ -21,6 +21,7 @@ TAG_TABLE_INDICES = {'TYPE': 0, 'SUBTYPE': 1, 'COUNT': 2, 'SYMBOL': 3}
 
 class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab):
 
+    # signals originating from this module
     tag_created_signal = QtCore.pyqtSignal(Tag)
     tag_edited_signal = QtCore.pyqtSignal(Tag)
     tag_deleted_signal = QtCore.pyqtSignal(Tag)

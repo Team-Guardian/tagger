@@ -17,6 +17,7 @@ TAB_INDICES = {'TAB_SETUP': 0, 'TAB_TAGGING': 1, 'TAB_TARGETS': 2, 'TAB_MAP': 3}
 
 class MainWindow(QtWidgets.QMainWindow):
 
+    # signals originating from this module
     image_added_signal = QtCore.pyqtSignal(Image)
     reset_application_signal = QtCore.pyqtSignal()
     new_image_discovered_by_watcher_signal = QtCore.pyqtSignal(str)

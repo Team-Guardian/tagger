@@ -1,18 +1,23 @@
 # Man pages references: http://doc.qt.io/qt-4.8/qfiledialog.html#getOpenFileName
 
-from PyQt5 import QtWidgets, QtCore
+# Qt library modules
 from PyQt5.QtCore import QDate
+
+# Custom modules
 from ui.ui_setupTab import Ui_SetupTab
+from interopCredentialPrompt import InteropCredentialPrompt
 from utils.imageInfo import *
 from db.dbHelper import *
 
 class SetupTab(QtWidgets.QWidget, Ui_SetupTab):
 
-    # create signals coming from this tab
+    # signals originating from this module
     flight_load_signal = QtCore.pyqtSignal(str)
     flight_create_signal = QtCore.pyqtSignal(str, Flight)
     turn_on_watcher_signal = QtCore.pyqtSignal()
     turn_off_watcher_signal = QtCore.pyqtSignal()
+    interop_credentials_entered_signal = QtCore.pyqtSignal(str, str, str, str)
+    interop_disable_signal = QtCore.pyqtSignal()
 
     def __init__(self):
         super(SetupTab, self).__init__()
@@ -109,20 +114,34 @@ class SetupTab(QtWidgets.QWidget, Ui_SetupTab):
         self.line_intrinsicMatrix.setText(filename)
 
     def folderWatcherCheckboxPressed(self):
-        checkbox_state = self.checkbox_folderWatcher.checkState()
-        if checkbox_state == QtCore.Qt.Checked:
+        folder_watcher_checkbox_state = self.checkbox_folderWatcher.checkState()
+        if folder_watcher_checkbox_state == QtCore.Qt.Checked:
             self.disableSelectingAndCreatingFlights()
             self.enableSelectingWatcherFolder()
             self.turn_on_watcher_signal.emit()
-        elif checkbox_state == QtCore.Qt.Unchecked:
+        elif folder_watcher_checkbox_state == QtCore.Qt.Unchecked:
             self.line_watchDirectory.setText('')
             self.enableSelectingAndCreatingFlights()
             self.disableSelectingWatcherFolder()
             self.turn_off_watcher_signal.emit()
 
     def interopSupportCheckboxPressed(self):
-        print 'Interop checkbox pressed'
-        pass
+        interop_enable_checkbox_state = self.checkbox_interopSupport.checkState()
+        if interop_enable_checkbox_state == QtCore.Qt.Checked:
+            interop_credentials_prompt = InteropCredentialPrompt()
+            interop_credentials_prompt.dialog_accepted.connect(self.processDialogAcceptedEvent)
+            interop_credentials_prompt.dialog_rejected.connect(self.processDialogRejectedEvent)
+            interop_credentials_prompt.exec_()
+        elif interop_enable_checkbox_state == QtCore.Qt.Unchecked:
+            self.interop_disable_signal.emit()
+
+    @QtCore.pyqtSlot(str, str, str, str)
+    def processDialogAcceptedEvent(self, ip_address, port_number, username, password):
+        self.interop_credentials_entered_signal.emit(ip_address, port_number, username, password)
+
+    @QtCore.pyqtSlot()
+    def processDialogRejectedEvent(self):
+        self.checkbox_interopSupport.setCheckState(QtCore.Qt.Unchecked)
 
     def resetTab(self):
         self.group_createNewFlight.setEnabled(False)
