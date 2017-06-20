@@ -13,7 +13,7 @@ cmd_subfolder = os.path.realpath(
     os.path.abspath(os.path.join(os.path.split(inspect.getfile(inspect.currentframe()))[0], "../interop/client/")))
 if cmd_subfolder not in sys.path:
     sys.path.insert(0, cmd_subfolder)
-from interop.client import Client
+from interop import client, types
 
 
 class Controller():
@@ -68,6 +68,8 @@ class Controller():
         # Note: processTagDeleted in Controller MUST be invoked after all other handlers have finished processing the event
         #       This ensures that the object exists while references are made to it. Registering slots in this order ensures that
         self.window.taggingTab.tag_deleted_signal.connect(self.processTagDeleted)
+
+        self.window.taggingTab.interop_target_created_signal.connect(self.processInteropTargetCreated)
 
         # from Targets Tab
         self.window.targetsTab.targets_tab_context_menu.go_to_image_in_tagging_tab_signal.connect(self.window.targetsTab.processGoToImageInTaggingTab)
@@ -135,12 +137,29 @@ class Controller():
     @QtCore.pyqtSlot(str, str, str, str)
     def processInteropCredentialsEntered(self, ip_address, port_number, username, password):
         server = '{}:{}'.format(ip_address, port_number)
-        interop_client = Client(server, username, password)
-        print interop_client.get_missions()
+        self.interop_client = client.Client(server, username, password)
+        self.window.taggingTab.interop_enabled = True
 
     @QtCore.pyqtSlot()
     def processInteropDisable(self):
-        pass
+        if self.interop_client is not None:
+            # delete the reference to the Client object to "close" the connection
+            del self.interop_client
+
+    @QtCore.pyqtSlot(str, float, float, str, str, str, str, str)
+    def processInteropTargetCreated(self, target_type, latitude, longitude, orientation, shape, shape_color, alphanumeric, alphanumeric_color):
+        interop_target = types.Target(type=target_type,
+                                       latitude=latitude,
+                                       longitude=longitude,
+                                       orientation=orientation,
+                                       shape=shape,
+                                       background_color=shape_color,
+                                       alphanumeric=alphanumeric,
+                                       alphanumeric_color=alphanumeric_color)
+        try:
+            interop_target = self.interop_client.post_target(interop_target)
+        except:
+            print 'you fucked up'
 
     def loadFlight(self, id): # TODO: this function does more than the name implies
         self.currentFlight = self.flights[id]

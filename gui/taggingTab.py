@@ -7,6 +7,7 @@ from PyQt5.QtCore import QRect
 from ui.ui_taggingTab import Ui_TaggingTab
 from tagDialog import TagDialog
 from db.dbHelper import *
+from gui.interopTargetDialog import InteropTargetDialog
 from gui.imageListItem import ImageListItem
 from gui.tagTableItem import TagTableItem
 from gui.tagContextMenu import TagContextMenu
@@ -15,7 +16,6 @@ from utils.imageInfo import GetDirectoryAndFilenameFromFullPath, FLIGHT_DIRECTOR
 from utils.imageInfo import processNewImage
 from utils.geolocate import getPixelFromLatLon
 from utils.geographicUtilities import *
-
 
 TAG_TABLE_INDICES = {'TYPE': 0, 'SUBTYPE': 1, 'COUNT': 2, 'SYMBOL': 3}
 
@@ -28,12 +28,16 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab):
     current_image_changed_signal = QtCore.pyqtSignal()
     marker_created_signal = QtCore.pyqtSignal(Marker)
     image_manually_added_signal = QtCore.pyqtSignal(Image)
+    interop_target_created_signal = QtCore.pyqtSignal(str, float, float, str, str, str, str, str)
 
     def __init__(self):
         super(TaggingTab, self).__init__()
 
         self.currentFlight = None
         self.currentImage = None
+
+        # target information will be sent to Interop when enabled
+        self.interop_enabled = False
 
         self.setupUi(self)
         self.connectButtons()
@@ -51,6 +55,8 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab):
         self.not_reviewed_image_count = 0
         self.all_image_current_row = 0
         self.updateRadioButtonLabels()
+
+        self.interop_target_dialog = InteropTargetDialog()
 
     @QtCore.pyqtSlot(Image)
     def processImageAdded(self, image):
@@ -189,6 +195,20 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab):
         pu = self.tagging_tab_context_menu.pixel_x_invocation_coord
         pv = self.tagging_tab_context_menu.pixel_y_invocation_coord
         lat, lon = geolocateLatLonFromPixelOnImage(self.currentImage, self.currentFlight.reference_altitude, pu, pv)
+
+        # Call interop target dialog here, for that if the user declines, the function can return without creating any new objects
+        if self.interop_enabled is True:
+            # wait for the user to accept the dialog
+            if self.interop_target_dialog.exec_() == QDialog.Accepted:
+                self.interop_target_created_signal.emit(self.interop_target_dialog.comboBox_targetType.currentText(),
+                                                        lat, lon, 'N', self.interop_target_dialog.comboBox_shape.currentText(),
+                                                        self.interop_target_dialog.comboBox_shapeColor.currentText(),
+                                                        self.interop_target_dialog.lineEdit_alphanumeric.text(),
+                                                        self.interop_target_dialog.comboBox_alphanumericColor.currentText())
+                                                        # self.interop_target_dialog.lineEdit_description.text())
+            else:
+                return
+
         m = create_marker(tag=tag, image=self.currentImage, latitude=lat, longitude=lon)
         m.tag.num_occurrences += 1
         m.tag.save()

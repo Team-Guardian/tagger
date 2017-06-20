@@ -31,6 +31,10 @@ class SetupTab(QtWidgets.QWidget, Ui_SetupTab):
 
         self.edit_flightDate.setDate(QDate.currentDate())
 
+        self.interop_credentials_prompt = InteropCredentialPrompt()
+        self.interop_credentials_prompt.dialog_accepted.connect(self.processDialogAcceptedEvent)
+        self.interop_credentials_prompt.dialog_rejected.connect(self.processDialogRejectedEvent)
+
     def connectButtons(self):
         self.button_loadFlight.clicked.connect(self.loadFlight)
         self.button_createFlight.clicked.connect(self.createFlight)
@@ -128,15 +132,13 @@ class SetupTab(QtWidgets.QWidget, Ui_SetupTab):
     def interopSupportCheckboxPressed(self):
         interop_enable_checkbox_state = self.checkbox_interopSupport.checkState()
         if interop_enable_checkbox_state == QtCore.Qt.Checked:
-            interop_credentials_prompt = InteropCredentialPrompt()
-            interop_credentials_prompt.dialog_accepted.connect(self.processDialogAcceptedEvent)
-            interop_credentials_prompt.dialog_rejected.connect(self.processDialogRejectedEvent)
-            interop_credentials_prompt.exec_()
+            self.interop_credentials_prompt.exec_()
         elif interop_enable_checkbox_state == QtCore.Qt.Unchecked:
             self.interop_disable_signal.emit()
 
     @QtCore.pyqtSlot(str, str, str, str)
     def processDialogAcceptedEvent(self, ip_address, port_number, username, password):
+        # forward the information from the dialog window to the Controller to attempt Interop connection
         self.interop_credentials_entered_signal.emit(ip_address, port_number, username, password)
 
     @QtCore.pyqtSlot()
