@@ -67,8 +67,8 @@ def get_all_tags():
     return list
 
 # Marker
-def create_marker(tag, image, latitude, longitude):
-    m = Marker(tag=tag, image=image, latitude=latitude, longitude=longitude)
+def create_marker(tag, image, latitude, longitude, interop_id=0):
+    m = Marker(tag=tag, image=image, latitude=latitude, longitude=longitude, interop_id=interop_id)
     m.save()
     return m
 

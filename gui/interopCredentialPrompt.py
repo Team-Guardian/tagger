@@ -14,12 +14,14 @@ class InteropCredentialPrompt(QtWidgets.QDialog, Ui_Dialog):
         super(InteropCredentialPrompt, self).__init__()
         self.setupUi(self)
 
+        self.lineEdit_otherIPAddress = QtWidgets.QLineEdit()
+
         self.accepted.connect(self.acceptedEventHandler)
         self.rejected.connect(self.rejectedEventHandler)
 
     def acceptedEventHandler(self):
-        self.dialog_accepted.emit(self.lineEdit_ipAddress.text(), self.lineEdit_port.text(),
-                                            self.lineEdit_username.text(), self.lineEdit_password.text())
+        self.dialog_accepted.emit(self.comboBox_ipAddress.currentText(), self.lineEdit_port.text(),
+                                    self.lineEdit_username.text(), self.lineEdit_password.text())
 
     def rejectedEventHandler(self):
         self.dialog_rejected.emit()

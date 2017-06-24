@@ -17,6 +17,14 @@ from utils.imageInfo import processNewImage
 from utils.geolocate import getPixelFromLatLon
 from utils.geographicUtilities import *
 
+# use this if you want to include modules from a subfolder
+import inspect
+cmd_subfolder = os.path.realpath(
+    os.path.abspath(os.path.join(os.path.split(inspect.getfile(inspect.currentframe()))[0], "../../interop/client/")))
+if cmd_subfolder not in sys.path:
+    sys.path.insert(0, cmd_subfolder)
+from interop import client, types
+
 TAG_TABLE_INDICES = {'TYPE': 0, 'SUBTYPE': 1, 'COUNT': 2, 'SYMBOL': 3}
 
 class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab):
@@ -28,7 +36,6 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab):
     current_image_changed_signal = QtCore.pyqtSignal()
     marker_created_signal = QtCore.pyqtSignal(Marker)
     image_manually_added_signal = QtCore.pyqtSignal(Image)
-    interop_target_created_signal = QtCore.pyqtSignal(str, float, float, str, str, str, str, str)
 
     def __init__(self):
         super(TaggingTab, self).__init__()
@@ -38,6 +45,7 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab):
 
         # target information will be sent to Interop when enabled
         self.interop_enabled = False
+        self.interop_client = None
 
         self.setupUi(self)
         self.connectButtons()
@@ -72,6 +80,10 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab):
         marker_to_delete.tag.num_occurrences -= 1
         marker_to_delete.tag.save()
         self.updateTagMarkerCountInUi(marker_to_delete.tag)
+
+        if self.interop_enabled:
+            if marker_to_delete.interop_id != 0:
+                self.interop_client.delete_target(marker_to_delete.interop_id)
         delete_marker(marker_to_delete)
 
     def processMarkerParentImageChange(self, image_changed_to):
@@ -185,9 +197,13 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab):
             row = self.list_tags.currentRow()
             tag = self.list_tags.item(row, 0).getTag()
 
+            if self.interop_enabled and self.interop_client is not None:
+                self.deleteTargetsFromInterop(tag)
+
             self.list_tags.removeRow(row)
             self.tagging_tab_context_menu.removeTagItem(tag)
             self.deleteMarkersFromUi(tag=tag)
+
             self.tag_dialog.addIcon(tag.symbol)
             self.tag_deleted_signal.emit(tag)
 
@@ -196,20 +212,24 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab):
         pv = self.tagging_tab_context_menu.pixel_y_invocation_coord
         lat, lon = geolocateLatLonFromPixelOnImage(self.currentImage, self.currentFlight.reference_altitude, pu, pv)
 
+        # default value used if interop is not enabled; properly posted interop target will never have ID=0
+        target_id = 0
+
         # Call interop target dialog here, for that if the user declines, the function can return without creating any new objects
         if self.interop_enabled is True:
             # wait for the user to accept the dialog
             if self.interop_target_dialog.exec_() == QDialog.Accepted:
-                self.interop_target_created_signal.emit(self.interop_target_dialog.comboBox_targetType.currentText(),
+                target_id = self.createAndPostInteropTarget(self.interop_target_dialog.comboBox_targetType.currentText(),
                                                         lat, lon, 'N', self.interop_target_dialog.comboBox_shape.currentText(),
                                                         self.interop_target_dialog.comboBox_shapeColor.currentText(),
                                                         self.interop_target_dialog.lineEdit_alphanumeric.text(),
                                                         self.interop_target_dialog.comboBox_alphanumericColor.currentText())
                                                         # self.interop_target_dialog.lineEdit_description.text())
+
             else:
                 return
 
-        m = create_marker(tag=tag, image=self.currentImage, latitude=lat, longitude=lon)
+        m = create_marker(tag=tag, image=self.currentImage, latitude=lat, longitude=lon, interop_id=target_id)
         m.tag.num_occurrences += 1
         m.tag.save()
 
@@ -218,6 +238,22 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab):
 
         self.addMarkerToUi(pu, pv, m, 1.0) # 1.0 means fully opaque for markers created in current image
         self.marker_created_signal.emit(m)
+
+    def createAndPostInteropTarget(self, target_type, latitude, longitude, orientation, shape, shape_color, alphanumeric, alphanumeric_color):
+        if self.interop_client is not None:
+            interop_target = types.Target(type=target_type,
+                                           latitude=latitude,
+                                           longitude=longitude,
+                                           orientation=orientation,
+                                           shape=shape,
+                                           background_color=shape_color,
+                                           alphanumeric=alphanumeric,
+                                           alphanumeric_color=alphanumeric_color)
+            try:
+                interop_target = self.interop_client.post_target(interop_target)
+                return interop_target.id
+            except:
+                print 'you fucked up'
 
     def addMarkerToUi(self, x, y, marker, opacity):
         # Create MarkerItem
@@ -260,6 +296,11 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab):
                         marker_to_delete_from_ui.tag.save()
                 else:
                     self.viewer_single.getScene().removeItem(item)
+
+    def deleteTargetsFromInterop(self, target_tag):
+        deleted_markers = list(Marker.objects.filter(tag=target_tag))
+        for marker in deleted_markers:
+            self.interop_client.delete_target(marker.interop_id)
 
     def updateImageList(self):
         for row_num in range(self.list_images.count()):

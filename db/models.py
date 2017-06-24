@@ -47,6 +47,7 @@ class Marker(models.Model):
     image = models.ForeignKey(Image, on_delete=models.CASCADE)
     latitude = models.FloatField()
     longitude = models.FloatField()
+    interop_id = models.IntegerField(default=0)
 
 
 
