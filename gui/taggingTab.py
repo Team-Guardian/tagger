@@ -64,7 +64,13 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab):
         self.all_image_current_row = 0
         self.updateRadioButtonLabels()
 
-        self.interop_target_dialog = InteropTargetDialog()
+        self.interop_target_dialog = InteropTargetDialog(self.enableTargetCropping, self.processInteropTargetDialogAccepted)
+
+    def setInteropEnabled(self):
+        self.interop_enabled = True
+
+    def setInteropDisabled(self):
+        self.interop_enabled = False
 
     @QtCore.pyqtSlot(Image)
     def processImageAdded(self, image):
@@ -212,32 +218,66 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab):
         pv = self.tagging_tab_context_menu.pixel_y_invocation_coord
         lat, lon = geolocateLatLonFromPixelOnImage(self.currentImage, self.currentFlight.reference_altitude, pu, pv)
 
-        # default value used if interop is not enabled; properly posted interop target will never have ID=0
-        target_id = 0
+        if self.interop_enabled:
+            self.interop_target_dialog.lineEdit_latitude.setText('{}'.format(lat))
+            self.interop_target_dialog.lineEdit_longitude.setText('{}'.format(lon))
+            self.interop_target_dialog.setTargetTag(tag)
+            self.interop_target_dialog.show()
+        else:
+            # default value used if interop is not enabled; properly posted interop target will never have ID=0
+            target_id = 0
 
-        # Call interop target dialog here, for that if the user declines, the function can return without creating any new objects
-        if self.interop_enabled is True:
-            # wait for the user to accept the dialog
-            if self.interop_target_dialog.exec_() == QDialog.Accepted:
-                target_id = self.createAndPostInteropTarget(self.interop_target_dialog.comboBox_targetType.currentText(),
-                                                        lat, lon, 'N', self.interop_target_dialog.comboBox_shape.currentText(),
-                                                        self.interop_target_dialog.comboBox_shapeColor.currentText(),
-                                                        self.interop_target_dialog.lineEdit_alphanumeric.text(),
-                                                        self.interop_target_dialog.comboBox_alphanumericColor.currentText())
-                                                        # self.interop_target_dialog.lineEdit_description.text())
+            m = create_marker(tag=tag, image=self.currentImage, latitude=lat, longitude=lon, interop_id=target_id)
+            m.tag.num_occurrences += 1
+            m.tag.save()
 
-            else:
-                return
+            # update the marker count in the table
+            self.updateTagMarkerCountInUi(tag)
 
-        m = create_marker(tag=tag, image=self.currentImage, latitude=lat, longitude=lon, interop_id=target_id)
+            self.addMarkerToUi(pu, pv, m, 1.0) # 1.0 means fully opaque for markers created in current image
+            self.marker_created_signal.emit(m)
+
+    def processInteropTargetDialogAccepted(self):
+        # Generate and post a target object, then save it's Interop-assined ID
+        target_id = self.createAndPostInteropTarget(self.interop_target_dialog.comboBox_targetType.currentText(),
+                                                    self.interop_target_dialog.lineEdit_latitude.text(),
+                                                    self.interop_target_dialog.lineEdit_longitude.text(),
+                                                    # self.interop_target_dialog.lineEdit_orientation.text(),
+                                                    'N',
+                                                    self.interop_target_dialog.comboBox_shape.currentText(),
+                                                    self.interop_target_dialog.comboBox_shapeColor.currentText(),
+                                                    self.interop_target_dialog.lineEdit_alphanumeric.text(),
+                                                    self.interop_target_dialog.comboBox_alphanumericColor.currentText())
+                                                    # self.interop_target_dialog.lineEdit_description.text())
+
+        m = create_marker(tag=self.interop_target_dialog.target_tag, image=self.currentImage,
+                          latitude=self.interop_target_dialog.lineEdit_latitude.text(),
+                          longitude=self.interop_target_dialog.lineEdit_longitude.text(), interop_id=target_id)
         m.tag.num_occurrences += 1
         m.tag.save()
 
-        # update the marker count in the table
-        self.updateTagMarkerCountInUi(tag)
+        # Reset dialog window
+        self.interop_target_dialog = InteropTargetDialog()
 
-        self.addMarkerToUi(pu, pv, m, 1.0) # 1.0 means fully opaque for markers created in current image
+        # update the marker count in the table
+        self.updateTagMarkerCountInUi(self.interop_target_dialog.target_tag)
+
+        self.addMarkerToUi(self.tagging_tab_context_menu.pixel_x_invocation_coord, self.tagging_tab_context_menu.pixel_y_invocation_coord, m, 1.0) # 1.0 means fully opaque for markers created in current image
         self.marker_created_signal.emit(m)
+
+    def enableTargetCropping(self):
+        self.viewer_single.crop_enabled = True
+
+    def disableTargetCropping(self):
+        self.viewer_single.crop_enabled = False
+
+    @QtCore.pyqtSlot(QtCore.QRectF)
+    def processTargetCropped(self, cropped_rect_scene_coords):
+        integer_cropped_rect_scene_coords = QtCore.QRect(int(cropped_rect_scene_coords.x()), int(cropped_rect_scene_coords.y()),
+                                      int(cropped_rect_scene_coords.width()), int(cropped_rect_scene_coords.height()))
+        cropped_target_image = self.viewer_single._photo.pixmap().copy(integer_cropped_rect_scene_coords)
+        self.interop_target_dialog.setCroppedImage(cropped_target_image)
+        self.disableTargetCropping()
 
     def createAndPostInteropTarget(self, target_type, latitude, longitude, orientation, shape, shape_color, alphanumeric, alphanumeric_color):
         if self.interop_client is not None:

@@ -72,6 +72,8 @@ class Controller():
         #       This ensures that the object exists while references are made to it. Registering slots in this order ensures that
         self.window.taggingTab.tag_deleted_signal.connect(self.processTagDeleted)
 
+        self.window.taggingTab.viewer_single.target_cropped_signal.connect(self.window.taggingTab.processTargetCropped)
+
         # from Targets Tab
         self.window.targetsTab.targets_tab_context_menu.go_to_image_in_tagging_tab_signal.connect(self.window.targetsTab.processGoToImageInTaggingTab)
 
@@ -139,7 +141,7 @@ class Controller():
     def processInteropCredentialsEntered(self, ip_address, port_number, username, password):
         server = '{}:{}'.format(ip_address, port_number)
         self.interop_client = client.Client(server, username, password)
-        self.window.taggingTab.interop_enabled = True
+        self.window.taggingTab.setInteropEnabled()
         self.window.taggingTab.interop_client = self.interop_client
 
     @QtCore.pyqtSlot()
@@ -147,6 +149,7 @@ class Controller():
         if self.interop_client is not None:
             # delete the reference to the Client object to "close" the connection
             del self.interop_client
+            self.window.taggingTab.setInteropDisabled()
 
     def loadFlight(self, id): # TODO: this function does more than the name implies
         self.currentFlight = self.flights[id]

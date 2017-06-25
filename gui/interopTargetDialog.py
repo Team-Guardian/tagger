@@ -4,16 +4,40 @@ from PyQt5 import QtWidgets, QtCore
 from ui.ui_interopTarget import Ui_Dialog
 
 class InteropTargetDialog(QtWidgets.QDialog, Ui_Dialog):
-    def __init__(self):
+    def __init__(self, enable_target_cropping_handler, accepted_event_handler):
         super(InteropTargetDialog, self).__init__()
 
         self.setupUi(self)
 
+        self.current_target_image = None
+
+        self.button_cropTarget.clicked.connect(enable_target_cropping_handler)
+
         # populate combo-boxes with allowed values
+        self.populateComboBoxes()
+
+        # Connect events to handlers
+        self.accepted.connect(accepted_event_handler)
+
+        # TODO: when a user double clicks the field, it becomes editable
+        # self.lineEdit_latitude.installEventFilter(self)
+        # self.lineEdit_longitude.installEventFilter(self)
+
+    def setTargetTag(self, tag):
+        self.target_tag = tag
+
+    def populateComboBoxes(self):
+        self.populateTargetTypeOptions()
+        self.populateShapeOptions()
+        self.populateShapeColorOptions()
+        self.populateAlphanumericColorOptions()
+
+    def populateTargetTypeOptions(self):
         self.comboBox_targetType.addItem('standard')
         self.comboBox_targetType.addItem('off-axis')
         self.comboBox_targetType.addItem('emergent')
 
+    def populateShapeOptions(self):
         self.comboBox_shape.addItem('circle')
         self.comboBox_shape.addItem('semicircle')
         self.comboBox_shape.addItem('quarter_circle')
@@ -28,6 +52,7 @@ class InteropTargetDialog(QtWidgets.QDialog, Ui_Dialog):
         self.comboBox_shape.addItem('star')
         self.comboBox_shape.addItem('cross')
 
+    def populateShapeColorOptions(self):
         self.comboBox_shapeColor.addItem('white')
         self.comboBox_shapeColor.addItem('black')
         self.comboBox_shapeColor.addItem('gray')
@@ -39,6 +64,7 @@ class InteropTargetDialog(QtWidgets.QDialog, Ui_Dialog):
         self.comboBox_shapeColor.addItem('brown')
         self.comboBox_shapeColor.addItem('orange')
 
+    def populateAlphanumericColorOptions(self):
         self.comboBox_alphanumericColor.addItem('white')
         self.comboBox_alphanumericColor.addItem('black')
         self.comboBox_alphanumericColor.addItem('gray')
@@ -49,3 +75,17 @@ class InteropTargetDialog(QtWidgets.QDialog, Ui_Dialog):
         self.comboBox_alphanumericColor.addItem('purple')
         self.comboBox_alphanumericColor.addItem('brown')
         self.comboBox_alphanumericColor.addItem('orange')
+
+    def setCroppedImage(self, cropped_image):
+        self.viewer_target.setPhoto(cropped_image)
+
+    # def eventFilter(self, QObject, QEvent):
+    #     if QObject == self.lineEdit_latitude and QEvent. == QtWidgets.QLineEdit.mouseDoubleClickEvent:
+    #
+    #     elif QObject == self.lineEdit_longitude:
+
+    def enableLatitudeEditing(self):
+        self.lineEdit_latitude.setEnabled(True)
+
+    def enableLongitudeEditing(self):
+        self.lineEdit_longitude.setEnabled(True)
