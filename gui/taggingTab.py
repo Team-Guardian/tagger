@@ -267,9 +267,24 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab):
 
     def enableTargetCropping(self):
         self.viewer_single.crop_enabled = True
+        self.interop_target_dialog.hide()
+        self.interop_target_dialog.setWindowModality(QtCore.Qt.NonModal)
+        self.interop_target_dialog.show()
+        self.setEnabled(False)
+        self.viewer_single.setEnabled(True)
+        # self.viewer_single._scene.setEnabled(True)
+        self.viewer_single._photo.setEnabled(True)
+        self.setWindowState(QtCore.Qt.WindowActive)
 
+    @QtCore.pyqtSlot()
     def disableTargetCropping(self):
         self.viewer_single.crop_enabled = False
+        self.interop_target_dialog.hide()
+        self.interop_target_dialog.setWindowModality(QtCore.Qt.ApplicationModal)
+        self.interop_target_dialog.show()
+        self.setEnabled(True)
+        # self.interop_target_dialog.setWindowState(QtCore.Qt.WindowActive)
+        self.setWindowState(QtCore.Qt.WindowNoState)
 
     @QtCore.pyqtSlot(QtCore.QRectF)
     def processTargetCropped(self, cropped_rect_scene_coords):

@@ -9,6 +9,7 @@ from scale import Scale
 class PhotoViewer(QtWidgets.QGraphicsView):
 
     target_cropped_signal = QtCore.pyqtSignal(QtCore.QRectF)
+    target_crop_cancel_signal = QtCore.pyqtSignal()
 
     def __init__(self, parent):
         super(PhotoViewer, self).__init__(parent)
@@ -93,6 +94,7 @@ class PhotoViewer(QtWidgets.QGraphicsView):
             self.updateScale()
 
     def eventFilter(self, QObject, QEvent):
+        # print QEvent.type()
         if QEvent.type() == QtCore.QEvent.MouseButtonPress and QEvent.modifiers() == QtCore.Qt.ControlModifier and self.crop_enabled:
             if not self.isImageNull() and not self.rubber_band:
                 self.rubber_band_initial_point = self.mapToGlobal(QEvent.pos())
@@ -122,6 +124,10 @@ class PhotoViewer(QtWidgets.QGraphicsView):
                 self.target_cropped_signal.emit(cropping_rect)
                 self.rubber_band = None
             self.setDragMode(QtWidgets.QGraphicsView.ScrollHandDrag)
+
+        elif QEvent.type() == QtCore.QEvent.KeyPress and QEvent.key() == QtCore.Qt.Key_Escape and self.crop_enabled:
+            print 'here'
+            self.target_crop_cancel_signal.emit()
 
         return QtWidgets.QWidget.eventFilter(self, QObject, QEvent)
 

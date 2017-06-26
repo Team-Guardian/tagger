@@ -11,14 +11,14 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_Dialog(object):
     def setupUi(self, Dialog):
         Dialog.setObjectName("Dialog")
-        Dialog.setWindowModality(QtCore.Qt.NonModal)
+        Dialog.setWindowModality(QtCore.Qt.ApplicationModal)
         Dialog.resize(1000, 500)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(Dialog.sizePolicy().hasHeightForWidth())
         Dialog.setSizePolicy(sizePolicy)
-        Dialog.setModal(False)
+        Dialog.setModal(True)
         self.buttonBox = QtWidgets.QDialogButtonBox(Dialog)
         self.buttonBox.setGeometry(QtCore.QRect(640, 450, 341, 41))
         self.buttonBox.setOrientation(QtCore.Qt.Horizontal)

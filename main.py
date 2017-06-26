@@ -73,6 +73,7 @@ class Controller():
         self.window.taggingTab.tag_deleted_signal.connect(self.processTagDeleted)
 
         self.window.taggingTab.viewer_single.target_cropped_signal.connect(self.window.taggingTab.processTargetCropped)
+        self.window.taggingTab.viewer_single.target_crop_cancel_signal.connect(self.window.taggingTab.disableTargetCropping)
 
         # from Targets Tab
         self.window.targetsTab.targets_tab_context_menu.go_to_image_in_tagging_tab_signal.connect(self.window.targetsTab.processGoToImageInTaggingTab)

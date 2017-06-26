@@ -3,7 +3,7 @@
  <class>Dialog</class>
  <widget class="QDialog" name="Dialog">
   <property name="windowModality">
-   <enum>Qt::NonModal</enum>
+   <enum>Qt::ApplicationModal</enum>
   </property>
   <property name="geometry">
    <rect>
@@ -23,7 +23,7 @@
    <string>Dialog</string>
   </property>
   <property name="modal">
-   <bool>false</bool>
+   <bool>true</bool>
   </property>
   <widget class="QDialogButtonBox" name="buttonBox">
    <property name="geometry">
