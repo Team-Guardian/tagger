@@ -64,7 +64,7 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab):
         self.all_image_current_row = 0
         self.updateRadioButtonLabels()
 
-        self.interop_target_dialog = InteropTargetDialog(self.enableTargetCropping, self.processInteropTargetDialogAccepted)
+        self.interop_target_dialog = InteropTargetDialog(self.enableTargetCropping)
 
     def setInteropEnabled(self):
         self.interop_enabled = True
@@ -237,6 +237,7 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab):
             self.addMarkerToUi(pu, pv, m, 1.0) # 1.0 means fully opaque for markers created in current image
             self.marker_created_signal.emit(m)
 
+    @QtCore.pyqtSlot()
     def processInteropTargetDialogAccepted(self):
         # Generate and post a target object, then save it's Interop-assined ID
         target_id = self.createAndPostInteropTarget(self.interop_target_dialog.comboBox_targetType.currentText(),
@@ -250,31 +251,33 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab):
                                                     self.interop_target_dialog.comboBox_alphanumericColor.currentText())
                                                     # self.interop_target_dialog.lineEdit_description.text())
 
-        m = create_marker(tag=self.interop_target_dialog.target_tag, image=self.currentImage,
+        self.saveAndPostTargetImage(target_id)
+
+        m = create_marker(tag=self.interop_target_dialog.current_target_tag, image=self.currentImage,
                           latitude=self.interop_target_dialog.lineEdit_latitude.text(),
                           longitude=self.interop_target_dialog.lineEdit_longitude.text(), interop_id=target_id)
         m.tag.num_occurrences += 1
         m.tag.save()
 
         # Reset dialog window
-        self.interop_target_dialog = InteropTargetDialog()
+        self.interop_target_dialog = InteropTargetDialog(self.enableTargetCropping)
 
         # update the marker count in the table
-        self.updateTagMarkerCountInUi(self.interop_target_dialog.target_tag)
+        self.updateTagMarkerCountInUi(self.interop_target_dialog.current_target_tag)
 
         self.addMarkerToUi(self.tagging_tab_context_menu.pixel_x_invocation_coord, self.tagging_tab_context_menu.pixel_y_invocation_coord, m, 1.0) # 1.0 means fully opaque for markers created in current image
         self.marker_created_signal.emit(m)
+
+    @QtCore.pyqtSlot()
+    def processInteropTargetDialogRejected(self):
+        self.interop_target_dialog = InteropTargetDialog(self.enableTargetCropping)
 
     def enableTargetCropping(self):
         self.viewer_single.crop_enabled = True
         self.interop_target_dialog.hide()
         self.interop_target_dialog.setWindowModality(QtCore.Qt.NonModal)
         self.interop_target_dialog.show()
-        self.setEnabled(False)
-        self.viewer_single.setEnabled(True)
-        # self.viewer_single._scene.setEnabled(True)
-        self.viewer_single._photo.setEnabled(True)
-        self.setWindowState(QtCore.Qt.WindowActive)
+        self.activateWindow()
 
     @QtCore.pyqtSlot()
     def disableTargetCropping(self):
@@ -282,9 +285,7 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab):
         self.interop_target_dialog.hide()
         self.interop_target_dialog.setWindowModality(QtCore.Qt.ApplicationModal)
         self.interop_target_dialog.show()
-        self.setEnabled(True)
-        # self.interop_target_dialog.setWindowState(QtCore.Qt.WindowActive)
-        self.setWindowState(QtCore.Qt.WindowNoState)
+        self.interop_target_dialog.activateWindow()
 
     @QtCore.pyqtSlot(QtCore.QRectF)
     def processTargetCropped(self, cropped_rect_scene_coords):
@@ -292,6 +293,7 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab):
                                       int(cropped_rect_scene_coords.width()), int(cropped_rect_scene_coords.height()))
         cropped_target_image = self.viewer_single._photo.pixmap().copy(integer_cropped_rect_scene_coords)
         self.interop_target_dialog.setCroppedImage(cropped_target_image)
+        self.interop_target_dialog.saveCroppedRect(integer_cropped_rect_scene_coords)
         self.disableTargetCropping()
 
     def createAndPostInteropTarget(self, target_type, latitude, longitude, orientation, shape, shape_color, alphanumeric, alphanumeric_color):
@@ -309,6 +311,30 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab):
                 return interop_target.id
             except:
                 print 'you fucked up'
+
+    def saveAndPostTargetImage(self, interop_target_id):
+        flight_root = QtCore.QDir(FLIGHT_DIRECTORY + '{}'.format(self.currentFlight.img_path))
+        flight_root.makeAbsolute()
+        abs_flight_root = flight_root
+        abs_image_path = QtCore.QDir('{}/{}'.format(abs_flight_root.path(), self.currentImage.filename))
+        original_pixmap = QPixmap(abs_image_path.path())
+        cropped_pixmap = original_pixmap.copy(self.interop_target_dialog.current_target_cropped_rect)
+
+        # set path where cropped images of targets will be saved
+        target_save_path = QtCore.QDir('{}/interop_targets'.format(abs_flight_root.path()))
+        # if it's the first target posted, create a directory to store images
+        if not QtCore.QDir(target_save_path.path()).exists():
+            QtCore.QDir.mkdir(target_save_path.path())
+
+        target_image_filepath = QtCore.QDir('{}/{}'.format(target_save_path.path(), interop_target_id))
+
+        cropped_pixmap.save(target_image_filepath.path(), format='jpg', quality=100)
+
+        # Open target image
+        with open(target_image_filepath.path(), 'rb') as f:
+            image_data = f.read()
+
+        self.interop_client.post_target_image(interop_target_id, image_data)
 
     def addMarkerToUi(self, x, y, marker, opacity):
         # Create MarkerItem

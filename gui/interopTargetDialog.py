@@ -4,27 +4,26 @@ from PyQt5 import QtWidgets, QtCore
 from ui.ui_interopTarget import Ui_Dialog
 
 class InteropTargetDialog(QtWidgets.QDialog, Ui_Dialog):
-    def __init__(self, enable_target_cropping_handler, accepted_event_handler):
+    def __init__(self, enable_target_cropping_handler):
         super(InteropTargetDialog, self).__init__()
 
         self.setupUi(self)
 
+        self.current_target_tag = None
         self.current_target_image = None
+        self.current_target_cropped_rect = None
 
         self.button_cropTarget.clicked.connect(enable_target_cropping_handler)
 
         # populate combo-boxes with allowed values
         self.populateComboBoxes()
 
-        # Connect events to handlers
-        self.accepted.connect(accepted_event_handler)
-
         # TODO: when a user double clicks the field, it becomes editable
         # self.lineEdit_latitude.installEventFilter(self)
         # self.lineEdit_longitude.installEventFilter(self)
 
     def setTargetTag(self, tag):
-        self.target_tag = tag
+        self.current_target_tag = tag
 
     def populateComboBoxes(self):
         self.populateTargetTypeOptions()
@@ -79,6 +78,9 @@ class InteropTargetDialog(QtWidgets.QDialog, Ui_Dialog):
     def setCroppedImage(self, cropped_image):
         self.viewer_target.setPhoto(cropped_image)
 
+    def saveCroppedRect(self, cropped_rect):
+        self.current_target_cropped_rect = cropped_rect
+
     # def eventFilter(self, QObject, QEvent):
     #     if QObject == self.lineEdit_latitude and QEvent. == QtWidgets.QLineEdit.mouseDoubleClickEvent:
     #
@@ -89,3 +91,9 @@ class InteropTargetDialog(QtWidgets.QDialog, Ui_Dialog):
 
     def enableLongitudeEditing(self):
         self.lineEdit_longitude.setEnabled(True)
+
+    def disableLatitudeEditing(self):
+        self.lineEdit_latitude.setEnabled(False)
+
+    def disableLongitudeEditing(self):
+        self.lineEdit_longitude.setEnabled(False)

@@ -94,7 +94,7 @@ class PhotoViewer(QtWidgets.QGraphicsView):
             self.updateScale()
 
     def eventFilter(self, QObject, QEvent):
-        # print QEvent.type()
+        print QEvent.type()
         if QEvent.type() == QtCore.QEvent.MouseButtonPress and QEvent.modifiers() == QtCore.Qt.ControlModifier and self.crop_enabled:
             if not self.isImageNull() and not self.rubber_band:
                 self.rubber_band_initial_point = self.mapToGlobal(QEvent.pos())

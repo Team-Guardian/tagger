@@ -74,6 +74,8 @@ class Controller():
 
         self.window.taggingTab.viewer_single.target_cropped_signal.connect(self.window.taggingTab.processTargetCropped)
         self.window.taggingTab.viewer_single.target_crop_cancel_signal.connect(self.window.taggingTab.disableTargetCropping)
+        self.window.taggingTab.interop_target_dialog.accepted.connect(self.window.taggingTab.processInteropTargetDialogAccepted)
+        self.window.taggingTab.interop_target_dialog.rejected.connect(self.window.taggingTab.processInteropTargetDialogRejected)
 
         # from Targets Tab
         self.window.targetsTab.targets_tab_context_menu.go_to_image_in_tagging_tab_signal.connect(self.window.targetsTab.processGoToImageInTaggingTab)
@@ -141,9 +143,19 @@ class Controller():
     @QtCore.pyqtSlot(str, str, str, str)
     def processInteropCredentialsEntered(self, ip_address, port_number, username, password):
         server = '{}:{}'.format(ip_address, port_number)
-        self.interop_client = client.Client(server, username, password)
-        self.window.taggingTab.setInteropEnabled()
-        self.window.taggingTab.interop_client = self.interop_client
+        try:
+            self.interop_client = client.Client(server, username, password)
+            self.window.taggingTab.setInteropEnabled()
+            self.window.taggingTab.interop_client = self.interop_client
+        except:
+            exception_notification = QtWidgets.QMessageBox()
+            exception_notification.setIcon(QtWidgets.QMessageBox.Warning)
+            exception_notification.setText('Error: main.py. Can\'t establish interop connection')
+            exception_notification.setWindowTitle('Error!')
+            exception_notification.setDetailedText('{}'.format(traceback.format_exc()))
+            exception_notification.exec_()
+            self.window.setupTab.checkbox_interopSupport.setCheckState(QtCore.Qt.Unchecked)
+            self.window.taggingTab.setInteropDisabled()
 
     @QtCore.pyqtSlot()
     def processInteropDisable(self):
