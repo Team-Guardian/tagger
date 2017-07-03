@@ -16,7 +16,9 @@ class SetupTab(QtWidgets.QWidget, Ui_SetupTab):
     flight_create_signal = QtCore.pyqtSignal(str, Flight)
     turn_on_watcher_signal = QtCore.pyqtSignal()
     turn_off_watcher_signal = QtCore.pyqtSignal()
-    interop_credentials_entered_signal = QtCore.pyqtSignal(str, str, str, str)
+    interop_connect_signal = QtCore.pyqtSignal(str, str, str, str)
+    interop_disconnect_signal = QtCore.pyqtSignal()
+    interop_enable_signal = QtCore.pyqtSignal()
     interop_disable_signal = QtCore.pyqtSignal()
 
     def __init__(self):
@@ -41,6 +43,9 @@ class SetupTab(QtWidgets.QWidget, Ui_SetupTab):
         self.button_selectAreaMap.clicked.connect(self.selectAreaMap)
         self.button_browseWatchDirectory.clicked.connect(self.selectWatchDirectory)
         self.button_selectIntrinsicMatrix.clicked.connect(self.selectIntrinsicMatrix)
+
+        self.button_interopConnect.clicked.connect(self.connectToInterop)
+        self.button_interopDisconnect.clicked.connect(self.disconnectFromInterop)
 
     def connectCheckboxes(self):
         self.checkbox_folderWatcher.stateChanged.connect(self.folderWatcherCheckboxPressed)
@@ -132,18 +137,31 @@ class SetupTab(QtWidgets.QWidget, Ui_SetupTab):
     def interopSupportCheckboxPressed(self):
         interop_enable_checkbox_state = self.checkbox_interopSupport.checkState()
         if interop_enable_checkbox_state == QtCore.Qt.Checked:
-            self.interop_credentials_prompt.exec_()
+            self.button_interopConnect.setEnabled(True)
+            self.interop_enable_signal.emit()
         elif interop_enable_checkbox_state == QtCore.Qt.Unchecked:
+            self.button_interopConnect.setEnabled(False)
+            self.button_interopDisconnect.setEnabled(False)
             self.interop_disable_signal.emit()
+
+    def connectToInterop(self):
+        self.interop_credentials_prompt.exec_()
+
+    def disconnectFromInterop(self):
+        self.interop_disconnect_signal.emit()
 
     @QtCore.pyqtSlot(str, str, str, str)
     def processDialogAcceptedEvent(self, ip_address, port_number, username, password):
         # forward the information from the dialog window to the Controller to attempt Interop connection
-        self.interop_credentials_entered_signal.emit(ip_address, port_number, username, password)
+        self.interop_connect_signal.emit(ip_address, port_number, username, password)
 
     @QtCore.pyqtSlot()
     def processDialogRejectedEvent(self):
-        self.checkbox_interopSupport.setCheckState(QtCore.Qt.Unchecked)
+        self.interop_disconnect_signal.emit()
+
+    @QtCore.pyqtSlot()
+    def processInteropConnectionError(self):
+        self.disconnectFromInterop()
 
     def resetTab(self):
         self.group_createNewFlight.setEnabled(False)

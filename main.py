@@ -53,7 +53,9 @@ class Controller():
         self.window.setupTab.turn_off_watcher_signal.connect(self.processDisableWatcher)
         self.window.setupTab.turn_on_watcher_signal.connect(self.processEnableWatcher, type=QtCore.Qt.QueuedConnection)
 
-        self.window.setupTab.interop_credentials_entered_signal.connect(self.processInteropCredentialsEntered)
+        self.window.setupTab.interop_connect_signal.connect(self.processInteropConnect)
+        self.window.setupTab.interop_disconnect_signal.connect(self.processInteropDisconnect)
+        self.window.setupTab.interop_enable_signal.connect(self.processInteropEnable)
         self.window.setupTab.interop_disable_signal.connect(self.processInteropDisable)
 
         # from Tagging Tab
@@ -76,6 +78,8 @@ class Controller():
         self.window.taggingTab.viewer_single.target_crop_cancel_signal.connect(self.window.taggingTab.disableTargetCropping)
         self.window.taggingTab.interop_target_dialog.accepted.connect(self.window.taggingTab.processInteropTargetDialogAccepted)
         self.window.taggingTab.interop_target_dialog.rejected.connect(self.window.taggingTab.processInteropTargetDialogRejected)
+
+        self.window.taggingTab.interop_connection_error_signal.connect(self.window.setupTab.processInteropConnectionError, QtCore.Qt.DirectConnection)
 
         # from Targets Tab
         self.window.targetsTab.targets_tab_context_menu.go_to_image_in_tagging_tab_signal.connect(self.window.targetsTab.processGoToImageInTaggingTab)
@@ -141,12 +145,15 @@ class Controller():
 
 
     @QtCore.pyqtSlot(str, str, str, str)
-    def processInteropCredentialsEntered(self, ip_address, port_number, username, password):
+    def processInteropConnect(self, ip_address, port_number, username, password):
         server = '{}:{}'.format(ip_address, port_number)
         try:
-            self.interop_client = client.Client(server, username, password)
+            self.interop_client = client.Client(server, username, password, timeout=5, max_retries=2)
             self.window.taggingTab.setInteropEnabled()
+            self.window.taggingTab.setInteropOnline()
             self.window.taggingTab.interop_client = self.interop_client
+            self.window.setupTab.button_interopDisconnect.setEnabled(True)
+            self.window.setupTab.button_interopConnect.setEnabled(False)
         except:
             exception_notification = QtWidgets.QMessageBox()
             exception_notification.setIcon(QtWidgets.QMessageBox.Warning)
@@ -154,15 +161,28 @@ class Controller():
             exception_notification.setWindowTitle('Error!')
             exception_notification.setDetailedText('{}'.format(traceback.format_exc()))
             exception_notification.exec_()
-            self.window.setupTab.checkbox_interopSupport.setCheckState(QtCore.Qt.Unchecked)
             self.window.taggingTab.setInteropDisabled()
+            self.window.taggingTab.setInteropOffline()
+
+    @QtCore.pyqtSlot()
+    def processInteropDisconnect(self):
+        if self.interop_client is not None:
+            self.interop_client = None
+        self.window.taggingTab.setInteropOffline()
+        self.window.setupTab.button_interopConnect.setEnabled(True)
+        self.window.setupTab.button_interopDisconnect.setEnabled(False)
+
+    @QtCore.pyqtSlot()
+    def processInteropEnable(self):
+        self.window.taggingTab.setInteropEnabled()
 
     @QtCore.pyqtSlot()
     def processInteropDisable(self):
         if self.interop_client is not None:
             # delete the reference to the Client object to "close" the connection
-            del self.interop_client
-            self.window.taggingTab.setInteropDisabled()
+            self.interop_client = None
+        self.window.taggingTab.setInteropDisabled()
+        self.window.taggingTab.setInteropOffline()
 
     def loadFlight(self, id): # TODO: this function does more than the name implies
         self.currentFlight = self.flights[id]

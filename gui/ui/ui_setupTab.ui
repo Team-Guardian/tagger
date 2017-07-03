@@ -21,7 +21,7 @@
      </property>
      <layout class="QVBoxLayout" name="verticalLayout" stretch="2,5">
       <item>
-       <layout class="QHBoxLayout" name="horizontalLayout" stretch="1,1,3">
+       <layout class="QHBoxLayout" name="horizontalLayout" stretch="1,1,1,1,1,3">
         <property name="spacing">
          <number>6</number>
         </property>
@@ -31,9 +31,42 @@
            <cursorShape>PointingHandCursor</cursorShape>
           </property>
           <property name="text">
-           <string>Enable Interop server support</string>
+           <string>Enable Interop</string>
           </property>
          </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="button_interopConnect">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+          <property name="text">
+           <string>Connect</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="button_interopDisconnect">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+          <property name="text">
+           <string>Disconnect</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <spacer name="horizontalSpacer_2">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>40</width>
+            <height>20</height>
+           </size>
+          </property>
+         </spacer>
         </item>
         <item>
          <widget class="QCheckBox" name="checkbox_folderWatcher">

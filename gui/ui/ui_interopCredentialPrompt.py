@@ -82,8 +82,8 @@ class Ui_Dialog(object):
         _translate = QtCore.QCoreApplication.translate
         Dialog.setWindowTitle(_translate("Dialog", "Dialog"))
         self.label_ipAddress.setText(_translate("Dialog", "IP Address"))
-        self.comboBox_ipAddress.setCurrentText(_translate("Dialog", "https://192.168.0.198"))
-        self.comboBox_ipAddress.setItemText(0, _translate("Dialog", "https://192.168.0.198"))
+        self.comboBox_ipAddress.setCurrentText(_translate("Dialog", "http://192.168.0.197"))
+        self.comboBox_ipAddress.setItemText(0, _translate("Dialog", "http://192.168.0.197"))
         self.comboBox_ipAddress.setItemText(1, _translate("Dialog", "http://localhost"))
         self.label_port.setText(_translate("Dialog", "Port #"))
         self.lineEdit_port.setText(_translate("Dialog", "8000"))
