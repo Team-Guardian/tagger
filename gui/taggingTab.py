@@ -259,14 +259,14 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab):
         m.tag.num_occurrences += 1
         m.tag.save()
 
-        # Reset dialog window
-        self.interop_target_dialog = InteropTargetDialog(self.enableTargetCropping)
-
         # update the marker count in the table
         self.updateTagMarkerCountInUi(self.interop_target_dialog.current_target_tag)
 
         self.addMarkerToUi(self.tagging_tab_context_menu.pixel_x_invocation_coord, self.tagging_tab_context_menu.pixel_y_invocation_coord, m, 1.0) # 1.0 means fully opaque for markers created in current image
         self.marker_created_signal.emit(m)
+
+        # Reset dialog window
+        self.interop_target_dialog = InteropTargetDialog(self.enableTargetCropping)
 
     @QtCore.pyqtSlot()
     def processInteropTargetDialogRejected(self):
@@ -324,7 +324,7 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab):
         target_save_path = QtCore.QDir('{}/interop_targets'.format(abs_flight_root.path()))
         # if it's the first target posted, create a directory to store images
         if not QtCore.QDir(target_save_path.path()).exists():
-            QtCore.QDir.mkdir(target_save_path.path())
+            target_save_path.mkpath(target_save_path.path()) # only an instance of QDir can create paths
 
         target_image_filepath = QtCore.QDir('{}/{}'.format(target_save_path.path(), interop_target_id))
 

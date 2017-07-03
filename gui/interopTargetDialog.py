@@ -18,9 +18,8 @@ class InteropTargetDialog(QtWidgets.QDialog, Ui_Dialog):
         # populate combo-boxes with allowed values
         self.populateComboBoxes()
 
-        # TODO: when a user double clicks the field, it becomes editable
-        # self.lineEdit_latitude.installEventFilter(self)
-        # self.lineEdit_longitude.installEventFilter(self)
+        self.lineEdit_latitude.installEventFilter(self)
+        self.lineEdit_longitude.installEventFilter(self)
 
     def setTargetTag(self, tag):
         self.current_target_tag = tag
@@ -81,19 +80,18 @@ class InteropTargetDialog(QtWidgets.QDialog, Ui_Dialog):
     def saveCroppedRect(self, cropped_rect):
         self.current_target_cropped_rect = cropped_rect
 
-    # def eventFilter(self, QObject, QEvent):
-    #     if QObject == self.lineEdit_latitude and QEvent. == QtWidgets.QLineEdit.mouseDoubleClickEvent:
-    #
-    #     elif QObject == self.lineEdit_longitude:
+    def eventFilter(self, QObject, QEvent):
+        if QObject == self.lineEdit_longitude and QEvent.type() == QtCore.QEvent.MouseButtonDblClick:
+            self.enableLongitudeEditing()
+        elif QObject == self.lineEdit_latitude and QEvent.type() == QtCore.QEvent.MouseButtonDblClick:
+            self.enableLatitudeEditing()
+        elif QEvent.type() == QtCore.QEvent.MouseButtonDblClick:
+            print 'here'
+
+        return QtWidgets.QWidget.eventFilter(self, QObject, QEvent)
 
     def enableLatitudeEditing(self):
         self.lineEdit_latitude.setEnabled(True)
 
     def enableLongitudeEditing(self):
         self.lineEdit_longitude.setEnabled(True)
-
-    def disableLatitudeEditing(self):
-        self.lineEdit_latitude.setEnabled(False)
-
-    def disableLongitudeEditing(self):
-        self.lineEdit_longitude.setEnabled(False)
