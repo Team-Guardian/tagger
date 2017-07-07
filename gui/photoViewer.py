@@ -91,40 +91,49 @@ class PhotoViewer(QtWidgets.QGraphicsView):
             else:
                 self._zoom = 0
 
-            self.updateScale()
+    def keyPressEvent(self, QKeyEvent):
+        if QKeyEvent.key() == QtCore.Qt.Key_Escape and self.crop_enabled:
+            self.target_crop_cancel_signal.emit()
 
-    def mousePressEvent(self, QMouseEvent):
-        if QMouseEvent.modifiers() == QtCore.Qt.ControlModifier and self.crop_enabled:
+        super(PhotoViewer, self).keyPressEvent(QKeyEvent)
+
+    def getRubberBandEndPoint(self, event_pos):
+        scene_pos = self.mapToScene(event_pos.pos())
+        x = scene_pos.x()
+        y = scene_pos.y()
+        if x >= self._photo.pixmap().width():
+            x = self._photo.pixmap().width()
+        elif x < 0:
+            x = 0
+
+        if y >= self._photo.pixmap().height():
+            y = self._photo.pixmap().height()
+        elif y < 0:
+            y = 0
+
+        return self.mapToGlobal(self.mapFromScene(QtCore.QPoint(x, y)))
+
+    def eventFilter(self, QObject, QEvent):
+        if QEvent.type() == QtCore.QEvent.MouseButtonPress and QEvent.modifiers() == QtCore.Qt.ControlModifier and self.crop_enabled:
             if not self.isImageNull() and not self.rubber_band:
-                self.rubber_band_initial_point = self.mapToGlobal(QMouseEvent.pos())
-                self.rubber_band_end_point = self.mapToGlobal(QMouseEvent.pos())
+                self.rubber_band_initial_point = self.mapToGlobal(QEvent.pos())
+                self.rubber_band_end_point = self.mapToGlobal(QEvent.pos())
                 self.rubber_band = QtWidgets.QRubberBand(QtWidgets.QRubberBand.Rectangle)
                 self.rubber_band.setGeometry(QtCore.QRect(self.rubber_band_initial_point, self.rubber_band_end_point))
                 self.rubber_band.show()
 
-        super(PhotoViewer, self).mousePressEvent(QMouseEvent)
-
-    def mouseMoveEvent(self, QMouseEvent):
-        if self.crop_enabled:
+        elif QEvent.type() == QtCore.QEvent.MouseMove and self.crop_enabled:
             if self.rubber_band:
                 self.setDragMode(QtWidgets.QGraphicsView.NoDrag)
-                self.rubber_band_end_point = self.mapToGlobal(QMouseEvent.pos())
-                x = QMouseEvent.pos().x()
-                y = QMouseEvent.pos().y()
-                if x >= self.viewport().rect().width():
-                    x = self.viewport().rect().width()
-                if y >= self.viewport().rect().height():
-                    y = self.viewport().rect().height()
-                self.rubber_band_end_point = self.mapToGlobal(QtCore.QPoint(x, y))
+                self.rubber_band_end_point = self.getRubberBandEndPoint(QEvent)
+                if not self.viewport().rect().contains(QEvent.pos()):
+                    pass
                 self.rubber_band.setGeometry(QtCore.QRect(self.rubber_band_initial_point, self.rubber_band_end_point).normalized())
 
-        super(PhotoViewer, self).mouseMoveEvent(QMouseEvent)
-
-    def mouseReleaseEvent(self, QMouseEvent):
-        if self.crop_enabled:
+        elif QEvent.type() == QtCore.QEvent.MouseButtonRelease and self.crop_enabled:
             self.setDragMode(QtWidgets.QGraphicsView.ScrollHandDrag)
             if self.rubber_band:
-                self.rubber_band_end_point = self.mapToGlobal(QMouseEvent.pos())
+                self.rubber_band_end_point = self.getRubberBandEndPoint(QEvent)
                 self.rubber_band.hide()
                 scene_rubber_origin_coordinates = self.mapToScene(self.mapFromGlobal(self.rubber_band_initial_point))
                 scene_rubber_end_coordinates = self.mapToScene(self.mapFromGlobal(self.rubber_band_end_point))
@@ -133,20 +142,7 @@ class PhotoViewer(QtWidgets.QGraphicsView):
                 self.rubber_band = None
             self.setDragMode(QtWidgets.QGraphicsView.ScrollHandDrag)
 
-        super(PhotoViewer, self).mouseReleaseEvent(QMouseEvent)
-
-    def keyPressEvent(self, QKeyEvent):
-        if QKeyEvent.key() == QtCore.Qt.Key_Escape and self.crop_enabled:
-            self.target_crop_cancel_signal.emit()
-
-        super(PhotoViewer, self).keyPressEvent(QKeyEvent)
-
-    # def eventFilter(self, QObject, QEvent):
-    #     if QEvent.type() == QtCore.QEvent.KeyPress and QEvent.key() == QtCore.Qt.Key_Escape and self.crop_enabled:
-    #         print 'here'
-    #         self.target_crop_cancel_signal.emit()
-    #
-    #     return QtWidgets.QWidget.eventFilter(self, QObject, QEvent)
+        return QtWidgets.QWidget.eventFilter(self, QObject, QEvent)
 
     def updateScale(self):
         self._scale.updateScale()
