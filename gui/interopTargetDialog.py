@@ -101,7 +101,7 @@ class InteropTargetDialog(QtWidgets.QDialog, Ui_Dialog):
         absolute_orientation = (self.image_yaw + relative_orientation) % 360 # can't be more than 360 degrees, loops around if more
 
         # convert direction in degrees to compass direction
-        compass_sector_index = int(math.floor((absolute_orientation / 45) + 0.5))
+        compass_sector_index = (int(math.floor((absolute_orientation / 45) + 0.5))) % 8
         compass_sectors = ["N", "NE", "E", "SE", "S", "SW", "W", "NW"]
         self.lineEdit_orientation.setText(compass_sectors[compass_sector_index])
 

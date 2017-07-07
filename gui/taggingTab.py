@@ -302,8 +302,23 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab):
 
     @QtCore.pyqtSlot(QtCore.QRectF)
     def processTargetCropped(self, cropped_rect_scene_coords):
-        integer_cropped_rect_scene_coords = QtCore.QRect(int(cropped_rect_scene_coords.x()), int(cropped_rect_scene_coords.y()),
-                                      int(cropped_rect_scene_coords.width()), int(cropped_rect_scene_coords.height()))
+        scene_origin_x = cropped_rect_scene_coords.x()
+        scene_origin_y = cropped_rect_scene_coords.y()
+        scene_width = int(cropped_rect_scene_coords.width())
+        scene_height = int(cropped_rect_scene_coords.height())
+
+        # Need to figure out which corner of the rectangle the dragging started from, and convert everything to top-left
+        if scene_width < 0:
+            scene_origin_x += scene_width
+        if scene_height < 0:
+            scene_origin_y += scene_height
+
+        integer_cropped_rect_scene_coords = QtCore.QRect(int(scene_origin_x),
+                                                         int(scene_origin_y),
+                                                         abs(scene_width),
+                                                         abs(scene_height))
+
+        self.interop_target_dialog.viewer_target._scene.setSceneRect(QtCore.QRectF(0, 0, abs(scene_width), abs(scene_height)))
         cropped_target_image = self.viewer_single._photo.pixmap().copy(integer_cropped_rect_scene_coords)
         self.interop_target_dialog.setCroppedImage(cropped_target_image)
         self.interop_target_dialog.saveCroppedRect(integer_cropped_rect_scene_coords)

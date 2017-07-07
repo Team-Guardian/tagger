@@ -46,8 +46,6 @@ class TargetViewer(QtWidgets.QGraphicsView):
             factor = min(viewrect.width() / scenerect.width(),
                          viewrect.height() / scenerect.height())
             self.scale(factor, factor)
-            # self.centerOn(rect.center())
-            self.centerOn(self.mapToScene(self.viewport().rect().center()))
 
     def setPhoto(self, pixmap=None):
         if pixmap and not pixmap.isNull():
