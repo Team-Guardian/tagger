@@ -1,3 +1,6 @@
+# Other modules
+import math
+
 # Qt library modules
 from PyQt5 import QtWidgets, QtCore
 
@@ -13,13 +16,23 @@ class InteropTargetDialog(QtWidgets.QDialog, Ui_Dialog):
         self.current_target_image = None
         self.current_target_cropped_rect = None
 
+        self.image_yaw = None
+
         self.button_cropTarget.clicked.connect(enable_target_cropping_handler)
 
         # populate combo-boxes with allowed values
         self.populateComboBoxes()
 
+
+        self.installEventFilter(self)
         self.lineEdit_latitude.installEventFilter(self)
         self.lineEdit_longitude.installEventFilter(self)
+
+        self.button_orientation.clicked.connect(self.startDrawingOrientation)
+
+        self.comboBox_targetType.currentIndexChanged.connect(self.processComboboxTargetTypeCurrentIndexChanged)
+
+        self.viewer_target.orientation_defined_signal.connect(self.processOrientationDefined)
 
     def setTargetTag(self, tag):
         self.current_target_tag = tag
@@ -80,18 +93,51 @@ class InteropTargetDialog(QtWidgets.QDialog, Ui_Dialog):
     def saveCroppedRect(self, cropped_rect):
         self.current_target_cropped_rect = cropped_rect
 
+    def startDrawingOrientation(self):
+        self.viewer_target.is_orientation_drawing_in_progress = True
+
+    @QtCore.pyqtSlot(float)
+    def processOrientationDefined(self, relative_orientation):
+        absolute_orientation = (self.image_yaw + relative_orientation) % 360 # can't be more than 360 degrees, loops around if more
+
+        # convert direction in degrees to compass direction
+        compass_sector_index = int(math.floor((absolute_orientation / 45) + 0.5))
+        compass_sectors = ["N", "NE", "E", "SE", "S", "SW", "W", "NW"]
+        self.lineEdit_orientation.setText(compass_sectors[compass_sector_index])
+
+    def processComboboxTargetTypeCurrentIndexChanged(self):
+        if self.comboBox_targetType.currentText() == 'emergent':
+            self.configureFormForEmergentTarget()
+        else:
+            self.configureFormForStandardAndOffAxisTarget()
+
     def eventFilter(self, QObject, QEvent):
         if QObject == self.lineEdit_longitude and QEvent.type() == QtCore.QEvent.MouseButtonDblClick:
-            self.enableLongitudeEditing()
+            self.lineEdit_longitude.setEnabled(True)
         elif QObject == self.lineEdit_latitude and QEvent.type() == QtCore.QEvent.MouseButtonDblClick:
-            self.enableLatitudeEditing()
-        elif QEvent.type() == QtCore.QEvent.MouseButtonDblClick:
-            print 'here'
+            self.lineEdit_latitude.setEnabled(True)
 
         return QtWidgets.QWidget.eventFilter(self, QObject, QEvent)
 
-    def enableLatitudeEditing(self):
-        self.lineEdit_latitude.setEnabled(True)
+    def configureFormForStandardAndOffAxisTarget(self):
+        self.comboBox_shape.setEnabled(True)
+        self.comboBox_shapeColor.setEnabled(True)
+        self.lineEdit_orientation.setEnabled(True)
+        self.lineEdit_alphanumeric.setEnabled(True)
+        self.comboBox_alphanumericColor.setEnabled(True)
+        self.textEdit_description.setEnabled(False)
 
-    def enableLongitudeEditing(self):
-        self.lineEdit_longitude.setEnabled(True)
+    def configureFormForEmergentTarget(self):
+        self.comboBox_shape.setEnabled(False)
+        self.comboBox_shapeColor.setEnabled(False)
+        self.lineEdit_orientation.setEnabled(False)
+        self.lineEdit_alphanumeric.setEnabled(False)
+        self.comboBox_alphanumericColor.setEnabled(False)
+        self.textEdit_description.setEnabled(True)
+
+    def reset(self):
+        self.lineEdit_alphanumeric.clear()
+        self.lineEdit_latitude.clear()
+        self.lineEdit_longitude.clear()
+        self.lineEdit_orientation.clear()
+        self.viewer_target.setPhoto(None)

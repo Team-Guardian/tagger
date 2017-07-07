@@ -148,21 +148,25 @@ class Controller():
     def processInteropConnect(self, ip_address, port_number, username, password):
         server = '{}:{}'.format(ip_address, port_number)
         try:
-            self.interop_client = client.Client(server, username, password, timeout=5, max_retries=2)
+            self.interop_client = client.Client(server, username, password, timeout=2, max_retries=1)
             self.window.taggingTab.setInteropEnabled()
             self.window.taggingTab.setInteropOnline()
             self.window.taggingTab.interop_client = self.interop_client
             self.window.setupTab.button_interopDisconnect.setEnabled(True)
             self.window.setupTab.button_interopConnect.setEnabled(False)
         except:
+            # Show error message
             exception_notification = QtWidgets.QMessageBox()
             exception_notification.setIcon(QtWidgets.QMessageBox.Warning)
-            exception_notification.setText('Error: main.py. Can\'t establish interop connection')
+            exception_notification.setText('Cannot connect to interop. Interop will be disabled.')
             exception_notification.setWindowTitle('Error!')
             exception_notification.setDetailedText('{}'.format(traceback.format_exc()))
             exception_notification.exec_()
+
             self.window.taggingTab.setInteropDisabled()
             self.window.taggingTab.setInteropOffline()
+
+            self.window.setupTab.checkbox_interopSupport.setCheckState(QtCore.Qt.Unchecked)
 
     @QtCore.pyqtSlot()
     def processInteropDisconnect(self):

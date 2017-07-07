@@ -215,8 +215,7 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab):
             row = self.list_tags.currentRow()
             tag = self.list_tags.item(row, 0).getTag()
 
-            if self.interop_enabled and self.interop_client is not None:
-                self.deleteTargetsFromInterop(tag)
+            self.attemptToDeleteTargetsFromInterop(tag)
 
             self.list_tags.removeRow(row)
             self.tagging_tab_context_menu.removeTagItem(tag)
@@ -230,10 +229,11 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab):
         pv = self.tagging_tab_context_menu.pixel_y_invocation_coord
         lat, lon = geolocateLatLonFromPixelOnImage(self.currentImage, self.currentFlight.reference_altitude, pu, pv)
 
-        if self.interop_enabled is True:
+        if self.isInteropAvailable():
             self.interop_target_dialog.lineEdit_latitude.setText('{}'.format(lat))
             self.interop_target_dialog.lineEdit_longitude.setText('{}'.format(lon))
             self.interop_target_dialog.setTargetTag(tag)
+            self.interop_target_dialog.image_yaw = self.currentImage.yaw
             self.interop_target_dialog.show()
         else:
             # default value used if interop is not enabled; properly posted interop target will never have ID=0
@@ -255,34 +255,35 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab):
         target_id = self.createAndPostInteropTarget(self.interop_target_dialog.comboBox_targetType.currentText(),
                                                     self.interop_target_dialog.lineEdit_latitude.text(),
                                                     self.interop_target_dialog.lineEdit_longitude.text(),
-                                                    # self.interop_target_dialog.lineEdit_orientation.text(),
-                                                    'N',
+                                                    self.interop_target_dialog.lineEdit_orientation.text(),
                                                     self.interop_target_dialog.comboBox_shape.currentText(),
                                                     self.interop_target_dialog.comboBox_shapeColor.currentText(),
                                                     self.interop_target_dialog.lineEdit_alphanumeric.text(),
-                                                    self.interop_target_dialog.comboBox_alphanumericColor.currentText())
-                                                    # self.interop_target_dialog.lineEdit_description.text())
+                                                    self.interop_target_dialog.comboBox_alphanumericColor.currentText(),
+                                                    self.interop_target_dialog.lineEdit_description.text())
 
-        self.saveAndPostTargetImage(target_id)
+        # createAndPostInteropTarget will return ID = 0
+        if target_id != 0:
+            self.saveAndPostTargetImage(target_id)
 
-        m = create_marker(tag=self.interop_target_dialog.current_target_tag, image=self.currentImage,
-                          latitude=self.interop_target_dialog.lineEdit_latitude.text(),
-                          longitude=self.interop_target_dialog.lineEdit_longitude.text(), interop_id=target_id)
-        m.tag.num_occurrences += 1
-        m.tag.save()
+            m = create_marker(tag=self.interop_target_dialog.current_target_tag, image=self.currentImage,
+                              latitude=self.interop_target_dialog.lineEdit_latitude.text(),
+                              longitude=self.interop_target_dialog.lineEdit_longitude.text(), interop_id=target_id)
+            m.tag.num_occurrences += 1
+            m.tag.save()
 
-        # update the marker count in the table
-        self.updateTagMarkerCountInUi(self.interop_target_dialog.current_target_tag)
+            # update the marker count in the table
+            self.updateTagMarkerCountInUi(self.interop_target_dialog.current_target_tag)
 
-        self.addMarkerToUi(self.tagging_tab_context_menu.pixel_x_invocation_coord, self.tagging_tab_context_menu.pixel_y_invocation_coord, m, 1.0) # 1.0 means fully opaque for markers created in current image
-        self.marker_created_signal.emit(m)
+            self.addMarkerToUi(self.tagging_tab_context_menu.pixel_x_invocation_coord, self.tagging_tab_context_menu.pixel_y_invocation_coord, m, 1.0) # 1.0 means fully opaque for markers created in current image
+            self.marker_created_signal.emit(m)
 
-        # Reset dialog window
-        self.interop_target_dialog = InteropTargetDialog(self.enableTargetCropping)
+            # Reset dialog window
+            self.interop_target_dialog.reset()
 
     @QtCore.pyqtSlot()
     def processInteropTargetDialogRejected(self):
-        self.interop_target_dialog = InteropTargetDialog(self.enableTargetCropping)
+        self.interop_target_dialog.reset()
 
     def enableTargetCropping(self):
         self.viewer_single.crop_enabled = True
@@ -308,76 +309,38 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab):
         self.interop_target_dialog.saveCroppedRect(integer_cropped_rect_scene_coords)
         self.disableTargetCropping()
 
-    def createAndPostInteropTarget(self, target_type, latitude, longitude, orientation, shape, shape_color, alphanumeric, alphanumeric_color):
-        interop_target = types.Target(type=target_type,
-                                       latitude=latitude,
-                                       longitude=longitude,
-                                       orientation=orientation,
-                                       shape=shape,
-                                       background_color=shape_color,
-                                       alphanumeric=alphanumeric,
-                                       alphanumeric_color=alphanumeric_color)
+    def createAndPostInteropTarget(self, target_type, latitude, longitude, orientation, shape, shape_color, alphanumeric, alphanumeric_color, description):
+        if target_type == 'emergent':
+            interop_target = types.Target(type=target_type,
+                                           latitude=latitude,
+                                           longitude=longitude,
+                                           description=description)
+        else:
+            interop_target = types.Target(type=target_type,
+                                           latitude=latitude,
+                                           longitude=longitude,
+                                           orientation=orientation,
+                                           shape=shape,
+                                           background_color=shape_color,
+                                           alphanumeric=alphanumeric,
+                                           alphanumeric_color=alphanumeric_color)
 
-        if self.interop_enabled is True and self.interop_is_online is True:
+        if self.isInteropAvailable():
             try:
                 interop_target = self.interop_client.post_target(interop_target)
                 return interop_target.id
             except requests.ConnectionError:
-                # Return offline object ID
-                latest_offline_id = Marker.objects.all().aggregate(Min('interop_id'))
-                # if no offline targets were saved, make the first one
-                if latest_offline_id.get('interop_id__min') is None:
-                    new_offline_id = -1
-                else:
-                    if latest_offline_id.get('interop_id__min') > 0:
-                        new_offline_id = -1
-                    else:
-                        new_offline_id = latest_offline_id.get('interop_id__min') - 1
-
-                # Save the offline object with offline ID
-                self.saveOfflineJSON(interop_target, new_offline_id)
-
                 # Notify the user of dropped connection
                 exception_notification = QtWidgets.QMessageBox()
                 exception_notification.setIcon(QtWidgets.QMessageBox.Warning)
-                exception_notification.setText('Error: taggingTab.py. Cannot connect to server. Offline object has been saved. Reconnect manually')
+                exception_notification.setText('Error: taggingTab.py. Cannot connect to server. Target was not posted. Reconnect manually')
                 exception_notification.setWindowTitle('Error!')
                 exception_notification.exec_()
 
                 # Trigger clean disconnect routine
                 self.interop_connection_error_signal.emit()
 
-                return new_offline_id
-        elif self.interop_enabled is True and self.interop_is_online is False:
-            # Return offline object ID
-            latest_offline_id = Marker.objects.all().aggregate(Min('interop_id'))
-            # if no offline targets were saved, make the first one
-            if latest_offline_id.get('interop_id__min') is None:
-                new_offline_id = -1
-            else:
-                if latest_offline_id.get('interop_id__min') > 0:
-                    new_offline_id = -1
-                else:
-                    new_offline_id = latest_offline_id.get('interop_id__min') - 1
-
-            # Save the offline object with offline ID
-            self.saveOfflineJSON(interop_target, new_offline_id)
-
-            return new_offline_id
-
-    def saveOfflineJSON(self, offline_interop_target, offline_target_id):
-        flight_root = QtCore.QDir(FLIGHT_DIRECTORY + '{}'.format(self.currentFlight.img_path))
-        flight_root.makeAbsolute()
-        abs_flight_root = flight_root
-
-        # if it's the first target JSON descriptor saved, create a directory to store Jasons
-        offline_target_json_save_path = QtCore.QDir('{}/interop-targets/offline/json'.format(abs_flight_root.path()))
-        if not QtCore.QDir(offline_target_json_save_path.path()).exists():
-            offline_target_json_save_path.mkpath(offline_target_json_save_path.path()) # only an instance of QDir can create paths
-
-        # Save JSON data to a file
-        with open('{}/{}.json'.format(offline_target_json_save_path.path(), offline_target_id), 'w') as outfile:
-            json.dump(offline_interop_target.serialize(), outfile)
+                return 0
 
     def saveAndPostTargetImage(self, interop_target_id):
         flight_root = QtCore.QDir(FLIGHT_DIRECTORY + '{}'.format(self.currentFlight.img_path))
@@ -387,15 +350,12 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab):
         original_pixmap = QPixmap(abs_image_path.path())
         cropped_pixmap = original_pixmap.copy(self.interop_target_dialog.current_target_cropped_rect)
 
-        # Set the default folder to store erroneously sorted images
         target_save_path = QtCore.QDir('{}/interop-targets/temp'.format(abs_flight_root.path()))
-        # Put image in a folder depending on whether interop connection is online or offline
-        if self.interop_enabled is True and self.interop_is_online is True:
+
+        if self.isInteropAvailable():
             # set path where cropped images of targets will be saved
-            target_save_path = QtCore.QDir('{}/interop-targets/online/img'.format(abs_flight_root.path()))
-        elif self.interop_enabled is True and self.interop_is_online is False:
-            target_save_path = QtCore.QDir('{}/interop-targets/offline/img'.format(abs_flight_root.path()))
-        # if it's the first target posted, create a directory to store images
+            target_save_path = QtCore.QDir('{}/interop-targets'.format(abs_flight_root.path()))
+
         if not QtCore.QDir(target_save_path.path()).exists():
             target_save_path.mkpath(target_save_path.path()) # only an instance of QDir can create paths
 
@@ -407,19 +367,18 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab):
         with open(target_image_filepath.path(), 'rb') as f:
             image_data = f.read()
 
-        if self.interop_enabled is True and self.interop_is_online is True:
+        if self.isInteropAvailable():
             try:
                 self.interop_client.post_target_image(interop_target_id, image_data)
             except requests.ConnectionError:
-                # Move image to 'staging' area for target images
-                image_pending_submission_path = QtCore.QDir('{}/interop-targets/online/pending-upload'.format(abs_flight_root.path()))
-                image_pending_submission_filepath = '{}/{}'.format(image_pending_submission_path.path(), interop_target_id)
-                target_image_filepath.rename(target_image_filepath.path(), image_pending_submission_filepath)
+                # Delete interop target
+                if self.interop_client is not None:
+                    self.interop_client.delete_target(interop_target_id)
 
                 # Notify the user of dropped connection
                 exception_notification = QtWidgets.QMessageBox()
                 exception_notification.setIcon(QtWidgets.QMessageBox.Warning)
-                exception_notification.setText('Error: taggingTab.py. Cannot connect to server. Offline object has been saved. Reconnect manually')
+                exception_notification.setText('Error: taggingTab.py. Cannot connect to server. Target was not posted. Reconnect manually')
                 exception_notification.setWindowTitle('Error!')
                 exception_notification.exec_()
 
@@ -468,10 +427,22 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab):
                 else:
                     self.viewer_single.getScene().removeItem(item)
 
-    def deleteTargetsFromInterop(self, target_tag):
-        deleted_markers = list(Marker.objects.filter(tag=target_tag))
-        for marker in deleted_markers:
-            self.interop_client.delete_target(marker.interop_id)
+    def attemptToDeleteTargetsFromInterop(self, target_tag):
+        markers_pending_delete = list(Marker.objects.filter(tag=target_tag))
+        for marker in markers_pending_delete:
+            if self.isInteropAvailable():
+                try:
+                    self.interop_client.delete_target(marker.interop_id)
+                except requests.ConnectionError:
+                    # Notify the user of dropped connection
+                    exception_notification = QtWidgets.QMessageBox()
+                    exception_notification.setIcon(QtWidgets.QMessageBox.Warning)
+                    exception_notification.setText('Error: taggingTab.py. Cannot connect to server. Target was not deleted. Reconnect manually')
+                    exception_notification.setWindowTitle('Error!')
+                    exception_notification.exec_()
+
+    def isInteropAvailable(self):
+        return (self.interop_client is not None and self.interop_enabled and self.interop_is_online)
 
     def updateImageList(self):
         for row_num in range(self.list_images.count()):
