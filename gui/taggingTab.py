@@ -260,7 +260,7 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab):
                                                     self.interop_target_dialog.comboBox_shapeColor.currentText(),
                                                     self.interop_target_dialog.lineEdit_alphanumeric.text(),
                                                     self.interop_target_dialog.comboBox_alphanumericColor.currentText(),
-                                                    self.interop_target_dialog.lineEdit_description.text())
+                                                    self.interop_target_dialog.textEdit_description.toPlainText())
 
         # createAndPostInteropTarget will return ID = 0
         if target_id != 0:
@@ -283,6 +283,10 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab):
 
     @QtCore.pyqtSlot()
     def processInteropTargetDialogRejected(self):
+        if self.viewer_single.crop_enabled:
+            self.viewer_single.crop_enabled = False
+            self.list_images.setEnabled(True)
+
         self.interop_target_dialog.reset()
 
     def enableTargetCropping(self):
@@ -291,6 +295,7 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab):
         self.interop_target_dialog.setWindowModality(QtCore.Qt.NonModal)
         self.interop_target_dialog.show()
         self.activateWindow()
+        self.list_images.setEnabled(False)
 
     @QtCore.pyqtSlot()
     def disableTargetCropping(self):
@@ -299,6 +304,7 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab):
         self.interop_target_dialog.setWindowModality(QtCore.Qt.ApplicationModal)
         self.interop_target_dialog.show()
         self.interop_target_dialog.activateWindow()
+        self.list_images.setEnabled(True)
 
     @QtCore.pyqtSlot(QtCore.QRectF)
     def processTargetCropped(self, cropped_rect_scene_coords):

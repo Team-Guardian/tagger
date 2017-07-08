@@ -91,11 +91,7 @@ class PhotoViewer(QtWidgets.QGraphicsView):
             else:
                 self._zoom = 0
 
-    def keyPressEvent(self, QKeyEvent):
-        if QKeyEvent.key() == QtCore.Qt.Key_Escape and self.crop_enabled:
-            self.target_crop_cancel_signal.emit()
-
-        super(PhotoViewer, self).keyPressEvent(QKeyEvent)
+        super(PhotoViewer, self).wheelEvent(event)
 
     def getRubberBandEndPoint(self, event_pos):
         scene_pos = self.mapToScene(event_pos.pos())
@@ -143,6 +139,12 @@ class PhotoViewer(QtWidgets.QGraphicsView):
             self.setDragMode(QtWidgets.QGraphicsView.ScrollHandDrag)
 
         return QtWidgets.QWidget.eventFilter(self, QObject, QEvent)
+
+    def keyPressEvent(self, QKeyEvent):
+        if QKeyEvent.key() == QtCore.Qt.Key_Escape and self.crop_enabled:
+            self.target_crop_cancel_signal.emit()
+
+        super(PhotoViewer, self).keyPressEvent(QKeyEvent)
 
     def updateScale(self):
         self._scale.updateScale()
