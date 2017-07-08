@@ -24,7 +24,12 @@ class TargetViewer(QtWidgets.QGraphicsView):
         # Configure ellipse pen
         self.ellipse_pen = QtGui.QPen()
         self.ellipse_pen.setColor(QtCore.Qt.red)
-        self.ellipse_pen.setWidth(2)
+        self.ellipse_pen.setWidth(3)
+
+        # Configure arc pen
+        self.arc_pen = QtGui.QPen()
+        self.arc_pen.setColor(QtCore.Qt.black)
+        self.arc_pen.setWidth(3)
 
         # Configure ellipse brush
         self.brush = QtGui.QBrush()
@@ -32,9 +37,12 @@ class TargetViewer(QtWidgets.QGraphicsView):
         self.brush.setStyle(QtCore.Qt.NoBrush)
 
         # Configure line pen
-        self.vertical_line_pen = QtGui.QPen()
-        self.vertical_line_pen.setColor(QtCore.Qt.black)
-        self.vertical_line_pen.setWidth(2)
+        self.line_pen = QtGui.QPen()
+        self.line_pen.setColor(QtCore.Qt.black)
+        self.line_pen.setWidth(3)
+
+        # Scaling factor for proportionally sizing Qt elements based on the pixel size of the pixmap
+        self.scaling_factor = 1
 
     def fitInView(self):
         rect = QtCore.QRectF(self._photo.pixmap().rect())
@@ -74,22 +82,38 @@ class TargetViewer(QtWidgets.QGraphicsView):
         return QtWidgets.QGraphicsView.viewportEvent(self, QEvent)
 
     def startDrawing(self, event_position):
+        # find the scaling factors to correctly size the elements
+        width_scaling_factor = self._scene.sceneRect().width() / self.viewport().rect().width()
+        height_scaling_factor = self._scene.sceneRect().height() / self.viewport().rect().height()
+        self.scaling_factor = width_scaling_factor if (width_scaling_factor > height_scaling_factor) else height_scaling_factor
+
+        # adjust pen thickness for better visibility
+        self.line_pen.setWidth(3*self.scaling_factor)
+        self.ellipse_pen.setWidth(3*self.scaling_factor)
+        self.arc_pen.setWidth(3*self.scaling_factor)
+
         # Draw center and cursor ellipses
         viewport_center = self.mapToScene(self.viewport().rect().center())
-        center_ellipse_bounding_rect = QtCore.QRectF(viewport_center.x()-10, viewport_center.y()-10, 20, 20)
+        center_ellipse_bounding_rect = QtCore.QRectF(viewport_center.x()-10*self.scaling_factor,
+                                                     viewport_center.y()-10*self.scaling_factor,
+                                                     20*self.scaling_factor, 20*self.scaling_factor)
 
         event_position_center = self.mapToScene(event_position)
-        cursor_ellipse_bounding_rect = QtCore.QRectF(event_position_center.x()-10, event_position_center.y()-10, 20, 20)
+        cursor_ellipse_bounding_rect = QtCore.QRectF(event_position_center.x()-10*self.scaling_factor,
+                                                     event_position_center.y()-10*self.scaling_factor,
+                                                     20*self.scaling_factor, 20*self.scaling_factor)
 
         self.center_ellipse = self._scene.addEllipse(center_ellipse_bounding_rect, self.ellipse_pen, self.brush)
         self.cursor_ellipse= self._scene.addEllipse(cursor_ellipse_bounding_rect, self.ellipse_pen, self.brush)
 
         # Draw vertical reference and cursor lines
-        self.vertical_reference_line = self._scene.addLine(viewport_center.x(), 0, viewport_center.x(), viewport_center.y()*2, self.vertical_line_pen)
-        self.cursor_line = self._scene.addLine(viewport_center.x(), viewport_center.y(), event_position_center.x(), event_position_center.y())
+        self.vertical_reference_line = self._scene.addLine(viewport_center.x(), 0, viewport_center.x(), viewport_center.y()*2, self.line_pen)
+        self.cursor_line = self._scene.addLine(viewport_center.x(), viewport_center.y(), event_position_center.x(), event_position_center.y(), self.line_pen)
 
         # Draw angle between reference and cursor lines
-        arc_ellipse_bounding_rect = QtCore.QRectF(viewport_center.x() - 40, viewport_center.y() - 40, 80, 80)
+        arc_ellipse_bounding_rect = QtCore.QRectF(viewport_center.x() - 40*self.scaling_factor,
+                                                  viewport_center.y() - 40*self.scaling_factor,
+                                                  80*self.scaling_factor, 80*self.scaling_factor)
         self.angle_arc = QtWidgets.QGraphicsEllipseItem(arc_ellipse_bounding_rect)
         self.angle_arc.setStartAngle(90*16)
         top_middle_point = (viewport_center.x(), 0)
@@ -97,17 +121,20 @@ class TargetViewer(QtWidgets.QGraphicsView):
         cursor_point = (event_position_center.x(), event_position_center.y())
         self.arc_span_angle = self.angleBetween(top_middle_point, center_point, cursor_point)
         self.angle_arc.setSpanAngle(-16 * self.arc_span_angle)
+
+        # Style the arc and add item to the scene for it to show
+        self.angle_arc.setPen(self.arc_pen)
         self._scene.addItem(self.angle_arc)
 
         # Add angle text
         # text box to show distance that scale represents
         self.distance_text_box = QtWidgets.QGraphicsTextItem()
         text_font = QtGui.QFont()
-        text_font.setPointSize(25)
+        text_font.setPointSize(25*self.scaling_factor)
         self.distance_text_box.setDefaultTextColor(QtCore.Qt.red)
         self.distance_text_box.setFont(text_font)
-        self.distance_text_box.setPos(viewport_center.x()+50, viewport_center.y()-50)
-        self.distance_text_box.setHtml('{} deg'.format(round(-(self.arc_span_angle/16), 2)))
+        self.distance_text_box.setPos(viewport_center.x()+50*self.scaling_factor, viewport_center.y()-50*self.scaling_factor)
+        self.distance_text_box.setHtml('{:7.2f} deg'.format(round(-(self.arc_span_angle/16), 2)))
         self._scene.addItem(self.distance_text_box)
 
 
@@ -116,17 +143,25 @@ class TargetViewer(QtWidgets.QGraphicsView):
 
         viewport_center = self.mapToScene(self.viewport().rect().center())
         event_position_center = self.mapToScene(event_position)
-        cursor_ellipse_bounding_rect = QtCore.QRectF(event_position_center.x()-10, event_position_center.y()-10, 20, 20)
+        cursor_ellipse_bounding_rect = QtCore.QRectF(event_position_center.x()-10*self.scaling_factor,
+                                                     event_position_center.y()-10*self.scaling_factor,
+                                                     20*self.scaling_factor, 20*self.scaling_factor)
 
         self.cursor_ellipse= self._scene.addEllipse(cursor_ellipse_bounding_rect, self.ellipse_pen, self.brush)
 
         self.cursor_line = self._scene.addLine(viewport_center.x(), viewport_center.y(), event_position_center.x(),
-                                               event_position_center.y())
+                                               event_position_center.y(), self.line_pen)
 
+        # Note: when drawing ellipses, the resolution of the drawing tool is 1/16th of a degree
+
+        # Align 0 degrees with vertical direction
         self.angle_arc.setStartAngle(90*16)
+
+        # define points that will define the vertex and the vertex angle
         top_middle_point = (viewport_center.x(), 0)
         center_point = (viewport_center.x(), viewport_center.y())
         cursor_point = (event_position_center.x(), event_position_center.y())
+
         self.arc_span_angle = self.angleBetween(top_middle_point, center_point, cursor_point)
         # convert to degrees relative to vertical, cw positive
         self.angle_arc.setSpanAngle(-16*self.arc_span_angle)
@@ -137,11 +172,11 @@ class TargetViewer(QtWidgets.QGraphicsView):
         # text box to show distance that scale represents
         self.distance_text_box = QtWidgets.QGraphicsTextItem()
         text_font = QtGui.QFont()
-        text_font.setPointSize(25)
+        text_font.setPointSize(25*self.scaling_factor)
         self.distance_text_box.setDefaultTextColor(QtCore.Qt.red)
         self.distance_text_box.setFont(text_font)
-        self.distance_text_box.setPos(viewport_center.x() + 50, viewport_center.y() - 50)
-        self.distance_text_box.setHtml('{} deg'.format(round(self.arc_span_angle, 2)))
+        self.distance_text_box.setPos(viewport_center.x() + 50*self.scaling_factor, viewport_center.y() - 50*self.scaling_factor)
+        self.distance_text_box.setHtml('{:7.2f} deg'.format(round(self.arc_span_angle, 2)))
         self._scene.addItem(self.distance_text_box)
 
     def submitOrientation(self, event_position):
