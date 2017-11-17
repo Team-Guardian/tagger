@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>TargetsTab</class>
+ <widget class="QWidget" name="TargetsTab">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>1214</width>
+    <height>771</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Form</string>
+  </property>
+  <layout class="QHBoxLayout" name="horizontalLayout" stretch="1,3">
+   <item>
+    <layout class="QVBoxLayout" name="verticalLayout_4" stretch="0,0,0">
+     <item>
+      <widget class="QGroupBox" name="groupBox_5">
+       <property name="title">
+        <string>Select Tag</string>
+       </property>
+       <layout class="QVBoxLayout" name="verticalLayout_6">
+        <item>
+         <widget class="QListWidget" name="list_tags"/>
+        </item>
+       </layout>
+      </widget>
+     </item>
+     <item>
+      <widget class="QGroupBox" name="groupBox_4">
+       <property name="title">
+        <string>Images with Selected Tag</string>
+       </property>
+       <layout class="QVBoxLayout" name="verticalLayout_5">
+        <item>
+         <widget class="QLineEdit" name="line_searchImages">
+          <property name="text">
+           <string/>
+          </property>
+          <property name="placeholderText">
+           <string>Search image by name</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QListWidget" name="list_taggedImages"/>
+        </item>
+       </layout>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="button_exportTelemetry">
+       <property name="text">
+        <string>Export Telemetry</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <layout class="QVBoxLayout" name="verticalLayout_10">
+     <property name="rightMargin">
+      <number>0</number>
+     </property>
+     <item>
+      <widget class="PhotoViewer" name="viewer_targets"/>
+     </item>
+    </layout>
+   </item>
+  </layout>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>PhotoViewer</class>
+   <extends>QGraphicsView</extends>
+   <header>gui/photoViewer</header>
+  </customwidget>
+ </customwidgets>
+ <resources/>
+ <connections/>
+</ui>

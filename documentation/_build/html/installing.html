@@ -1,0 +1,356 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Installing &mdash; Tagger 0.1 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="genindex.html"/>
+        <link rel="search" title="Search" href="search.html"/>
+    <link rel="top" title="Tagger 0.1 documentation" href="index.html"/>
+        <link rel="next" title="FAQ" href="faq.html"/>
+        <link rel="prev" title="Changelog" href="changelog.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> Tagger
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="changelog.html">Changelog</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Installing</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#installing-dependencies">1. Installing dependencies</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#postgresql-installation-and-setup">2. PostgreSQL Installation and Setup</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#open-terminal">1. Open Terminal</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#log-in-as-user-postgres">2. Log in as user postgres</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#run-the-postgresql-terminal-interface">3. Run the postgreSQL terminal interface</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#change-password-of-currently-postgres-user-to-postgres">4. Change password of currently postgres user to <em>postgres</em></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#create-a-new-database-called-tagger-and-set-owner-to-postgres-user">5. Create a new database called <em>tagger</em> and set owner to <em>postgres</em> user</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#log-out">6. Log out</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#restart-postgresql-service">7. Restart postgreSQL service</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#creating-database-schema">3. Creating Database Schema</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#celebrate">4. Celebrate</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#how-to-set-up-a-slave-tagger-on-a-local-area-network">How to Set Up a Slave Tagger on a Local Area Network</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#install-dependencies">1. Install dependencies</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#configure-user-groups">2. Configure user groups</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#create-a-destination-directory-for-mapping-in-your-tagger-repo-root-directory">3. Create a destination directory for mapping in your tagger repo root directory</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#map-gcs-flights-directory-to-the-local-folder-you-just-created">4. Map GCS flights directory to the local folder you just created</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="faq.html">FAQs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="for_developers.html">For Developers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="support.html">Support</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Tagger</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+      <li>Installing</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/installing.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="installing">
+<h1>Installing<a class="headerlink" href="#installing" title="Permalink to this headline">¶</a></h1>
+<p><strong>How to Get This Package Working</strong>. Follow these steps to resolve Tagger dependencies, setup PostgreSQL database, and connect to LAN for multi-client operation.</p>
+<div class="section" id="installing-dependencies">
+<h2>1. Installing dependencies<a class="headerlink" href="#installing-dependencies" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-bash"><div class="highlight"><pre><span></span>sudo apt-get update
+sudo apt-get install qttools5-dev-tools python-pyqt5 postgresql python-psycopg2  python-pip pgadmin3 python-pyexiv2 python-numpy python-gdal pyqt5-dev-tools
+sudo -H pip install django
+sudo -H pip install setuptools
+sudo -H pip install watchdog
+</pre></div>
+</div>
+</div>
+<div class="section" id="postgresql-installation-and-setup">
+<h2>2. PostgreSQL Installation and Setup<a class="headerlink" href="#postgresql-installation-and-setup" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="open-terminal">
+<h3>1. Open Terminal<a class="headerlink" href="#open-terminal" title="Permalink to this headline">¶</a></h3>
+</div>
+<div class="section" id="log-in-as-user-postgres">
+<h3>2. Log in as user postgres<a class="headerlink" href="#log-in-as-user-postgres" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-bash"><div class="highlight"><pre><span></span>sudo -i -u postgres
+</pre></div>
+</div>
+</div>
+<div class="section" id="run-the-postgresql-terminal-interface">
+<h3>3. Run the postgreSQL terminal interface<a class="headerlink" href="#run-the-postgresql-terminal-interface" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-bash"><div class="highlight"><pre><span></span>psql
+</pre></div>
+</div>
+</div>
+<div class="section" id="change-password-of-currently-postgres-user-to-postgres">
+<h3>4. Change password of currently postgres user to <em>postgres</em><a class="headerlink" href="#change-password-of-currently-postgres-user-to-postgres" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-bash"><div class="highlight"><pre><span></span><span class="se">\p</span>assword
+postgres
+postgres
+</pre></div>
+</div>
+</div>
+<div class="section" id="create-a-new-database-called-tagger-and-set-owner-to-postgres-user">
+<h3>5. Create a new database called <em>tagger</em> and set owner to <em>postgres</em> user<a class="headerlink" href="#create-a-new-database-called-tagger-and-set-owner-to-postgres-user" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-bash"><div class="highlight"><pre><span></span>create database tagger with owner postgres<span class="p">;</span>
+<span class="se">\q</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="log-out">
+<h3>6. Log out<a class="headerlink" href="#log-out" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-bash"><div class="highlight"><pre><span></span><span class="nb">exit</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="restart-postgresql-service">
+<h3>7. Restart postgreSQL service<a class="headerlink" href="#restart-postgresql-service" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-bash"><div class="highlight"><pre><span></span>sudo service postgresql restart
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="creating-database-schema">
+<h2>3. Creating Database Schema<a class="headerlink" href="#creating-database-schema" title="Permalink to this headline">¶</a></h2>
+<p>In in the root of the project folder <strong>tagger</strong></p>
+<div class="highlight-bash"><div class="highlight"><pre><span></span>python manage.py makemigrations
+python manage.py migrate
+</pre></div>
+</div>
+</div>
+<div class="section" id="celebrate">
+<h2>4. Celebrate<a class="headerlink" href="#celebrate" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="how-to-set-up-a-slave-tagger-on-a-local-area-network">
+<h3>How to Set Up a Slave Tagger on a Local Area Network<a class="headerlink" href="#how-to-set-up-a-slave-tagger-on-a-local-area-network" title="Permalink to this headline">¶</a></h3>
+</div>
+<div class="section" id="install-dependencies">
+<h3>1. Install dependencies<a class="headerlink" href="#install-dependencies" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-bash"><div class="highlight"><pre><span></span>sudo apt-get update
+sudo apt-get install sshfs openssh-server
+</pre></div>
+</div>
+</div>
+<div class="section" id="configure-user-groups">
+<h3>2. Configure user groups<a class="headerlink" href="#configure-user-groups" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-bash"><div class="highlight"><pre><span></span>sudo groupadd fuse
+sudo adduser &lt;my_user&gt; fuse
+</pre></div>
+</div>
+</div>
+<div class="section" id="create-a-destination-directory-for-mapping-in-your-tagger-repo-root-directory">
+<h3>3. Create a destination directory for mapping in your tagger repo root directory<a class="headerlink" href="#create-a-destination-directory-for-mapping-in-your-tagger-repo-root-directory" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-bash"><div class="highlight"><pre><span></span>mkdir &lt;path_to_tagger_repo&gt;/remote_flights
+</pre></div>
+</div>
+</div>
+<div class="section" id="map-gcs-flights-directory-to-the-local-folder-you-just-created">
+<h3>4. Map GCS flights directory to the local folder you just created<a class="headerlink" href="#map-gcs-flights-directory-to-the-local-folder-you-just-created" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-bash"><div class="highlight"><pre><span></span>sshfs uav@gcs-vision.local:/home/uav/tagger/flights &lt;path_to_tagger_repo&gt;/remote_flights
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+
+
+           </div>
+           <div class="articleComments">
+            
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="faq.html" class="btn btn-neutral float-right" title="FAQ" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="changelog.html" class="btn btn-neutral" title="Changelog" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2017, Team Guardian.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'0.1',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>
