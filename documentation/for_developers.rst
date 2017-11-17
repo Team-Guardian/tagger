@@ -80,4 +80,4 @@ What controls there are
 ~~~~~~~~~~~~~~~~~~~~~~~
 
 **Latitude and Longitude Search:**
-Searches through received images via to determine which photos contain the specified co-ordinates.
+Searches through received images via to determine which photos contain the specified coordinates.
