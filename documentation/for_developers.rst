@@ -63,7 +63,7 @@ Tagging Tab
 -----------
 The tagging tab allows the user to tag objects in images and its full description is below.
 
-What It Shows
+What information it shows
 ~~~~~~~~~~~~~
 
 **Tags**
@@ -75,7 +75,7 @@ The Images section shows all the images taken and they can come in in real time.
 **Map**
 If an image is selected for review, it is put onto the Map where the user can edit tags in the image
 
-What Controls Their Are
+What controls there are
 ~~~~~~~~~~~~~~~~~~~~~~~
 
 **Adding Tags**
