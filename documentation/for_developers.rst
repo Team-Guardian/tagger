@@ -1,7 +1,7 @@
 For Developers
 ==============
 
-This section takes a deep dive into the internal workings of Tagger source. It is intended for developers looking tomodify or add functionality to the application.
+This section takes a deep dive into the internal workings of Tagger source. It is intended for developers looking to modify or add functionality to the application.
 
 Writing Documentation
 ---------------------
@@ -102,7 +102,6 @@ A high-altitude view of the current flight area is displayed on the right side o
 
 **Images:**
 A list of received images is shown on the left. (TODO: add details about what happens when you click these, etc)
-
 
 What controls there are
 ~~~~~~~~~~~~~~~~~~~~~~~
