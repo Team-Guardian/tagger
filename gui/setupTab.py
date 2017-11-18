@@ -25,20 +25,20 @@ class SetupTab(QtWidgets.QWidget, Ui_SetupTab):
         super(SetupTab, self).__init__()
 
         self.setupUi(self)
-        self.connectButtons()
+        self.connectButtons() #Enables button functionality
 
         self.checkbox_folderWatcher.setCheckState(QtCore.Qt.Checked)
         self.checkbox_interopSupport.setCheckState(QtCore.Qt.Unchecked)
         self.connectCheckboxes()
 
-        self.edit_flightDate.setDate(QDate.currentDate())
+        self.edit_flightDate.setDate(QDate.currentDate()) #Automatically sets the 'Date' under 'Create Flight' to the current date
 
         self.interop_credentials_prompt = InteropCredentialPrompt()
         self.interop_credentials_prompt.dialog_accepted.connect(self.processDialogAcceptedEvent)
         self.interop_credentials_prompt.dialog_rejected.connect(self.processDialogRejectedEvent)
 
-    def connectButtons(self):
-        self.button_loadFlight.clicked.connect(self.loadFlight)
+    def connectButtons(self): #Map the button commands to their respective function.
+        self.button_loadFlight.clicked.connect(self.loadFlight) #These functions are defined below
         self.button_createFlight.clicked.connect(self.createFlight)
         self.button_selectAreaMap.clicked.connect(self.selectAreaMap)
         self.button_browseWatchDirectory.clicked.connect(self.selectWatchDirectory)
