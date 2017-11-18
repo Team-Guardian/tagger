@@ -58,3 +58,25 @@ Targets tab must provide an interface to update the tab when a table in the data
 - Tag was deleted;
 - New marker was created;
 - Marker was deleted;
+
+Tagging Tab
+-----------
+The tagging tab allows the user to tag objects in images and its full description is below.
+
+What It Shows
+~~~~~~~~~~~~~
+
+**Tags**
+The tags created by the user are stored here for easy access. The tags can be sorted by their following characteristics: Type, Subtype, Current (Total), and Icon. Tags can be edited or removed in this section, and will also be removed on the big map showing all tags. Tags can also be added to images and new additions will be added here.
+
+**Images**
+The Images section shows all the images taken and they can come in in real time. The images are seperated into three main groups: images that have been reviewed, images that have not been reviewed, and all images. 
+
+**Map**
+If an image is selected for review, it is put onto the Map where the user can edit tags in the image
+
+What Controls Their Are
+~~~~~~~~~~~~~~~~~~~~~~~
+
+**Adding Tags**
+To add tag an object in the image, first click add under the Tags section and fill in corresponding characteristics. Then hover over object in the image and right click to tag it. 
