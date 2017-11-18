@@ -14,11 +14,11 @@ class SetupTab(QtWidgets.QWidget, Ui_SetupTab, Observable):
         Observable.__init__(self)
 
         self.setupUi(self)
-        self.connectButtons()
-        self.edit_flightDate.setDate(QDate.currentDate())
+        self.connectButtons()  #Enables button functionality
+        self.edit_flightDate.setDate(QDate.currentDate()) #Automatically sets the 'Date' under 'Create Flight' to the current date
 
-    def connectButtons(self):
-        self.button_loadFlight.clicked.connect(self.loadFlight)
+    def connectButtons(self): #Map the button commands to their respective function.
+        self.button_loadFlight.clicked.connect(self.loadFlight) #These functions are defined below
         self.button_createFlight.clicked.connect(self.createFlight)
         self.button_selectAreaMap.clicked.connect(self.selectAreaMap)
         self.button_browseWatchDirectory.clicked.connect(self.selectWatchDirectory)
