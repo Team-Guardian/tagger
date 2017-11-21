@@ -61,7 +61,7 @@ Targets tab must provide an interface to update the tab when a table in the data
 
 Tagging Tab
 -----------
-The tagging tab allows the user to tag objects in images and its full description is below.
+The tagging tab allows the user to review images and tag objects in images.
 
 What information it shows
 ~~~~~~~~~~~~~
@@ -73,10 +73,16 @@ The tags created by the user are stored here for easy access. The tags can be so
 The Images section shows all the images taken and they can come in in real time. The images are seperated into three main groups: images that have been reviewed, images that have not been reviewed, and all images. 
 
 **Map**
-If an image is selected for review, it is put onto the Map where the user can edit tags in the image
+If an image is selected for review, it is displayed onto the right portion of the window where the user can add or remove tags on the image.
 
 What controls there are
 ~~~~~~~~~~~~~~~~~~~~~~~
 
 **Adding Tags**
 To add tag an object in the image, first click add under the Tags section and fill in corresponding characteristics. Then hover over object in the image and right click to tag it. 
+
+**Determining Geolocation**
+If the cursor is on the image, the bottom left of the window indicates the latitude, longitude, elevation, and the UAV's rotation about three axis.  
+
+**Zoom and Pan Images**
+To zoom, use the scroll wheel then click and drag to pan around the image. 
