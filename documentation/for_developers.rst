@@ -79,10 +79,7 @@ What controls there are
 ~~~~~~~~~~~~~~~~~~~~~~~
 
 **Adding Tags**
-To add tag an object in the image, first click add under the Tags section and fill in corresponding characteristics. Then hover over object in the image and right click to tag it. 
-
-**Determining Geolocation**
-If the cursor is on the image, the bottom left of the window indicates the latitude, longitude, elevation, and the UAV's rotation about three axis.  
+To add tag an object in the image, first click add under the Tags section and fill in corresponding characteristics. Then hover over object in the image and right click to tag it.  
 
 **Zoom and Pan Images**
 To zoom, use the scroll wheel then click and drag to pan around the image. 
