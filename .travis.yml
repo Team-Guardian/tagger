@@ -8,5 +8,7 @@ branches:
   only:
     - travis-ci-test
 
+before_install: sudo chmod +x ./install.sh
 install: ./install.sh
+
 script: pytest

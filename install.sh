@@ -4,8 +4,8 @@
 # installs dependencies and sets up the environment
 
 # collect dependencies
-sudo apt-get update
-sudo apt-get -qq install qttools5-dev-tools python-pyqt5 postgresql python-psycopg2 python-pip pgadmin3 python-pyexiv2 python-numpy python-gdal pyqt5-dev-tools python-pip pgadmin3 python-pyexiv2 python-numpy python-gdal pyqt5-dev-tools
+sudo apt-get -qq update
+sudo apt-get install -y qttools5-dev-tools python-pyqt5 postgresql python-psycopg2 python-pip pgadmin3 python-pyexiv2 python-numpy python-gdal pyqt5-dev-tools python-pip pgadmin3 python-pyexiv2 python-numpy python-gdal pyqt5-dev-tools
 sudo pip install django setuptools watchdog pytest
 
 psswd=postgres
