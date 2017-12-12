@@ -1,0 +1,4 @@
+django==1.10.5
+setuptools
+watchdog
+pytest
