@@ -2,7 +2,7 @@
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 from utils.geolocate import geolocateLatLonFromPixelOnImage
-from contour import Contour
+from .contour import Contour
 
 class MiniMap(QtWidgets.QGraphicsView):
     def __init__(self, parent):
@@ -44,7 +44,7 @@ class MiniMap(QtWidgets.QGraphicsView):
                 self._img_contour.updatePolygon()
                 self.addContourToScene()
             else:
-                print "This flight does not have an associated areamap."
+                print("This flight does not have an associated areamap.")
 
     def findImageCornerPixelCoordinates(self, img):
         map_dims = self._map.boundingRect()
@@ -89,12 +89,12 @@ class MiniMap(QtWidgets.QGraphicsView):
         self._scene.addItem(self._img_contour)
 
     def removeContourFromScene(self):
-        for item in  self._scene.items():
+        for item in  list(self._scene.items()):
             if type(item) is Contour:
                 self._scene.removeItem(item)
 
     def clearScene(self):
-        for item in  self._scene.items():
+        for item in  list(self._scene.items()):
             self._scene.removeItem(item)
 
     def fitInView(self):

@@ -4,7 +4,7 @@ import math
 # Qt library modules
 from PyQt5 import QtWidgets, QtCore
 
-from ui.ui_interopTarget import Ui_Dialog
+from .ui.ui_interopTarget import Ui_Dialog
 
 class InteropTargetDialog(QtWidgets.QDialog, Ui_Dialog):
     def __init__(self, enable_target_cropping_handler):

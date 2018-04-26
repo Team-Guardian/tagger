@@ -1,6 +1,6 @@
 from PyQt5 import QtWidgets, QtGui, QtCore
 
-from ui.ui_targetsTab import Ui_TargetsTab
+from .ui.ui_targetsTab import Ui_TargetsTab
 from db.dbHelper import *
 from db.models import Image
 from gui.tagListItem import TagListItem
@@ -97,7 +97,7 @@ class TargetsTab(QtWidgets.QWidget, Ui_TargetsTab):
         self.image_list_item_dict[image] = image_list_item
 
     def hideAllImageListItems(self):
-        for image, item in self.image_list_item_dict.iteritems():
+        for image, item in list(self.image_list_item_dict.items()):
             item_row = self.list_taggedImages.row(item)
             self.list_taggedImages.item(item_row).setHidden(True)
 

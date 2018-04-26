@@ -85,8 +85,8 @@ if __name__=="__main__":
 
     # Usage example
     my_tags = get_all_tags()
-    print my_tags
+    print(my_tags)
 
     f = create_flight('SFU Surrey', 123, 'my_matrix')
-    print f.__dict__
+    print(f.__dict__)
     delete_flight(f)

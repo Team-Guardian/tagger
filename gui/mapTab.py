@@ -1,11 +1,11 @@
 from PyQt5 import QtWidgets, QtGui, QtCore
-from contour import Contour
+from .contour import Contour
 from db.models import Image
-from ui.ui_mapTab import Ui_MapTab
+from .ui.ui_mapTab import Ui_MapTab
 from gui.imageListItem import ImageListItem
 from utils.geolocate import geolocateLatLonFromPixelOnAreamap, geolocateLatLonFromPixelOnImage
 from utils.geographicUtilities import Point, PolygonBounds, getFrameBounds
-from mapContextMenu import MapContextMenu
+from .mapContextMenu import MapContextMenu
 
 class MapTab(QtWidgets.QWidget, Ui_MapTab):
     def __init__(self, parent=None):
@@ -142,14 +142,14 @@ class MapTab(QtWidgets.QWidget, Ui_MapTab):
         try:
             lat = float(self.line_latitude.text())
         except ValueError:
-            print 'Latitude is not a float'
+            print('Latitude is not a float')
             self.clearLatLonInputFields()
             self.unhideAllImages()
             return
         try:
             lon = float(self.line_longitude.text())
         except ValueError:
-            print 'Longitude is not a float'
+            print('Longitude is not a float')
             self.clearLatLonInputFields()
             self.unhideAllImages()
             return
@@ -228,14 +228,14 @@ class MapTab(QtWidgets.QWidget, Ui_MapTab):
 
     # Clear and reset routines
     def clearScene(self):
-        for item in self.viewer_map._scene.items():
+        for item in list(self.viewer_map._scene.items()):
             self.viewer_map._scene.removeItem(item)
 
     def removeCurrentContourFromScene(self):
         self.viewer_map._scene.removeItem(self.current_contour)
 
     def removeContoursFromScene(self):
-        for item in  self.viewer_map._scene.items():
+        for item in  list(self.viewer_map._scene.items()):
             if type(item) is Contour:
                 self.viewer_map._scene.removeItem(item)
 

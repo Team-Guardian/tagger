@@ -188,7 +188,7 @@ class Scale():
 
     # loop through all items shown in the scene and delete items that belong to Scale class
     def deleteScaleFromScene(self):
-        for item in self.graphics_view.getScene().items():
+        for item in list(self.graphics_view.getScene().items()):
             # TODO: add these items to the group and delete based on group attribute
             if item == self.horizontal_line or item == self.vertical_line_start or item == self.vertical_line_end or item == self.vertical_line_middle or item == self.distance_text_box:
                 self.graphics_view.getScene().removeItem(item)
@@ -218,7 +218,7 @@ class Scale():
         painter_device = QtGui.QPainter(saved_image)
         removed_items = self.prepareSceneForScaleCapture()
         if scene_cropping_rect is not None:
-            print scene_cropping_rect
+            print(scene_cropping_rect)
             self.graphics_view.getScene().render(painter_device, QtCore.QRectF(saved_image.rect()), QtCore.QRectF(scene_cropping_rect))
         else:
             self.graphics_view.getScene().render(painter_device)
@@ -228,7 +228,7 @@ class Scale():
 
     def prepareSceneForScaleCapture(self):
         removed_items = []
-        for item in self.graphics_view.getScene().items():
+        for item in list(self.graphics_view.getScene().items()):
             if item != self.horizontal_line and item != self.vertical_line_start and item != self.vertical_line_end and item != self.vertical_line_middle and item != self.distance_text_box:
                 self.graphics_view.getScene().removeItem(item)
                 removed_items.append(item)

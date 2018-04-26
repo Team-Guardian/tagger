@@ -31,4 +31,4 @@ class PhotoItem(QtWidgets.QGraphicsPixmapItem):
                     else:
                         signal.emit(data)
             else:
-                print 'Error: photoItem.py. Context menu is not set'
+                print('Error: photoItem.py. Context menu is not set')

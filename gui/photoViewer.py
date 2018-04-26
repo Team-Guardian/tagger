@@ -1,9 +1,9 @@
 # StackOverflow for the win! http://stackoverflow.com/questions/35508711/how-to-enable-pan-and-zoom-in-a-qgraphicsview
 
 from PyQt5 import QtCore, QtGui, QtWidgets
-from photoItem import PhotoItem
-from markerItem import MarkerItem
-from scale import Scale
+from .photoItem import PhotoItem
+from .markerItem import MarkerItem
+from .scale import Scale
 
 
 class PhotoViewer(QtWidgets.QGraphicsView):
@@ -63,7 +63,7 @@ class PhotoViewer(QtWidgets.QGraphicsView):
 
     def wheelEvent(self, event):
         marker_items = [] # List of all marker items in the current _scene
-        for item in self._scene.items():
+        for item in list(self._scene.items()):
             if type(item) == MarkerItem:
                 marker_items.append(item)
 

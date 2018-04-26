@@ -1,5 +1,5 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
-from tagDialog import ICON_DIRECTORY
+from .tagDialog import ICON_DIRECTORY
 from db.models import Marker, Image
 
 # This sub-class is used to display markers for targets.

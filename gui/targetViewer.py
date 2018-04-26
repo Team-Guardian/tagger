@@ -183,12 +183,12 @@ class TargetViewer(QtWidgets.QGraphicsView):
         self.relative_orientation = self.arc_span_angle
         self.orientation_defined_signal.emit(self.relative_orientation)
 
-        for item in self._scene.items():
+        for item in list(self._scene.items()):
             if item == self.center_ellipse or item == self.cursor_ellipse or item == self.vertical_reference_line or item == self.cursor_line or item == self.angle_arc or item == self.distance_text_box:
                 self._scene.removeItem(item)
 
     def deleteDynamicElementsFromScene(self):
-        for item in self._scene.items():
+        for item in list(self._scene.items()):
             if item == self.cursor_ellipse or item == self.cursor_line or item == self.angle_arc or item == self.distance_text_box:
                 self._scene.removeItem(item)
 

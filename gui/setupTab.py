@@ -4,8 +4,8 @@
 from PyQt5.QtCore import QDate
 
 # Custom modules
-from ui.ui_setupTab import Ui_SetupTab
-from interopCredentialPrompt import InteropCredentialPrompt
+from .ui.ui_setupTab import Ui_SetupTab
+from .interopCredentialPrompt import InteropCredentialPrompt
 from utils.imageInfo import *
 from db.dbHelper import *
 

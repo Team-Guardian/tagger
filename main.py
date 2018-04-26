@@ -32,7 +32,7 @@ class Controller():
         self.imageWatcher.event_handler.setNewImageAddedHandler(self.postNewImageDiscoveredByWatcherSignal)
 
         # populate lists
-        for flight in self.flights.values():
+        for flight in list(self.flights.values()):
             self.window.setupTab.addFlightToUi(flight)
 
         # All the signals are connected through the Controller class that acts as a hub

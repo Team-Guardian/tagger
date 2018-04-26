@@ -24,13 +24,13 @@ class TagContextMenu(QtWidgets.QMenu):
             self.default_action_handle.setVisible(False)
 
     def updateTagItem(self, tag_to_update):
-        for action, tag in self.action_data_dict.iteritems():
+        for action, tag in list(self.action_data_dict.items()):
             if tag == tag_to_update:
                 action.setText('{}, {}'.format(tag.type, tag.subtype))
 
     def removeTagItem(self, tag_to_remove):
         action_to_remove = None
-        for action, tag in self.action_data_dict.iteritems():
+        for action, tag in list(self.action_data_dict.items()):
             if tag == tag_to_remove:
                 action_to_remove = action
         if action_to_remove is not None:
@@ -63,7 +63,7 @@ class TagContextMenu(QtWidgets.QMenu):
         return default_action_handle
 
     def synchronizeWithDatabase(self):
-        for action, tag in self.action_data_dict.iteritems():
+        for action, tag in list(self.action_data_dict.items()):
             updated_tag = Tag.objects.get(pk=tag.pk)
             self.action_data_dict[action] = updated_tag
 

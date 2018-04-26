@@ -1,4 +1,4 @@
-from geolocate import geolocateLatLonFromPixelOnImage
+from .geolocate import geolocateLatLonFromPixelOnImage
 
 # Definitions and utilities for performing geographic operations.
 

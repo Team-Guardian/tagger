@@ -6,15 +6,15 @@ from PyQt5 import QtWidgets, QtGui, QtCore
 from PyQt5.QtWidgets import QDialog
 from PyQt5.QtGui import QPixmap
 from PyQt5.QtCore import QRect
-from ui.ui_taggingTab import Ui_TaggingTab
-from tagDialog import TagDialog
+from .ui.ui_taggingTab import Ui_TaggingTab
+from .tagDialog import TagDialog
 from db.dbHelper import *
 from django.db.models import Min
 from gui.interopTargetDialog import InteropTargetDialog
 from gui.imageListItem import ImageListItem
 from gui.tagTableItem import TagTableItem
 from gui.tagContextMenu import TagContextMenu
-from markerItem import MarkerItem
+from .markerItem import MarkerItem
 from utils.imageInfo import GetDirectoryAndFilenameFromFullPath, FLIGHT_DIRECTORY
 from utils.imageInfo import processNewImage
 from utils.geolocate import getPixelFromLatLon
@@ -436,7 +436,7 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab):
                 self.list_tags.setItem(rowIndex, TAG_TABLE_INDICES['COUNT'], TagTableItem(str(tag.num_occurrences), tag))
 
     def deleteMarkersFromUi(self, tag=None):
-        sceneObjects = self.viewer_single.getScene().items()
+        sceneObjects = list(self.viewer_single.getScene().items())
         for item in sceneObjects:
             if type(item) is MarkerItem:
                 if tag != None:
@@ -608,7 +608,7 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab):
             self.list_images.item(row_num).setHidden(False)
 
     def reviewedButtonToggled(self):
-        for image, item in self.image_list_item_dict.iteritems():
+        for image, item in self.image_list_item_dict.items():
             item_row = self.list_images.row(item)
             if image.is_reviewed:
                 self.list_images.item(item_row).setHidden(False)
@@ -616,7 +616,7 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab):
                 self.list_images.item(item_row).setHidden(True)
 
     def notReviewedButtonToggled(self):
-        for image, item in self.image_list_item_dict.iteritems():
+        for image, item in self.image_list_item_dict.items():
             item_row = self.list_images.row(item)
             if not image.is_reviewed:
                 self.list_images.item(item_row).setHidden(False)
@@ -735,16 +735,16 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab):
         for m in markers:
             tag = m.tag
             type_subtype = '{}_{}'.format(tag.type, tag.subtype)
-            if tags.has_key(type_subtype):
+            if type_subtype in tags:
                 tags[type_subtype] += 1
             else:
                 tags[type_subtype] = 1
 
         save_image_name = ''
-        for key, count in tags.iteritems():
+        for key, count in tags.items():
             save_image_name += key + '_' + str(count) + '_'
         save_image_name += self.currentImage.filename.split('.')[0]
-        print save_image_name
+        print(save_image_name)
 
         return save_image_name
 

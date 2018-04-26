@@ -5,10 +5,10 @@ from PyQt5.QtWidgets import QShortcut
 from PyQt5.QtGui import QKeySequence
 
 from gui.ui.ui_mainWindow import Ui_MainWindow
-from mapTab import MapTab
-from setupTab import SetupTab
-from taggingTab import TaggingTab
-from targetsTab import TargetsTab
+from .mapTab import MapTab
+from .setupTab import SetupTab
+from .taggingTab import TaggingTab
+from .targetsTab import TargetsTab
 from db.models import Image
 from utils.geolocate import geolocateLatLonFromPixelOnImage
 
