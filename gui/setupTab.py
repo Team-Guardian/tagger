@@ -150,16 +150,13 @@ class SetupTab(QtWidgets.QWidget, Ui_SetupTab):
     def disconnectFromInterop(self):
         self.interop_disconnect_signal.emit()
 
-    @QtCore.pyqtSlot(str, str, str, str)
     def processDialogAcceptedEvent(self, ip_address, port_number, username, password):
         # forward the information from the dialog window to the Controller to attempt Interop connection
         self.interop_connect_signal.emit(ip_address, port_number, username, password)
 
-    @QtCore.pyqtSlot()
     def processDialogRejectedEvent(self):
         self.interop_disconnect_signal.emit()
 
-    @QtCore.pyqtSlot()
     def processInteropConnectionError(self):
         self.disconnectFromInterop()
 

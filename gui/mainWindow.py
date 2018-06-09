@@ -64,7 +64,6 @@ class MainWindow(QtWidgets.QMainWindow):
 
         self.ui.tabWidget.currentChanged.connect(self.tabChangeHandler)
 
-    @QtCore.pyqtSlot()
     def processCurrentImageChanged(self):
         self.ui.actionSaveImage.setEnabled(True)
 

@@ -31,22 +31,18 @@ class TargetsTab(QtWidgets.QWidget, Ui_TargetsTab):
         self.viewer_targets._photo.setTabContextMenu(self.targets_tab_context_menu)
         self.button_exportTelemetry.clicked.connect(self.exportTelemetry)
 
-    @QtCore.pyqtSlot(Image)
     def processImageAdded(self, image):
         self.addImageToUi(image)
 
-    @QtCore.pyqtSlot(Tag)
     def processTagCreated(self, new_tag):
         self.addTagToUi(new_tag)
 
-    @QtCore.pyqtSlot(Tag)
     def processTagEdited(self, edited_tag):
         edited_tag_list_item = self.tag_list_item_dict.get(edited_tag)
         tag_name = '{}, {}'.format(edited_tag.type, edited_tag.subtype)
         edited_tag_list_item.setText(tag_name)
         self.list_tags.editItem(edited_tag_list_item)
 
-    @QtCore.pyqtSlot(Tag)
     def processTagDeleted(self, deleted_tag):
         deleted_tag_list_item = self.tag_list_item_dict.get(deleted_tag)
         deleted_tag_list_item_row = self.list_tags.row(deleted_tag_list_item)
@@ -54,19 +50,16 @@ class TargetsTab(QtWidgets.QWidget, Ui_TargetsTab):
         self.changeCurrentTagItemAfterTagDelete(deleted_tag_list_item_row)
         del self.tag_list_item_dict[deleted_tag]
 
-    @QtCore.pyqtSlot()
     def processGoToImageInTaggingTab(self):
         main_window = QtWidgets.QApplication.activeWindow()
         main_window.taggingTab.goToImage(self.current_image)
         main_window.ui.tabWidget.setCurrentIndex(TAB_INDICES['TAB_TAGGING'])
 
-    @QtCore.pyqtSlot(Tag)
     def processMarkerCreated(self, new_marker):
         markers_tag = new_marker.tag
         if self.current_tag == markers_tag:
             self.filterImages(markers_tag)
 
-    @QtCore.pyqtSlot(Tag)
     def processMarkerDeleted(self, deleted_marker):
         markers_tag = deleted_marker.tag
         if self.current_tag == markers_tag:

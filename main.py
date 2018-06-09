@@ -99,13 +99,11 @@ class Controller():
         self.window.new_image_discovered_by_watcher_signal.emit(path_to_image)
 
     # Handles image discovered event once the program enters the main thread
-    @QtCore.pyqtSlot(str)
     def processNewImageInWatchedFolder(self, path_to_image):
         image = processNewImage(path_to_image, self.currentFlight)
         if image is not None:
             self.processImageAdded(image)
 
-    @QtCore.pyqtSlot(str)
     def processFlightLoad(self, flight_id):
         self.resetWatcher()
         self.window.taggingTab.resetTab()
@@ -113,38 +111,31 @@ class Controller():
         self.window.mapTab.resetTab()
         self.loadFlight(flight_id)
 
-    @QtCore.pyqtSlot(str, Flight)
     def processFlightCreated(self, flight_id, flight):
         self.flights[flight_id] = flight
         self.window.setupTab.addFlightToUi(flight)
         self.processFlightLoad(flight_id)
 
-    @QtCore.pyqtSlot()
     def processReset(self):
         self.resetWatcher()
         self.window.resetTabs()
 
-    @QtCore.pyqtSlot(Tag)
     def processTagCreated(self, new_tag):
         self.tags.append(new_tag)
 
-    @QtCore.pyqtSlot(Tag)
     def processTagDeleted(self, deleted_tag):
         self.tags.remove(deleted_tag)
         delete_tag(deleted_tag)  # This also deletes all the markers associated with this tag (Cascaded delete)
 
-    @QtCore.pyqtSlot()
     def processEnableWatcher(self):
         if self.currentFlight is not None:
             self.window.setupTab.button_browseWatchDirectory.click()
             self.startWatcher()
 
-    @QtCore.pyqtSlot()
     def processDisableWatcher(self):
         self.resetWatcher()
 
 
-    @QtCore.pyqtSlot(str, str, str, str)
     def processInteropConnect(self, ip_address, port_number, username, password):
         server = '{}:{}'.format(ip_address, port_number)
         try:
@@ -168,7 +159,6 @@ class Controller():
 
             self.window.setupTab.checkbox_interopSupport.setCheckState(QtCore.Qt.Unchecked)
 
-    @QtCore.pyqtSlot()
     def processInteropDisconnect(self):
         if self.interop_client is not None:
             self.interop_client = None
@@ -176,11 +166,9 @@ class Controller():
         self.window.setupTab.button_interopConnect.setEnabled(True)
         self.window.setupTab.button_interopDisconnect.setEnabled(False)
 
-    @QtCore.pyqtSlot()
     def processInteropEnable(self):
         self.window.taggingTab.setInteropEnabled()
 
-    @QtCore.pyqtSlot()
     def processInteropDisable(self):
         if self.interop_client is not None:
             # delete the reference to the Client object to "close" the connection

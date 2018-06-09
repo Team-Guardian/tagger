@@ -96,7 +96,6 @@ class InteropTargetDialog(QtWidgets.QDialog, Ui_Dialog):
     def startDrawingOrientation(self):
         self.viewer_target.is_orientation_drawing_in_progress = True
 
-    @QtCore.pyqtSlot(float)
     def processOrientationDefined(self, relative_orientation):
         absolute_orientation = (self.image_yaw + relative_orientation) % 360 # can't be more than 360 degrees, loops around if more
 

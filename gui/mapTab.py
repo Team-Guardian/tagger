@@ -36,25 +36,21 @@ class MapTab(QtWidgets.QWidget, Ui_MapTab):
         self.list_allImages.currentItemChanged.connect(self.currentImageChanged)
 
     # paints contours on the map tab every second (approximate telemetry Rx rate)
-    @QtCore.pyqtSlot(Image)
     def processImageAdded(self, image):
         self.addImageToUi(image)
 
-    @QtCore.pyqtSlot()
     def processFindImages(self):
         point_pixel_x_coord = self.map_context_menu.pixel_x_invocation_coord
         point_pixel_y_coord = self.map_context_menu.pixel_y_invocation_coord
         point_lat, point_lon = self.geolocatePoint(point_pixel_x_coord, point_pixel_y_coord)
         self.findImagesContainingPoint(point_lat, point_lon)
 
-    @QtCore.pyqtSlot()
     def processCopyLatLon(self):
         point_pixel_x_coord = self.map_context_menu.pixel_x_invocation_coord
         point_pixel_y_coord = self.map_context_menu.pixel_y_invocation_coord
         point_lat, point_lon = self.geolocatePoint(point_pixel_x_coord, point_pixel_y_coord)
         self.copyPointLatLonToClipboard(point_lat, point_lon)
 
-    @QtCore.pyqtSlot()
     def processResetFilters(self):
         self.clearLatLonInputFields()
         self.unhideAllImages()
