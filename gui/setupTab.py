@@ -24,21 +24,24 @@ class SetupTab(QtWidgets.QWidget, Ui_SetupTab):
     def __init__(self):
         super(SetupTab, self).__init__()
 
-        self.setupUi(self)
-        self.connectButtons() #Enables button functionality
-
+        self.setupUi(self) # must be the first function call
+        
+        # set initial states and values
         self.checkbox_folderWatcher.setCheckState(QtCore.Qt.Checked)
         self.checkbox_interopSupport.setCheckState(QtCore.Qt.Unchecked)
+        
+        self.edit_flightDate.setDate(QDate.currentDate()) # set the date to the current date
+        
+        self.connectButtons()
         self.connectCheckboxes()
 
-        self.edit_flightDate.setDate(QDate.currentDate()) #Automatically sets the 'Date' under 'Create Flight' to the current date
-
+        # Todo: make this conditional on the availability of the Interop module
         self.interop_credentials_prompt = InteropCredentialPrompt()
         self.interop_credentials_prompt.dialog_accepted.connect(self.processDialogAcceptedEvent)
         self.interop_credentials_prompt.dialog_rejected.connect(self.processDialogRejectedEvent)
 
-    def connectButtons(self): #Map the button commands to their respective function.
-        self.button_loadFlight.clicked.connect(self.loadFlight) #These functions are defined below
+    def connectButtons(self): # map buttons to actions
+        self.button_loadFlight.clicked.connect(self.loadFlight)
         self.button_createFlight.clicked.connect(self.createFlight)
         self.button_selectAreaMap.clicked.connect(self.selectAreaMap)
         self.button_browseWatchDirectory.clicked.connect(self.selectWatchDirectory)
@@ -109,9 +112,11 @@ class SetupTab(QtWidgets.QWidget, Ui_SetupTab):
         self.line_areaMap.setText(filename)
 
     def selectWatchDirectory(self):
-        filepath = QtWidgets.QFileDialog.getExistingDirectory(self, "Select Directory to Watch", "../vision-system/")
+        filepath = QtWidgets.QFileDialog.getExistingDirectory(self, "Select Directory to Watch", "/home/") # can we set this to /home/$USER?
+
         if not filepath:
             return
+            
         self.line_watchDirectory.setText(filepath)
         self.enableSelectingAndCreatingFlights()
 
@@ -124,24 +129,30 @@ class SetupTab(QtWidgets.QWidget, Ui_SetupTab):
 
     def folderWatcherCheckboxPressed(self):
         folder_watcher_checkbox_state = self.checkbox_folderWatcher.checkState()
+
         if folder_watcher_checkbox_state == QtCore.Qt.Checked:
             self.disableSelectingAndCreatingFlights()
             self.enableSelectingWatcherFolder()
+
             self.turn_on_watcher_signal.emit()
         elif folder_watcher_checkbox_state == QtCore.Qt.Unchecked:
-            self.line_watchDirectory.setText('')
+            self.line_watchDirectory.setText("")
             self.enableSelectingAndCreatingFlights()
             self.disableSelectingWatcherFolder()
+
             self.turn_off_watcher_signal.emit()
 
     def interopSupportCheckboxPressed(self):
         interop_enable_checkbox_state = self.checkbox_interopSupport.checkState()
+
         if interop_enable_checkbox_state == QtCore.Qt.Checked:
             self.button_interopConnect.setEnabled(True)
+
             self.interop_enable_signal.emit()
         elif interop_enable_checkbox_state == QtCore.Qt.Unchecked:
             self.button_interopConnect.setEnabled(False)
             self.button_interopDisconnect.setEnabled(False)
+
             self.interop_disable_signal.emit()
 
     def connectToInterop(self):

@@ -27,7 +27,7 @@ class Controller():
         self.tags = []
         self.images = []
 
-        self.window = MainWindow()
+        self.window = MainWindow()  
         self.window.show()
         self.imageWatcher.event_handler.setNewImageAddedHandler(self.postNewImageDiscoveredByWatcherSignal)
 
