@@ -3,8 +3,8 @@ Getting Started
 
 By following the steps on this page, you will get your system ready for running and developing Tagger.
 
-Collect Dependencies
---------------------
+Collecting Dependencies
+-----------------------
 
 Tagger uses `Pipenv <https://docs.pipenv.org/>`_ to manage Python package dependencies. A tool inspired by packaging managers from other languages, Pipenv has an additional benefit of automatically creating and managing a virtual environment for your project to keep package dependencies isolated - you can read more about the tool in the :doc:`guide for developers <./for_developers>`.
 
