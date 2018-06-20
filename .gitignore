@@ -2,3 +2,5 @@
 .idea/
 flights/*
 *.log
+_build
+*.out
