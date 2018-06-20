@@ -27,8 +27,8 @@ sudo apt-get -y install libexiv2-dev libgdal-dev libboost-all-dev >> .install.lo
 sudo apt-get -y install postgresql pgadmin3 >> .install.log # install PostgreSQL database and PgAdmin GUI to work with it
 
 # collect and install python3 dependencies
-sudo apt-get -y install python-pip3 >> .install.log # install pip for python3 if not installed yet
-pip3 install --user pipenv >> .install.log # get dependencies manager pipenv, only install for current user
+sudo apt-get -y install python3-pip >> .install.log # install pip for python3 if not installed yet
+python3 -m pip install --user pipenv >> .install.log # get dependencies manager pipenv, only install for current user
 
 # temporarily modify path so bash knows where to find pipenv
 # path will stay changed for the current bash session
@@ -38,8 +38,11 @@ echo ">> PATH will be changed back when you close this terminal window and launc
 
 export PATH=$PATH:$HOME/.local/bin
 
-pipenv install setuptools >> .install.log # need it to install some packages
-pipenv install requests psycopg2 py3exiv2 watchdog numpy PyQt5 django >> .install.log # install python3 packages
+pipenv install # will list dependencies from the Pipfile
+
+# pipenv install setuptools >> .install.log # need it to install some packages
+# pipenv install requests psycopg2 py3exiv2 watchdog numpy PyQt5 django >> .install.log # install python3 packages
+# pipenv install pygdal==2.2.1.3 >> .install.log
 
 # [Not included for now, instead run `sudo apt-get install python3-gdal`]
 # ==========================================================================================================================
