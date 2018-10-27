@@ -13,7 +13,7 @@ cmd_subfolder = os.path.realpath(
     os.path.abspath(os.path.join(os.path.split(inspect.getfile(inspect.currentframe()))[0], "../interop/client/")))
 if cmd_subfolder not in sys.path:
     sys.path.insert(0, cmd_subfolder)
-from interop import client, types
+#from interop import client, types
 
 
 class Controller():
