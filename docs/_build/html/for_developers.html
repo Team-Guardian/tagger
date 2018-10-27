@@ -25,26 +25,19 @@
   
 
   
-  
     <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
-  
-
-  
-
-  
-        <link rel="index" title="Index"
-              href="genindex.html"/>
-        <link rel="search" title="Search" href="search.html"/>
-    <link rel="top" title="Tagger 0.1 documentation" href="index.html"/>
-        <link rel="next" title="Support" href="support.html"/>
-        <link rel="prev" title="FAQ" href="faq.html"/> 
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Support" href="support.html" />
+    <link rel="prev" title="FAQ" href="faq.html" /> 
 
   
   <script src="_static/js/modernizr.min.js"></script>
 
 </head>
 
-<body class="wy-body-for-nav" role="document">
+<body class="wy-body-for-nav">
 
    
   <div class="wy-grid-for-nav">
@@ -91,11 +84,27 @@
             
             
               <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="getting_started.html">Getting Started</a></li>
 <li class="toctree-l1"><a class="reference internal" href="changelog.html">Changelog</a></li>
 <li class="toctree-l1"><a class="reference internal" href="installing.html">Installing</a></li>
 <li class="toctree-l1"><a class="reference internal" href="faq.html">FAQs</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">For Developers</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#writing-documentation">Writing Documentation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#setup-tab">Setup Tab</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#what-it-shows">What it shows</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#what-controls-there-are">What controls there are</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#targets-tab">Targets Tab</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#what-information-it-shows">What information it shows</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#interface">Interface</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#map-tab">Map Tab</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id1">What it shows</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id2">What controls there are</a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="support.html">Support</a></li>
@@ -110,7 +119,7 @@
     <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
 
       
-      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+      <nav class="wy-nav-top" aria-label="top navigation">
         
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
           <a href="index.html">Tagger</a>
@@ -118,9 +127,10 @@
       </nav>
 
 
-      
       <div class="wy-nav-content">
+        
         <div class="rst-content">
+        
           
 
 
@@ -167,25 +177,93 @@
 <p>This section takes a deep dive into the internal workings of Tagger source. It is intended for developers looking to modify or add functionality to the application.</p>
 <div class="section" id="writing-documentation">
 <h2>Writing Documentation<a class="headerlink" href="#writing-documentation" title="Permalink to this headline">¶</a></h2>
-<p><strong>Dependencies</strong> This documentation is created with <a class="reference external" href="http://www.sphinx-doc.org/en/stable/index.html">Sphinx</a>. To make any changes to it, you will need to get Sphinx and ReadTheDocs theme on your machine. Both Sphinx and ReadTheDocs theme can be installed using Pip:</p>
+<p><strong>Dependencies.</strong> This documentation is created with <a class="reference external" href="http://www.sphinx-doc.org/en/stable/index.html">Sphinx</a>. To make any changes to it, you will need to get Sphinx and ReadTheDocs theme on your machine. Both Sphinx and ReadTheDocs theme can be installed using Pip:</p>
 <div class="highlight-bash"><div class="highlight"><pre><span></span>pip install Sphinx
 pip install sphinx_rtd_theme
 </pre></div>
 </div>
-<p>You’re now all set up to contribute to this documentation!</p>
-<p><strong>Documentation folder structure</strong> All the files are stored under <code class="docutils literal"><span class="pre">./documentation</span></code> in the Tagger source directory. Files ending with <code class="docutils literal"><span class="pre">.rst</span></code> are the ‘source files’ for documentation, written in reStructuredText. These files store all the content and special syntax that defines the appearance. You can find more information on reStructuredText <a class="reference external" href="https://brandons-sphinx-tutorial.readthedocs.io/en/latest/">in this tutorial</a>. From these source files, Sphinx generates a set of HTML files that are stored in <code class="docutils literal"><span class="pre">./documentation/_build/html</span></code>.</p>
-<p>Once you’ve finished making changes to any of the <code class="docutils literal"><span class="pre">.rst</span></code> files, you need to update HTML files with a simple command:</p>
+<p>You&#8217;re now all set up to contribute to this documentation!</p>
+<p><strong>Documentation folder structure.</strong> All the files are stored under <code class="docutils literal"><span class="pre">./documentation</span></code> in the Tagger source directory. Files ending with <code class="docutils literal"><span class="pre">.rst</span></code> are the &#8216;source files&#8217; for documentation, written in reStructuredText. These files store all the content and special syntax that defines the appearance. You can find more information on reStructuredText <a class="reference external" href="https://brandons-sphinx-tutorial.readthedocs.io/en/latest/">in this tutorial</a>. From these source files, Sphinx generates a set of HTML files that are stored in <code class="docutils literal"><span class="pre">./documentation/_build/html</span></code>.</p>
+<p>Once you&#8217;ve finished making changes to any of the <code class="docutils literal"><span class="pre">.rst</span></code> files, you need to update HTML files with a simple command:</p>
 <div class="highlight-bash"><div class="highlight"><pre><span></span>make html
 </pre></div>
 </div>
 </div>
+<div class="section" id="setup-tab">
+<h2>Setup Tab<a class="headerlink" href="#setup-tab" title="Permalink to this headline">¶</a></h2>
+<p>The setup tab is the first tab shown when starting up Tagger, and is primarily responsible for creating a new mission or loading an existing one. Since this is the first tab presented to the user, this is probably the best location to add features that the user would want to set before using the application. The full functionality of this tab is described below.</p>
+<div class="section" id="what-it-shows">
+<h3>What it shows<a class="headerlink" href="#what-it-shows" title="Permalink to this headline">¶</a></h3>
+<p><strong>General:</strong>
+At the top of the tab, we have access to viewing and changing the current watch directory, as well as enabling and disabling Interop connection and Folder watching.</p>
+<p><strong>Open Existing Flight:</strong>
+If a flight has previously been created, the user can select and load that previous flight here.</p>
+<p><strong>Create Flight:</strong>
+If no flights exist, a new flight can be created after defining a few details, including location, site elevation, etc.</p>
+</div>
+<div class="section" id="what-controls-there-are">
+<h3>What controls there are<a class="headerlink" href="#what-controls-there-are" title="Permalink to this headline">¶</a></h3>
+<p><strong>Add new flight:</strong>
+A new flight can be created after defining required variables, including the flight location, site elevation (MSL), current date, selecting the area map, and choosing the intrinsic matrix for the camera used.</p>
+<p><strong>Load previous flight:</strong>
+If a previous flight exists, it can be selected and loaded from a drop-down list here.</p>
+<p><strong>Select Watch Directory:</strong>
+Defining the Watch directory folder is required so that Tagger knows where to look when receiving new photos from the aircraft. This can be selected by browsing to the specified folder.</p>
+<p><strong>Enable Interop:</strong>
+Interop is the service through which Tagger communicates with the competition judges&#8217; servers. From here, we can connect or disconnect from the Interop server. For more information on the AUVSI SUAS Interop, check here: <a class="reference external" href="https://github.com/auvsi-suas/interop">https://github.com/auvsi-suas/interop</a></p>
+</div>
+</div>
+<div class="section" id="targets-tab">
+<h2>Targets Tab<a class="headerlink" href="#targets-tab" title="Permalink to this headline">¶</a></h2>
+<p>View all the images that contain a target in the <strong>Targets</strong> tab. This tab acts as a dashboard for tagging process, and thus features minimal controls.</p>
+<div class="section" id="what-information-it-shows">
+<h3>What information it shows<a class="headerlink" href="#what-information-it-shows" title="Permalink to this headline">¶</a></h3>
+<p>Information displayed in the Targets tab depends on <em>tags</em>, <em>markers</em>, and <em>images</em> stored in the database.</p>
+<p><strong>Tagged Images.</strong> Select a tag to see a list of images that contain the selected tag. An image appears on the list if:</p>
+<ul class="simple">
+<li>Image was marked with one or more instances of the selected tag;</li>
+<li>Geographic bounding box captured by the image encloses one or more existing instances of the selected tag;</li>
+</ul>
+<p><strong>Image Viewer.</strong> Select an image from the list to have it appear in the viewer pane.</p>
+<p><strong>Image Context Menu.</strong> Right-click on the image in the viewer pane to bring up the context menu. Through the context menu, you can:</p>
+<ul class="simple">
+<li>Go to the current image in the <strong>Tagging</strong> tab;</li>
+</ul>
+</div>
+<div class="section" id="interface">
+<h3>Interface<a class="headerlink" href="#interface" title="Permalink to this headline">¶</a></h3>
+<p>Targets tab must provide an interface to update the tab when a table in the database containing <em>tags</em>, <em>markers</em>, or <em>images</em> is changed. Updates are triggered by each of these events:</p>
+<ul class="simple">
+<li>New image has been added to the database;</li>
+<li>New tag was created;</li>
+<li>Tag was edited;</li>
+<li>Tag was deleted;</li>
+<li>New marker was created;</li>
+<li>Marker was deleted;</li>
+</ul>
+</div>
+</div>
+<div class="section" id="map-tab">
+<h2>Map Tab<a class="headerlink" href="#map-tab" title="Permalink to this headline">¶</a></h2>
+<p>The map tab displays an overview of the surrounding flight area, as well as displaying a visual representation of the area already covered by aerial photography. This provides a great overview of the current progress the drone has made in capturing images.</p>
+<div class="section" id="id1">
+<h3>What it shows<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h3>
+<p><strong>Map:</strong>
+A high-altitude view of the current flight area is displayed on the right side of the map tab, which also shows an overlay of the area covered by aerial photography. Moving the mouse over the map also displays the approximate latitude and longitude in the lower left corner of the Tagger window.</p>
+<p><strong>Images:</strong>
+A list of received images is shown on the left. (TODO: add details about what happens when you click these, etc)</p>
+</div>
+<div class="section" id="id2">
+<h3>What controls there are<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h3>
+<p><strong>Latitude and Longitude Search</strong>
+By inputting specified coordinates here, Tagger returns the list of images that contain those coordinates.</p>
+</div>
+</div>
 </div>
 
 
            </div>
-           <div class="articleComments">
-            
-           </div>
+           
           </div>
           <footer>
   
@@ -207,7 +285,7 @@ pip install sphinx_rtd_theme
 
     </p>
   </div>
-  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
 
 </footer>
 
@@ -226,6 +304,7 @@ pip install sphinx_rtd_theme
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
             VERSION:'0.1',
+            LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,
@@ -243,14 +322,11 @@ pip install sphinx_rtd_theme
     <script type="text/javascript" src="_static/js/theme.js"></script>
   
 
-  
-  
   <script type="text/javascript">
       jQuery(function () {
-          SphinxRtdTheme.StickyNav.enable();
+          SphinxRtdTheme.Navigation.enable(true);
       });
-  </script>
-   
+  </script> 
 
 </body>
 </html>

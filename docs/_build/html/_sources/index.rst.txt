@@ -13,8 +13,9 @@ Contents
 
 .. toctree::
 
-   changelog
-   installing
-   FAQs <faq>
-   For Developers <for_developers>
-   support
+    Getting Started <getting_started>
+    changelog
+    installing
+    FAQs <faq>
+    For Developers <for_developers>
+    support
