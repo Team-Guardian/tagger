@@ -50,16 +50,33 @@ class SetupTab(QtWidgets.QWidget, Ui_SetupTab):
         self.button_interopConnect.clicked.connect(self.connectToInterop)
         self.button_interopDisconnect.clicked.connect(self.disconnectFromInterop)
      
+    #Check items exist in flight drop down
+    def checkItemsExist():
+        # Take input
+        item_Flight = input()
+        if item_Flight = []:
+            return true
+        else:
+            return False
+   
     # Switch function for load button
     def switchButton_loadFlight():
-        if:
+        if checkItemsExist() = False:
             self.button_loadFlight.setEnabled(False)
+            print("tool tip")
             #Display tool tip
         else:
             self.button_loadFlight.setEnabled(True)
             
-      
-
+    # Check if all fields of function have some value to run create flight function.
+    def checkValuesExist():
+        #Take input
+        values_Flight = input()
+        if item_Flight = []:
+            return False
+        else:
+            createFlight()
+            
     def connectCheckboxes(self):
         self.checkbox_folderWatcher.stateChanged.connect(self.folderWatcherCheckboxPressed)
         self.checkbox_interopSupport.stateChanged.connect(self.interopSupportCheckboxPressed)
