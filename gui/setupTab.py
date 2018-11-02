@@ -49,6 +49,16 @@ class SetupTab(QtWidgets.QWidget, Ui_SetupTab):
 
         self.button_interopConnect.clicked.connect(self.connectToInterop)
         self.button_interopDisconnect.clicked.connect(self.disconnectFromInterop)
+     
+    # Switch function for load button
+    def switchButton_loadFlight():
+        if:
+            self.button_loadFlight.setEnabled(False)
+            #Display tool tip
+        else:
+            self.button_loadFlight.setEnabled(True)
+            
+      
 
     def connectCheckboxes(self):
         self.checkbox_folderWatcher.stateChanged.connect(self.folderWatcherCheckboxPressed)
