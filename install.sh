@@ -38,7 +38,7 @@ echo ">> PATH will be changed back when you close this terminal window and launc
 
 export PATH=$PATH:$HOME/.local/bin
 
-sudo apt-get install python3-gdal #Known issue with GDAL so this is a patch
+sudo apt-get -y install python3-gdal >> .install.log # Known issue with GDAL so this is a patch
 
 pipenv install # will list dependencies from the Pipfile
 
