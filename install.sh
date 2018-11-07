@@ -25,7 +25,7 @@ sudo apt-get -y install qttools5-dev-tools pyqt5-dev-tools >> .install.log # ins
 sudo apt-get -y install exiv2 libgdal20 >> .install.log # install packages that will be wrapped with python
 sudo apt-get -y install libexiv2-dev libgdal-dev libboost-all-dev >> .install.log # install headers for compiling packages
 sudo apt-get -y install postgresql pgadmin3 >> .install.log # install PostgreSQL database and PgAdmin GUI to work with it
-
+sudo apt-get -y install build-essential python-all-dev libboost-python-dev>> .install.log #install py3exiv2 prerequisites to build it locally
 # collect and install python3 dependencies
 sudo apt-get -y install python3-pip >> .install.log # install pip for python3 if not installed yet
 python3 -m pip install --user pipenv >> .install.log # get dependencies manager pipenv, only install for current user
@@ -37,6 +37,8 @@ echo ">> Modify PATH for the current session only to install dependencies for th
 echo ">> PATH will be changed back when you close this terminal window and launch another one";
 
 export PATH=$PATH:$HOME/.local/bin
+
+sudo apt-get install python3-gdal #Known issue with GDAL so this is a patch
 
 pipenv install # will list dependencies from the Pipfile
 

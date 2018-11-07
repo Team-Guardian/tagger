@@ -127,13 +127,13 @@
             "index": "pypi",
             "version": "==0.3.0"
         },
-        "pygdal": {
-            "hashes": [
-                "sha256:baa72ad3ea36b08148e62716b9ca62695d74e1bf27313971f8bf68223be18117"
-            ],
-            "index": "pypi",
-            "version": "==2.2.1.3"
-        },
+       # "pygdal": {
+       #     "hashes": [
+       #         "sha256:baa72ad3ea36b08148e62716b9ca62695d74e1bf27313971f8bf68223be18117"
+       #     ],
+       #     "index": "pypi",
+       #     "version": "==2.2.1.3"
+       # },
         "pyqt5": {
             "hashes": [
                 "sha256:1e652910bd1ffd23a3a48c510ecad23a57a853ed26b782cd54b16658e6f271ac",
