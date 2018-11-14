@@ -43,7 +43,11 @@ class SetupTab(QtWidgets.QWidget, Ui_SetupTab):
 
     def connectButtons(self): # map buttons to actions
 
-        self.button_loadFlight.clicked.connect(self.loadFlight)
+        if self.checkFlightsExist():
+            self.button_loadFlight.clicked.connect(self.loadFlight)
+        else:
+            self.button_loadFlight.setEnabled(False)
+
         self.button_createFlight.clicked.connect(self.createFlight)
         self.button_selectAreaMap.clicked.connect(self.selectAreaMap)
         self.button_browseWatchDirectory.clicked.connect(self.selectWatchDirectory)
@@ -52,32 +56,13 @@ class SetupTab(QtWidgets.QWidget, Ui_SetupTab):
         self.button_interopConnect.clicked.connect(self.connectToInterop)
         self.button_interopDisconnect.clicked.connect(self.disconnectFromInterop)
 
-        # Check items exist in flight drop down
-     def checkItemsExist():
-            # Take input
-            item_Flight = input()
-            if item_Flight =[]:
-                return True
-            else:
-                return False
-
-        # Switch function for load button
-     def switchButton_loadFlight():
-            if checkItemsExist() = False:
-                self.button_loadFlight.setEnabled(False)
-                print("tool tip")
-                # Display tool tip
-            else:
-                self.button_loadFlight.setEnabled(True)
-
-        # Check if all fields of function have some value to run create flight function.
-    def checkValuesExist():
-            # Take input
-            values_Flight = input()
-            if item_Flight =[]:
-                return False
-            else:
-                createFlight()
+    # Check items exist in flight drop down
+    def checkFlightsExist(self):
+        # Take input
+        if len(flights) > 0:
+            return True
+        else:
+            return False
 
     def connectCheckboxes(self):
         self.checkbox_folderWatcher.stateChanged.connect(self.folderWatcherCheckboxPressed)
@@ -103,35 +88,54 @@ class SetupTab(QtWidgets.QWidget, Ui_SetupTab):
     def loadFlight(self):
         self.flight_load_signal.emit(self.combo_flights.currentText())
 
-    def createFlight(self):
+    # Check if all fields of function have some value to run create flight function.
+    def checkValuesExist(self):
         location = self.line_locationName.text()
-        try:
-            elevation = float(self.line_siteElevation.text())
-        except ValueError:
-            exception_notification = QtWidgets.QMessageBox()
-            exception_notification.setIcon(QtWidgets.QMessageBox.Warning)
-            exception_notification.setText('Error: setupTab.py. Invalid elevation value; no flight created')
-            exception_notification.setWindowTitle('Error!')
-            exception_notification.setDetailedText('{}'.format(traceback.format_exc()))
-            exception_notification.exec_()
-            return
+        elevation = self.line_siteElevation.text()
         date_string = self.edit_flightDate.text()
-        date = datetime.datetime.strptime(date_string, '%Y-%m-%d').date()
         area_map = self.line_areaMap.text()
         intrinsic_matrix = self.line_intrinsicMatrix.text()
 
-        if AreaMap.objects.filter(name=area_map).exists(): # TODO: change this DB call
-            am = AreaMap.objects.filter(name=area_map).last()
+        if location == "" or elevation == "" or date_string == "" or area_map == "" or intrinsic_matrix == "":
+            return False
         else:
-            corners_geo = loadGeotiff('./area_maps/{}'.format(area_map))
-            am = create_areamap(area_map, '{}.png'.format(area_map), corners_geo[0][1], corners_geo[0][0],
-                                                             corners_geo[1][1], corners_geo[1][0],
-                                                             corners_geo[2][1], corners_geo[2][0],
-                                                             corners_geo[3][1], corners_geo[3][0])
+            return True
 
-        f = create_flight(location, elevation, intrinsic_matrix + '.xml', date, am)
-        flight_list_id = '{} {}'.format(f.location, str(f.date))
-        self.flight_create_signal.emit(flight_list_id, f)
+    def createFlight(self):
+        if self.checkValuesExist():
+            location = self.line_locationName.text()
+            try:
+                elevation = float(self.line_siteElevation.text())
+            except ValueError:
+                exception_notification = QtWidgets.QMessageBox()
+                exception_notification.setIcon(QtWidgets.QMessageBox.Warning)
+                exception_notification.setText('Error: setupTab.py. Invalid elevation value; no flight created')
+                exception_notification.setWindowTitle('Error!')
+                exception_notification.setDetailedText('{}'.format(traceback.format_exc()))
+                exception_notification.exec_()
+                return
+            date_string = self.edit_flightDate.text()
+            date = datetime.datetime.strptime(date_string, '%Y-%m-%d').date()
+            area_map = self.line_areaMap.text()
+            intrinsic_matrix = self.line_intrinsicMatrix.text()
+
+            if AreaMap.objects.filter(name=area_map).exists(): # TODO: change this DB call
+                am = AreaMap.objects.filter(name=area_map).last()
+            else:
+                corners_geo = loadGeotiff('./area_maps/{}'.format(area_map))
+                am = create_areamap(area_map, '{}.png'.format(area_map), corners_geo[0][1], corners_geo[0][0],
+                                                                 corners_geo[1][1], corners_geo[1][0],
+                                                                 corners_geo[2][1], corners_geo[2][0],
+                                                                 corners_geo[3][1], corners_geo[3][0])
+
+            f = create_flight(location, elevation, intrinsic_matrix + '.xml', date, am)
+            flight_list_id = '{} {}'.format(f.location, str(f.date))
+            self.flight_create_signal.emit(flight_list_id, f)
+        else:
+            None
+            # Find out which fields are blank
+            # Display PyQT Tool tip for the blank fields
+            # Maybe... change colour of text bar for the blank fields
 
     def selectAreaMap(self):
         filepath = QtWidgets.QFileDialog.getOpenFileName(self, "Select Area Map to Load", "./area_maps",
