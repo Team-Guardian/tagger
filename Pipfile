@@ -12,7 +12,7 @@ watchdog = "*"
 numpy = "*"
 "pyqt5" = "*"
 requests = "*"
-pygdal = "==2.2.1.3"
+#pygdal = "==2.2.1.3"
 
 [dev-packages]
 

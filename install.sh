@@ -19,13 +19,35 @@ fi
 # create a log file to make terminal output less noisy
 touch .install.log; > .install.log
 
+if command -v python3 &>/dev/null; then
+    echo ">> Python 3 is installed"
+else
+    echo ">> Would you like to install Python 3 and set Python 3.6 to default?";
+    echo -n "$MY_YESNO_PROMPT"
+    read confirm
+
+    if [ $confirm = "n" ] || [ $confirm = "N" ] || [ $confirm = "no" ] || [ $confirm = "No" ]
+    then
+       exit 0
+       break
+   else
+      # Install python3
+      sudo add-apt-repository ppa:jonathonf/python-3.6 >> .install.log
+      sudo apt-get -y update >> .install.log
+      sudo apt-get -y install python3.6 >> .install.log
+      sudo update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.5 1
+      sudo update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.6 2
+      sudo update-alternatives --config python3
+    fi
+fi
+
 # collect and install system dependencies
 sudo apt-get update >> .install.log # make sure we have the up-to-date package list
 sudo apt-get -y install qttools5-dev-tools pyqt5-dev-tools >> .install.log # install system packages for working with Qt5
 sudo apt-get -y install exiv2 libgdal20 >> .install.log # install packages that will be wrapped with python
 sudo apt-get -y install libexiv2-dev libgdal-dev libboost-all-dev >> .install.log # install headers for compiling packages
 sudo apt-get -y install postgresql pgadmin3 >> .install.log # install PostgreSQL database and PgAdmin GUI to work with it
-
+sudo apt-get -y install build-essential python-all-dev libboost-python-dev>> .install.log #install py3exiv2 prerequisites to build it locally
 # collect and install python3 dependencies
 sudo apt-get -y install python3-pip >> .install.log # install pip for python3 if not installed yet
 python3 -m pip install --user pipenv >> .install.log # get dependencies manager pipenv, only install for current user
@@ -37,6 +59,8 @@ echo ">> Modify PATH for the current session only to install dependencies for th
 echo ">> PATH will be changed back when you close this terminal window and launch another one";
 
 export PATH=$PATH:$HOME/.local/bin
+
+sudo apt-get -y install python3-gdal >> .install.log # Known issue with GDAL so this is a patch
 
 pipenv install # will list dependencies from the Pipfile
 
