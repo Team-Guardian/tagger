@@ -41,7 +41,10 @@ class SetupTab(QtWidgets.QWidget, Ui_SetupTab):
         self.interop_credentials_prompt.dialog_rejected.connect(self.processDialogRejectedEvent)
 
     def connectButtons(self): # map buttons to actions
-        self.button_loadFlight.clicked.connect(self.loadFlight)
+        if Flight == []:
+            self.button_loadFlight.setEnabled(False)
+        else:
+            self.button_loadFlight.setEnabled(True)
         self.button_createFlight.clicked.connect(self.createFlight)
         self.button_selectAreaMap.clicked.connect(self.selectAreaMap)
         self.button_browseWatchDirectory.clicked.connect(self.selectWatchDirectory)
