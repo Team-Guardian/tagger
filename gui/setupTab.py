@@ -77,35 +77,47 @@ class SetupTab(QtWidgets.QWidget, Ui_SetupTab):
     def loadFlight(self):
         self.flight_load_signal.emit(self.combo_flights.currentText())
 
-    def createFlight(self):
-        location = self.line_locationName.text()
-        try:
-            elevation = float(self.line_siteElevation.text())
-        except ValueError:
-            exception_notification = QtWidgets.QMessageBox()
-            exception_notification.setIcon(QtWidgets.QMessageBox.Warning)
-            exception_notification.setText('Error: setupTab.py. Invalid elevation value; no flight created')
-            exception_notification.setWindowTitle('Error!')
-            exception_notification.setDetailedText('{}'.format(traceback.format_exc()))
-            exception_notification.exec_()
-            return
+    def checkCreateFLightValue(self):
         date_string = self.edit_flightDate.text()
         date = datetime.datetime.strptime(date_string, '%Y-%m-%d').date()
         area_map = self.line_areaMap.text()
         intrinsic_matrix = self.line_intrinsicMatrix.text()
+        location = self.line_locationName.text()
 
-        if AreaMap.objects.filter(name=area_map).exists(): # TODO: change this DB call
-            am = AreaMap.objects.filter(name=area_map).last()
+        if len(date) == 0 or len(area_map) == 0 or len(intrinsic_matrix) == 0 or len(location) == 0:
+            return False
         else:
-            corners_geo = loadGeotiff('./area_maps/{}'.format(area_map))
-            am = create_areamap(area_map, '{}.png'.format(area_map), corners_geo[0][1], corners_geo[0][0],
+            try:
+                elevation = float(self.line_siteElevation.text())
+                return True
+            except ValueError:
+                return False
+
+    def createFlight(self):
+        self.checkCreateFLightValue()
+        if self.checkCreateFLightValue() == False:
+            exception_notification = QtWidgets.QMessageBox()
+            exception_notification.setIcon(QtWidgets.QMessageBox.Warning)
+            exception_notification.setText('Error: setupTab.py. Invalid values; no flight created')
+            exception_notification.setWindowTitle('Error!')
+            exception_notification.setDetailedText('{}'.format(traceback.format_exc()))
+            exception_notification.exec_()
+            return
+
+        elif self.checkCreateFLightValue() == True:
+
+            if AreaMap.objects.filter(name=self.area_map).exists(): # TODO: change this DB call
+                am = AreaMap.objects.filter(name=self.area_map).last()
+            else:
+                corners_geo = loadGeotiff('./area_maps/{}'.format(self.area_map))
+                am = create_areamap(self.area_map, '{}.png'.format(self.area_map), corners_geo[0][1], corners_geo[0][0],
                                                              corners_geo[1][1], corners_geo[1][0],
                                                              corners_geo[2][1], corners_geo[2][0],
                                                              corners_geo[3][1], corners_geo[3][0])
 
-        f = create_flight(location, elevation, intrinsic_matrix + '.xml', date, am)
-        flight_list_id = '{} {}'.format(f.location, str(f.date))
-        self.flight_create_signal.emit(flight_list_id, f)
+            f = create_flight(self.location, self.elevation, self.intrinsic_matrix + '.xml', self.date, am)
+            flight_list_id = '{} {}'.format(f.location, str(f.date))
+            self.flight_create_signal.emit(flight_list_id, f)
 
     def selectAreaMap(self):
         filepath = QtWidgets.QFileDialog.getOpenFileName(self, "Select Area Map to Load", "./area_maps",
