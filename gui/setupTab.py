@@ -84,7 +84,7 @@ class SetupTab(QtWidgets.QWidget, Ui_SetupTab):
         intrinsic_matrix = self.line_intrinsicMatrix.text()
         location = self.line_locationName.text()
 
-        if len(date) == 0 or len(area_map) == 0 or len(intrinsic_matrix) == 0 or len(location) == 0:
+        if len(str(date)) == 0 or len(area_map) == 0 or len(intrinsic_matrix) == 0 or len(location) == 0:
             return False
         else:
             try:
