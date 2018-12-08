@@ -52,7 +52,14 @@ exit
 ```
 sudo service postgresql restart
 ```
-## 7. You are all done! Run the tagger program.
+## 7. Creating Database Schema
+
+In in the root of the project folder **tagger**
+```
+python manage.py makemigrations
+python manage.py migrate
+```
+## 8. You are all done! Run the tagger program.
 ```
 python3 main.py
 ```
