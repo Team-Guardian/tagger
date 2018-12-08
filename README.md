@@ -54,7 +54,7 @@ sudo service postgresql restart
 ```
 ## 7. Creating Database Schema
 
-In in the root of the project folder **tagger**
+In the root of the project folder **tagger**
 ```
 python manage.py makemigrations
 python manage.py migrate
