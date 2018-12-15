@@ -1,55 +1,68 @@
 # How to Get This Package Working
 
-## 1. Installing All Dependencies
+## 1. Install Git package.
 ```
-sudo apt-get update
-sudo apt-get install qttools5-dev-tools python-pyqt5 postgresql python-psycopg2  python-pip pgadmin3 python-pyexiv2 python-numpy python-gdal pyqt5-dev-tools
-sudo -H pip install django
-sudo -H pip install setuptools
-sudo -H pip install watchdog
+sudo apt-get install git
 ```
-## 2. PostgreSQL Installation and Setup
+## 2. Clone Team-Guardian's Tagger repository.
+```
+git clone https://github.com/Team-Guardian/tagger.git
+```
+## 3. Change permission of the installation script.
+```
+chmod 755 install.sh
+```
+## 4. Run installation script for tagger.
+```
+./install.sh
+```
+## 5. Enter tagger's isolated environment.
+```
+sudo python3 -m pipenv shell
+```
+## 6. PostgreSQL Installation and Setup
 
-1. Open Terminal
+### 6.1. Open Terminal
 
 
-2. Log in as user postgres
+### 6.2. Log in as user postgres
 ```
 sudo -i -u postgres
 ```
-3. Run the postgreSQL terminal interface
+### 6.3. Run the postgreSQL terminal interface
 ```
 psql
 ```
-4. Change password of currently postgres user to *postgres*
+### 6.4. Change password of currently postgres user to *postgres*
 ```
 \password
 postgres
 postgres
 ```
-5. Create a new database called *tagger* and set owner to *postgres* user.
+### 6.5. Create a new database called *tagger* and set owner to *postgres* user.
 ```
 create database tagger with owner postgres;
 \q
 ```
-6. Log out
+### 6.6. Log out
 ```
 exit
 ```
-7. Restart postgreSQL service
+### 6.7. Restart postgreSQL service
 ```
 sudo service postgresql restart
 ```
+## 7. Creating Database Schema
 
-## 3. Creating Database Schema
-
-In in the root of the project folder **tagger**
+In the root of the project folder **tagger**
 ```
 python manage.py makemigrations
 python manage.py migrate
 ```
-## 4. Celebrate :beers: :beers:
-
+## 8. You are all done! Run the tagger program.
+```
+python3 main.py
+```
 # How to Set Up a Slave Tagger on a Local Area Network
 
 ## 1. Install dependencies
@@ -73,4 +86,3 @@ mkdir <path_to_tagger_repo>/remote_flights
 ```
 sshfs uav@gcs-vision.local:/home/uav/tagger/flights <path_to_tagger_repo>/remote_flights
 ```
-
