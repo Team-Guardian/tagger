@@ -1,7 +1,7 @@
 # loadGeotiff(...): http://gis.stackexchange.com/questions/57834/how-to-get-raster-corner-coordinates-using-python-gdal-bindings/57837#57837
 
 from math import degrees
-# from osgeo import gdal, osr
+from osgeo import gdal, osr
 import pyexiv2
 import ntpath
 import os
@@ -89,24 +89,24 @@ def getExifDataFromImage(path_to_image):
     return imageData
 
 def loadGeotiff(img_path):
-    # raster = '{}.tiff'.format(img_path)
-    # if not os.path.exists(raster):
-    #     raster = '{}.tif'.format(img_path)
-    # ds=gdal.Open(raster)
+    raster = '{}.tiff'.format(img_path)
+    if not os.path.exists(raster):
+        raster = '{}.tif'.format(img_path)
+    ds=gdal.Open(raster)
 
-    # gt=ds.GetGeoTransform()
-    # cols = ds.RasterXSize
-    # rows = ds.RasterYSize
-    # ext=GetExtent(gt,cols,rows)
+    gt=ds.GetGeoTransform()
+    cols = ds.RasterXSize
+    rows = ds.RasterYSize
+    ext=GetExtent(gt,cols,rows)
 
-    # src_srs=osr.SpatialReference()
-    # src_srs.ImportFromWkt(ds.GetProjection())
-    # #tgt_srs=osr.SpatialReference()
-    # #tgt_srs.ImportFromEPSG(4326)
-    # tgt_srs = src_srs.CloneGeogCS()
+    src_srs=osr.SpatialReference()
+    src_srs.ImportFromWkt(ds.GetProjection())
+    #tgt_srs=osr.SpatialReference()
+    #tgt_srs.ImportFromEPSG(4326)
+    tgt_srs = src_srs.CloneGeogCS()
 
-    # geo_ext=ReprojectCoords(ext,src_srs,tgt_srs)
-    geo_ext = [[0,0], [0,0], [0,0], [0,0]]
+    geo_ext=ReprojectCoords(ext,src_srs,tgt_srs)
+    #geo_ext = [[0,0], [0,0], [0,0], [0,0]]
     return geo_ext
 
 def GetExtent(gt,cols,rows):

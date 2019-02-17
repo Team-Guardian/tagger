@@ -11,6 +11,7 @@ from .taggingTab import TaggingTab
 from .targetsTab import TargetsTab
 from db.models import Image
 from utils.geolocate import geolocateLatLonFromPixelOnImage
+from .scale import Scale
 
 TAB_INDICES = {'TAB_SETUP': 0, 'TAB_TAGGING': 1, 'TAB_TARGETS': 2, 'TAB_MAP': 3}
 
@@ -64,6 +65,12 @@ class MainWindow(QtWidgets.QMainWindow):
 
         self.ui.tabWidget.currentChanged.connect(self.tabChangeHandler)
 
+        self.numClicks = 0
+        self.locList = []
+        self.locList.append([])
+        self.locList.append([])
+        self.x = Scale()
+
     def processCurrentImageChanged(self):
         self.ui.actionSaveImage.setEnabled(True)
 
@@ -88,6 +95,33 @@ class MainWindow(QtWidgets.QMainWindow):
                     lat, lon = self.mapTab.geolocatePoint(point.x(), point.y())
                     self.ui.statusbar.showMessage('x: %4d, y: %4d, lat: %-3.6f, lon: %-3.6f' % \
                                           (round(point.x()), round(point.y()), lat, lon))
+        if event.type() == QtCore.QEvent.MouseButtonDblClick:
+            if source is self.taggingTab.viewer_single.viewport():
+                if not self.taggingTab.viewer_single.isImageNull():
+                    point = self.taggingTab.viewer_single.mapToScene(event.pos())
+                    image = self.taggingTab.getCurrentImage()
+                    site_elevation = self.taggingTab.getCurrentFlight().reference_altitude
+                    if image:
+                        if (self.numClicks < 2):
+                            lat, lon = geolocateLatLonFromPixelOnImage(image, site_elevation, point.x(), point.y())
+                            print("Lat " + str(lat) + "     Lon " + str(lon))
+                            if self.numClicks == 0:
+                                self.locList[0].append(lat)
+                                self.locList[0].append(lon)
+                            if self.numClicks == 1:
+                                self.locList[1].append(lat)
+                                self.locList[1].append(lon)
+                                distance = Scale.distanceBetweenGeodeticCoordinates(self.x, self.locList[0][0],
+                                                                                    self.locList[0][1],
+                                                                                    self.locList[1][0],
+                                                                                    self.locList[1][1])
+                                print(distance)
+                            self.numClicks = self.numClicks + 1
+                        else:
+                            self.numClicks = 0
+                            self.locList[:] = []
+                            self.locList.append([])
+                            self.locList.append([])
 
         elif event.type() == QtCore.QEvent.MouseMove and event.buttons() == QtCore.Qt.LeftButton:
             self.taggingTab.viewer_single.updateScale()
