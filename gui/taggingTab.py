@@ -20,6 +20,11 @@ from utils.imageInfo import processNewImage
 from utils.geolocate import getPixelFromLatLon
 from utils.geographicUtilities import *
 
+# Measuring Shapes
+import numpy as np
+from numpy import linalg as LA
+from .scale import Scale
+
 # use this if you want to include modules from a subfolder
 import inspect
 cmd_subfolder = os.path.realpath(
@@ -39,8 +44,10 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab):
     current_image_changed_signal = QtCore.pyqtSignal()
     marker_created_signal = QtCore.pyqtSignal(Marker)
     image_manually_added_signal = QtCore.pyqtSignal(Image)
-
     interop_connection_error_signal = QtCore.pyqtSignal()
+    three_points_acquired_signal = QtCore.pyqtSignal()
+    circle_points_acquired_signal = QtCore.pyqtSignal()
+    trapezoid_points_acquired_signal = QtCore.pyqtSignal()
 
     def __init__(self):
         super(TaggingTab, self).__init__()
@@ -71,6 +78,11 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab):
         self.updateRadioButtonLabels()
 
         self.interop_target_dialog = InteropTargetDialog(self.enableTargetCropping)
+
+        self.measuring_button_clicked = False
+        self.num_points_needed = 0
+        self.double_click_loc = []
+        self.x = Scale()
 
     def setInteropEnabled(self):
         self.interop_enabled = True
@@ -126,6 +138,12 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab):
 
         self.button_toggleReviewed.clicked.connect(self.toggleImageReviewed)
         self.button_addImage.clicked.connect(self.addImage)
+
+        self.button_circle.clicked.connect(self.circleButtonToggled)
+        self.button_parallelogram.clicked.connect(self.threePointShapeButtonToggled)
+        self.button_square.clicked.connect(self.threePointShapeButtonToggled)
+        self.button_trapezoid.clicked.connect(self.trapezoidButtonToggled)
+        self.button_rectangle.clicked.connect(self.threePointShapeButtonToggled)
 
     def addTag(self):
         self.tag_dialog.setWindowTitle("Create tag")
@@ -761,3 +779,110 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab):
         if image_bounds.isPointInsideBounds(marker_loc):
             return True
         return False
+
+    def threePointShapeButtonToggled(self):
+        if self.measuring_button_clicked == False:
+            self.measuring_button_clicked = True
+            self.num_points_needed = 3
+            self.double_click_loc[:] = []
+            self.double_click_loc.append([])
+            self.double_click_loc.append([])
+            self.double_click_loc.append([])
+
+        else:
+            self.measuring_button_clicked = False
+            self.num_points_needed = 0
+            self.double_click_loc[:] = []
+
+    def circleButtonToggled(self):
+        if self.measuring_button_clicked == False:
+            self.measuring_button_clicked = True
+            self.num_points_needed = 2
+            self.double_click_loc[:] = []
+            self.double_click_loc.append([])
+            self.double_click_loc.append([])
+
+        else:
+            self.measuring_button_clicked = False
+            self.num_points_needed = 0
+            self.double_click_loc[:] = []
+
+    def trapezoidButtonToggled(self):
+        if self.measuring_button_clicked == False:
+            self.measuring_button_clicked = True
+            self.num_points_needed = 4
+            self.double_click_loc[:] = []
+            self.double_click_loc.append([])
+            self.double_click_loc.append([])
+            self.double_click_loc.append([])
+            self.double_click_loc.append([])
+
+        else:
+            self.measuring_button_clicked = False
+            self.num_points_needed = 0
+            self.double_click_loc[:] = []
+
+    def measureCrossProduct(self):
+        P1 = [self.double_click_loc[0][0], self.double_click_loc[0][1]]
+        P2 = [self.double_click_loc[1][0], self.double_click_loc[1][1]]
+        P3 = [self.double_click_loc[2][0], self.double_click_loc[2][1]]
+
+        P21 = [Scale.distanceBetweenGeodeticCoordinates(self.x, self.double_click_loc[0][0], 0,
+                                                        self.double_click_loc[1][0], 0),
+               Scale.distanceBetweenGeodeticCoordinates(self.x, 0, self.double_click_loc[0][1], 0,
+                                                        self.double_click_loc[1][1])]
+        P31 = [Scale.distanceBetweenGeodeticCoordinates(self.x, self.double_click_loc[1][0], 0,
+                                                        self.double_click_loc[2][0], 0),
+               Scale.distanceBetweenGeodeticCoordinates(self.x, 0, self.double_click_loc[1][1], 0,
+                                                        self.double_click_loc[2][1])]
+
+        Cross_Product = np.cross(P21, P31)
+        Area = LA.norm(Cross_Product)
+
+        print(f"Three points selected, P1 is {P1}, P2 is {P2}, P3 is {P3}.")
+        print(f"Area of the shape or magnitude of the cross product is {Area}\n")
+
+    def measureCircle(self):
+        P1 = [self.double_click_loc[0][0], self.double_click_loc[0][1]]
+        P2 = [self.double_click_loc[1][0], self.double_click_loc[1][1]]
+
+        P21 = [Scale.distanceBetweenGeodeticCoordinates(self.x, self.double_click_loc[0][0], 0,
+                                                        self.double_click_loc[1][0], 0),
+               Scale.distanceBetweenGeodeticCoordinates(self.x, 0, self.double_click_loc[0][1], 0,
+                                                        self.double_click_loc[1][1])]
+
+        Diameter = LA.norm(P21)
+        Area = (3.14/4)*(Diameter*Diameter)
+
+        print(f"Two points selected, P1 is {P1}, P2 is {P2}.")
+        print(f"Area of Circle is {Area}\n")
+
+    def measureTrapezoid(self):
+        P1 = [self.double_click_loc[0][0], self.double_click_loc[0][1]]
+        P2 = [self.double_click_loc[1][0], self.double_click_loc[1][1]]
+
+        P21 = [Scale.distanceBetweenGeodeticCoordinates(self.x, self.double_click_loc[0][0], 0,
+                                                        self.double_click_loc[1][0], 0),
+               Scale.distanceBetweenGeodeticCoordinates(self.x, 0, self.double_click_loc[0][1], 0,
+                                                        self.double_click_loc[1][1])]
+
+        first_side = LA.norm(P21)
+        print(f"Length of the first side is {first_side}.")
+
+        P3 = [self.double_click_loc[2][0], self.double_click_loc[2][1]]
+        P4 = [self.double_click_loc[3][0], self.double_click_loc[3][1]]
+
+        P43 = [Scale.distanceBetweenGeodeticCoordinates(self.x, self.double_click_loc[2][0], 0,
+                                                        self.double_click_loc[3][0], 0),
+               Scale.distanceBetweenGeodeticCoordinates(self.x, 0, self.double_click_loc[2][1], 0,
+                                                        self.double_click_loc[3][1])]
+
+        second_side = LA.norm(P43)
+        print(f"Length of the second side is {second_side}.")
+
+
+        height = P43[1] - P21[1]
+        print(f"The height is then {height}.")
+
+        Area = 0.5*(first_side + second_side)*height
+        print(f"Area of the Trapezoid is {Area}.\n")\

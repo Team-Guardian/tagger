@@ -79,6 +79,10 @@ class Controller():
         self.window.taggingTab.interop_target_dialog.accepted.connect(self.window.taggingTab.processInteropTargetDialogAccepted)
         self.window.taggingTab.interop_target_dialog.rejected.connect(self.window.taggingTab.processInteropTargetDialogRejected)
 
+        self.window.taggingTab.three_points_acquired_signal.connect(self.window.taggingTab.measureCrossProduct)
+        self.window.taggingTab.circle_points_acquired_signal.connect(self.window.taggingTab.measureCircle)
+        self.window.taggingTab.trapezoid_points_acquired_signal.connect(self.window.taggingTab.measureTrapezoid)
+
         self.window.taggingTab.interop_connection_error_signal.connect(self.window.setupTab.processInteropConnectionError, QtCore.Qt.DirectConnection)
 
         # from Targets Tab

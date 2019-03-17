@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'ui_taggingTab.ui'
 #
-# Created by: PyQt5 UI code generator 5.5.1
+# Created by: PyQt5 UI code generator 5.11.3
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -130,9 +130,32 @@ class Ui_TaggingTab(object):
         self.horizontalLayout.addLayout(self.layout_taggingControls)
         self.layout_taggingImage = QtWidgets.QVBoxLayout()
         self.layout_taggingImage.setObjectName("layout_taggingImage")
+        self.horizontalLayout_2 = QtWidgets.QHBoxLayout()
+        self.horizontalLayout_2.setObjectName("horizontalLayout_2")
+        spacerItem = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
+        self.horizontalLayout_2.addItem(spacerItem)
+        self.button_square = QtWidgets.QPushButton(TaggingTab)
+        self.button_square.setObjectName("button_square")
+        self.horizontalLayout_2.addWidget(self.button_square)
+        self.button_parallelogram = QtWidgets.QPushButton(TaggingTab)
+        self.button_parallelogram.setObjectName("button_parallelogram")
+        self.horizontalLayout_2.addWidget(self.button_parallelogram)
+        self.button_trapezoid = QtWidgets.QPushButton(TaggingTab)
+        self.button_trapezoid.setObjectName("button_trapezoid")
+        self.horizontalLayout_2.addWidget(self.button_trapezoid)
+        self.button_rectangle = QtWidgets.QPushButton(TaggingTab)
+        self.button_rectangle.setObjectName("button_rectangle")
+        self.horizontalLayout_2.addWidget(self.button_rectangle)
+        self.button_circle = QtWidgets.QPushButton(TaggingTab)
+        self.button_circle.setObjectName("button_circle")
+        self.horizontalLayout_2.addWidget(self.button_circle)
+        self.layout_taggingImage.addLayout(self.horizontalLayout_2)
+        self.verticalLayout_4 = QtWidgets.QVBoxLayout()
+        self.verticalLayout_4.setObjectName("verticalLayout_4")
         self.viewer_single = PhotoViewer(TaggingTab)
         self.viewer_single.setObjectName("viewer_single")
-        self.layout_taggingImage.addWidget(self.viewer_single)
+        self.verticalLayout_4.addWidget(self.viewer_single)
+        self.layout_taggingImage.addLayout(self.verticalLayout_4)
         self.horizontalLayout.addLayout(self.layout_taggingImage)
         self.horizontalLayout.setStretch(0, 1)
         self.horizontalLayout.setStretch(1, 3)
@@ -163,6 +186,11 @@ class Ui_TaggingTab(object):
         self.button_addImage.setText(_translate("TaggingTab", "Add Image"))
         self.button_toggleReviewed.setText(_translate("TaggingTab", "Mark as Reviewed"))
         self.button_toggleView.setText(_translate("TaggingTab", "Toggle View"))
+        self.button_square.setText(_translate("TaggingTab", "Square"))
+        self.button_parallelogram.setText(_translate("TaggingTab", "Parallelogram"))
+        self.button_trapezoid.setText(_translate("TaggingTab", "Trapezoid"))
+        self.button_rectangle.setText(_translate("TaggingTab", "Rectangle"))
+        self.button_circle.setText(_translate("TaggingTab", "Circle"))
 
 from gui.miniMap import MiniMap
 from gui.photoViewer import PhotoViewer
