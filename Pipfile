@@ -13,7 +13,7 @@ numpy = "*"
 "pyqt5" = "*"
 requests = "*"
 pygdal = "*"
-opencv3 = "*"
+
 
 [dev-packages]
 
