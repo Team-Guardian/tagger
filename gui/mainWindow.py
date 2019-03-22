@@ -15,6 +15,8 @@ from .scale import Scale
 
 TAB_INDICES = {'TAB_SETUP': 0, 'TAB_TAGGING': 1, 'TAB_TARGETS': 2, 'TAB_MAP': 3}
 
+#this is just a test - ron 
+
 
 class MainWindow(QtWidgets.QMainWindow):
 
