@@ -19,7 +19,7 @@ from utils.imageInfo import GetDirectoryAndFilenameFromFullPath, FLIGHT_DIRECTOR
 from utils.imageInfo import processNewImage
 from utils.geolocate import getPixelFromLatLon
 from utils.geographicUtilities import *
-
+from PyQt5.QtWidgets import QApplication, QWidget, QMessageBox
 # Measuring Shapes
 import numpy as np
 from numpy import linalg as LA
@@ -825,74 +825,62 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab):
             self.double_click_loc[:] = []
 
     def measureCrossProduct(self):
-        P1 = [self.double_click_loc[0][0], self.double_click_loc[0][1]]
-        P2 = [self.double_click_loc[1][0], self.double_click_loc[1][1]]
-        P3 = [self.double_click_loc[2][0], self.double_click_loc[2][1]]
 
-        P21 = [Scale.distanceBetweenGeodeticCoordinates(self.x, self.double_click_loc[0][0], 0,
+        P12 = [Scale.distanceBetweenGeodeticCoordinates(self.x, self.double_click_loc[0][0], 0,
                                                         self.double_click_loc[1][0], 0),
                Scale.distanceBetweenGeodeticCoordinates(self.x, 0, self.double_click_loc[0][1], 0,
                                                         self.double_click_loc[1][1])]
-        P31 = [Scale.distanceBetweenGeodeticCoordinates(self.x, self.double_click_loc[1][0], 0,
+        P13 = [Scale.distanceBetweenGeodeticCoordinates(self.x, self.double_click_loc[1][0], 0,
                                                         self.double_click_loc[2][0], 0),
                Scale.distanceBetweenGeodeticCoordinates(self.x, 0, self.double_click_loc[1][1], 0,
                                                         self.double_click_loc[2][1])]
 
-        Cross_Product = np.cross(P21, P31)
-        Area = LA.norm(Cross_Product)
+        crossProduct = np.cross(P12, P13)
+        area = LA.norm(crossProduct)
 
-        print(f"Three points selected, P1 is {P1}, P2 is {P2}, P3 is {P3}.")
-        print(f"Area of the shape or magnitude of the cross product is {Area}\n")
+        QMessageBox.about(self, "Cross Product Result ", f"Area of the shape or magnitude of the cross product is {area}m.")
 
     def measureCircle(self):
-        P1 = [self.double_click_loc[0][0], self.double_click_loc[0][1]]
-        P2 = [self.double_click_loc[1][0], self.double_click_loc[1][1]]
 
-        P21 = [Scale.distanceBetweenGeodeticCoordinates(self.x, self.double_click_loc[0][0], 0,
+        P12 = [Scale.distanceBetweenGeodeticCoordinates(self.x, self.double_click_loc[0][0], 0,
                                                         self.double_click_loc[1][0], 0),
                Scale.distanceBetweenGeodeticCoordinates(self.x, 0, self.double_click_loc[0][1], 0,
                                                         self.double_click_loc[1][1])]
 
-        Diameter = LA.norm(P21)
-        Area = (3.14/4)*(Diameter*Diameter)
+        diameter = LA.norm(P12)
+        area = (3.14/4)*(diameter*diameter)
 
-        print(f"Two points selected, P1 is {P1}, P2 is {P2}.")
-        print(f"Area of Circle is {Area}\n")
+        QMessageBox.about(self, "Circle Shape Result", f"Diameter is {diameter}m."
+                                                   f"Area of circle is {area}m.")
+
 
     def measureTrapezoid(self):
-        P1 = [self.double_click_loc[0][0], self.double_click_loc[0][1]]
-        P2 = [self.double_click_loc[1][0], self.double_click_loc[1][1]]
 
-        P21 = [Scale.distanceBetweenGeodeticCoordinates(self.x, self.double_click_loc[0][0], 0,
+        P12 = [Scale.distanceBetweenGeodeticCoordinates(self.x, self.double_click_loc[0][0], 0,
                                                         self.double_click_loc[1][0], 0),
                Scale.distanceBetweenGeodeticCoordinates(self.x, 0, self.double_click_loc[0][1], 0,
                                                         self.double_click_loc[1][1])]
 
-        first_side = LA.norm(P21)
-        print(f"Length of the first side is {first_side}.")
+        first_side = LA.norm(P12)
 
-        P3 = [self.double_click_loc[2][0], self.double_click_loc[2][1]]
-        P4 = [self.double_click_loc[3][0], self.double_click_loc[3][1]]
 
-        P43 = [Scale.distanceBetweenGeodeticCoordinates(self.x, self.double_click_loc[2][0], 0,
+        P34 = [Scale.distanceBetweenGeodeticCoordinates(self.x, self.double_click_loc[2][0], 0,
                                                         self.double_click_loc[3][0], 0),
                Scale.distanceBetweenGeodeticCoordinates(self.x, 0, self.double_click_loc[2][1], 0,
                                                         self.double_click_loc[3][1])]
 
-        P5 = [self.double_click_loc[4][0], self.double_click_loc[4][1]]
-        P6 = [self.double_click_loc[5][0], self.double_click_loc[5][1]]
 
-        P65 = [Scale.distanceBetweenGeodeticCoordinates(self.x, self.double_click_loc[4][0], 0,
+        P56 = [Scale.distanceBetweenGeodeticCoordinates(self.x, self.double_click_loc[4][0], 0,
                                                         self.double_click_loc[5][0], 0),
                Scale.distanceBetweenGeodeticCoordinates(self.x, 0, self.double_click_loc[4][1], 0,
                                                         self.double_click_loc[5][1])]
 
-        second_side = LA.norm(P43)
-        print(f"Length of the second side is {second_side}.")
+        second_side = LA.norm(P34)
+        height = LA.norm(P56)
+        area = 0.5*(first_side + second_side)*height
 
+        QMessageBox.about(self, "Trapezoid Area Result", f"Area of Trapezoid is {area}m.\n"
+                                                f"Length of first side is {first_side}m.\n"
+                                                f"Length of second side is {second_side}m.\n"
+                                                f"Height is {height}m.")
 
-        height = LA.norm(P65)
-        print(f"The height is then {height}.")
-
-        Area = 0.5*(first_side + second_side)*height
-        print(f"Area of the Trapezoid is {Area}.\n")\
