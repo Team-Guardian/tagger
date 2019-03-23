@@ -810,8 +810,10 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab):
     def trapezoidButtonToggled(self):
         if self.measuring_button_clicked == False:
             self.measuring_button_clicked = True
-            self.num_points_needed = 4
+            self.num_points_needed = 6
             self.double_click_loc[:] = []
+            self.double_click_loc.append([])
+            self.double_click_loc.append([])
             self.double_click_loc.append([])
             self.double_click_loc.append([])
             self.double_click_loc.append([])
@@ -877,11 +879,19 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab):
                Scale.distanceBetweenGeodeticCoordinates(self.x, 0, self.double_click_loc[2][1], 0,
                                                         self.double_click_loc[3][1])]
 
+        P5 = [self.double_click_loc[4][0], self.double_click_loc[4][1]]
+        P6 = [self.double_click_loc[5][0], self.double_click_loc[5][1]]
+
+        P65 = [Scale.distanceBetweenGeodeticCoordinates(self.x, self.double_click_loc[4][0], 0,
+                                                        self.double_click_loc[5][0], 0),
+               Scale.distanceBetweenGeodeticCoordinates(self.x, 0, self.double_click_loc[4][1], 0,
+                                                        self.double_click_loc[5][1])]
+
         second_side = LA.norm(P43)
         print(f"Length of the second side is {second_side}.")
 
 
-        height = P43[1] - P21[1]
+        height = LA.norm(P65)
         print(f"The height is then {height}.")
 
         Area = 0.5*(first_side + second_side)*height

@@ -12,6 +12,8 @@ from .targetsTab import TargetsTab
 from db.models import Image
 from utils.geolocate import geolocateLatLonFromPixelOnImage
 from .scale import Scale
+from PyQt5.QtGui import QPainter, QBrush, QPen
+from PyQt5.QtCore import Qt
 
 TAB_INDICES = {'TAB_SETUP': 0, 'TAB_TAGGING': 1, 'TAB_TARGETS': 2, 'TAB_MAP': 3}
 
@@ -110,7 +112,7 @@ class MainWindow(QtWidgets.QMainWindow):
                                 self.taggingTab.three_points_acquired_signal.emit()
                             elif self.taggingTab.num_points_needed == 2:
                                 self.taggingTab.circle_points_acquired_signal.emit()
-                            elif self.taggingTab.num_points_needed == 4:
+                            elif self.taggingTab.num_points_needed == 6:
                                 self.taggingTab.trapezoid_points_acquired_signal.emit()
                             self.taggingTab.measuring_button_clicked = False
                             self.numClicks = 0
