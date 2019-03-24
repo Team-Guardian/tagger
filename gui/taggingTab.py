@@ -836,9 +836,9 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab):
                                                         self.double_click_loc[2][1])]
 
         crossProduct = np.cross(P12, P13)
-        area = LA.norm(crossProduct)
+        area = np.around(LA.norm(crossProduct), decimals=3)
 
-        QMessageBox.about(self, "Cross Product Result ", f"Area of the shape or magnitude of the cross product is {area}m.")
+        QMessageBox.about(self, "Cross Product Result ", f"Area of the shape or magnitude of the cross product is {area} m.")
 
     def measureCircle(self):
 
@@ -847,11 +847,11 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab):
                Scale.distanceBetweenGeodeticCoordinates(self.x, 0, self.double_click_loc[0][1], 0,
                                                         self.double_click_loc[1][1])]
 
-        diameter = LA.norm(P12)
-        area = (3.14/4)*(diameter*diameter)
+        diameter = np.around(LA.norm(P12), decimals=3)
+        area = np.around((3.14/4)*(diameter*diameter), decimals=3)
 
-        QMessageBox.about(self, "Circle Shape Result", f"Diameter is {diameter}m."
-                                                   f"Area of circle is {area}m.")
+        QMessageBox.about(self, "Circle Shape Result", f"Diameter is {diameter} m.\n"
+                                                   f"Area of circle is {area} m.")
 
 
     def measureTrapezoid(self):
@@ -860,8 +860,6 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab):
                                                         self.double_click_loc[1][0], 0),
                Scale.distanceBetweenGeodeticCoordinates(self.x, 0, self.double_click_loc[0][1], 0,
                                                         self.double_click_loc[1][1])]
-
-        first_side = LA.norm(P12)
 
 
         P34 = [Scale.distanceBetweenGeodeticCoordinates(self.x, self.double_click_loc[2][0], 0,
@@ -875,12 +873,14 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab):
                Scale.distanceBetweenGeodeticCoordinates(self.x, 0, self.double_click_loc[4][1], 0,
                                                         self.double_click_loc[5][1])]
 
-        second_side = LA.norm(P34)
-        height = LA.norm(P56)
-        area = 0.5*(first_side + second_side)*height
+        first_side = np.around(LA.norm(P12), decimals=3)
+        second_side = np.around(LA.norm(P34), decimals=3)
+        height = np.around(LA.norm(P56), decimals=3)
 
-        QMessageBox.about(self, "Trapezoid Area Result", f"Area of Trapezoid is {area}m.\n"
-                                                f"Length of first side is {first_side}m.\n"
-                                                f"Length of second side is {second_side}m.\n"
-                                                f"Height is {height}m.")
+        area = np.around(0.5*(first_side + second_side)*height, decimals=3)
+
+        QMessageBox.about(self, "Trapezoid Area Result", f"Area of Trapezoid is {area} m.\n"
+                                                f"Length of first side is {first_side} m.\n"
+                                                f"Length of second side is {second_side} m.\n"
+                                                f"Height is {height} m.")
 
