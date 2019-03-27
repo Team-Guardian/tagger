@@ -838,7 +838,7 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab):
         crossProduct = np.cross(P12, P13)
         area = np.around(LA.norm(crossProduct), decimals=3)
 
-        QMessageBox.about(self, "Cross Product Result ", f"Area of the shape or magnitude of the cross product is {area} m.")
+        QMessageBox.about(self, "Cross Product Result ", f"Area of the shape or magnitude of the cross product is \n{area} m.")
 
     def measureCircle(self):
 
@@ -850,8 +850,8 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab):
         diameter = np.around(LA.norm(P12), decimals=3)
         area = np.around((3.14/4)*(diameter*diameter), decimals=3)
 
-        QMessageBox.about(self, "Circle Shape Result", f"Diameter is {diameter} m.\n"
-                                                   f"Area of circle is {area} m.")
+        QMessageBox.about(self, "Circle Shape Result", f"Diameter is \n{diameter} m.\n"
+                                                   f"Area of circle is \n{area} m.")
 
 
     def measureTrapezoid(self):
@@ -879,8 +879,8 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab):
 
         area = np.around(0.5*(first_side + second_side)*height, decimals=3)
 
-        QMessageBox.about(self, "Trapezoid Area Result", f"Area of Trapezoid is {area} m.\n"
-                                                f"Length of first side is {first_side} m.\n"
-                                                f"Length of second side is {second_side} m.\n"
-                                                f"Height is {height} m.")
+        QMessageBox.about(self, "Trapezoid Area Result", f"Area of Trapezoid is \n{area} m.\n"
+                                                f"Length of first side is \n{first_side} m.\n"
+                                                f"Length of second side is \n{second_side} m.\n"
+                                                f"Height is \n{height} m.")
 
