@@ -84,6 +84,9 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab):
         self.double_click_loc = []
         self.x = Scale()
 
+        self.taggerPath = '/home/ron/Desktop/tagger/areaLog.txt'
+
+
     def setInteropEnabled(self):
         self.interop_enabled = True
 
@@ -842,6 +845,7 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab):
             self.num_points_needed = 0
             self.double_click_loc[:] = []
 
+
     def measureCrossProduct(self):
 
         P12 = [Scale.distanceBetweenGeodeticCoordinates(self.x, self.double_click_loc[0][0], 0,
@@ -856,11 +860,17 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab):
         crossProduct = np.cross(P12, P13)
         area = np.around(LA.norm(crossProduct), decimals=3)
 
-        QMessageBox.about(self, "Cross Product Result ", f"Area: \n{area} m.\n"
-                                                         f"Area (15 degree tilt): \n{np.around(area*1.03407, decimals = 3)} m")
+        QMessageBox.about(self, 'Cross Product Result', f'Area: \n{area} m.\n')
+
 
         self.measuring_button_clicked = False
         self.setButtonsEnabled()
+
+        areaLog = open(self.taggerPath, 'a')
+        areaLog.write(f'{self.currentImage.filename}\n')
+        areaLog.write('Cross Product Area\n'f'Area: \n{area} m^2.\n\n')
+        areaLog.close()
+
 
     def measureCircle(self):
 
@@ -871,14 +881,20 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab):
 
         diameter = np.around(LA.norm(P12), decimals=3)
         area = np.around((3.14/4)*(diameter*diameter), decimals=3)
+        circumference = np.around((3.14*diameter), decimals=3)
 
-        QMessageBox.about(self, "Circle Shape Result", f"Diameter: \n{diameter} m.\n"
-                                                       f"Diameter (15 degree tilt): \n{np.around(diameter*1.03407, decimals = 3)} m.\n\n"
-                                                       f"Area: \n{area} m^2.\n"
-                                                       f"Area (15 degree tilt): \n{np.around(area*1.03407, decimals = 3)} m^2.")
+        QMessageBox.about(self, 'Circle Shape Result', f'Diameter: \n{diameter} m.\n 'f'Area: \n{area} m^2.\n'
+                                                       f'Circumference: \n{circumference} m.')
+
 
         self.measuring_button_clicked = False
         self.setButtonsEnabled()
+
+        areaLog = open(self.taggerPath, 'a')
+        areaLog.write(f'{self.currentImage.filename}\n')
+        areaLog.write('Circle Area\n'f'Diameter: \n{diameter} m.\n'f'Area: \n{area} m^2.\n'
+                                     f'Circumference: \n{circumference} m.\n\n')
+        areaLog.close()
 
 
     def measureTrapezoid(self):
@@ -906,11 +922,25 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab):
 
         area = np.around(0.5*(first_side + second_side)*height, decimals=3)
 
-        QMessageBox.about(self, "Trapezoid Area Result", f"Area of Trapezoid is \n{area} m.\n"
-                                                f"Length of first side is \n{first_side} m.\n"
-                                                f"Length of second side is \n{second_side} m.\n"
-                                                f"Height is \n{height} m.")
+        QMessageBox.about(self, 'Trapezoid Area Result', f'Area of Trapezoid is \n{area} m^2.\n'
+                                f'Length of first side is \n{first_side} m.\n'
+                                f'Length of second side is \n{second_side} m.\n'
+                                f'Height is \n{height} m.')
+
+
+
         self.measuring_button_clicked = False
         self.setButtonsEnabled()
+
+        areaLog = open(self.taggerPath, 'a')
+        areaLog.write(f'{self.currentImage.filename}\n')
+        areaLog.write('Trapezoid Area\n' f'Length of first side is \n{first_side} m.\n'
+                                         f'Length of second side is \n{second_side} m.\n'
+                                         f'Height is \n{height} m.\n'f'Area: \n{area} m^2\n\n')
+
+        areaLog.close()
+
+
+
 
 
