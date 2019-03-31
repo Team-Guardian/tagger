@@ -780,9 +780,24 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab):
             return True
         return False
 
+    def setButtonsDisabled(self):
+        self.button_rectangle.setEnabled(False)
+        self.button_square.setEnabled(False)
+        self.button_parallelogram.setEnabled(False)
+        self.button_circle.setEnabled(False)
+        self.button_trapezoid.setEnabled(False)
+
+    def setButtonsEnabled(self):
+        self.button_rectangle.setEnabled(True)
+        self.button_parallelogram.setEnabled(True)
+        self.button_square.setEnabled(True)
+        self.button_circle.setEnabled(True)
+        self.button_trapezoid.setEnabled(True)
+
     def threePointShapeButtonToggled(self):
         if self.measuring_button_clicked == False:
             self.measuring_button_clicked = True
+            self.setButtonsDisabled()
             self.num_points_needed = 3
             self.double_click_loc[:] = []
             self.double_click_loc.append([])
@@ -797,6 +812,7 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab):
     def circleButtonToggled(self):
         if self.measuring_button_clicked == False:
             self.measuring_button_clicked = True
+            self.setButtonsDisabled()
             self.num_points_needed = 2
             self.double_click_loc[:] = []
             self.double_click_loc.append([])
@@ -810,6 +826,7 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab):
     def trapezoidButtonToggled(self):
         if self.measuring_button_clicked == False:
             self.measuring_button_clicked = True
+            self.setButtonsDisabled()
             self.num_points_needed = 6
             self.double_click_loc[:] = []
             self.double_click_loc.append([])
@@ -818,6 +835,7 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab):
             self.double_click_loc.append([])
             self.double_click_loc.append([])
             self.double_click_loc.append([])
+
 
         else:
             self.measuring_button_clicked = False
@@ -838,7 +856,11 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab):
         crossProduct = np.cross(P12, P13)
         area = np.around(LA.norm(crossProduct), decimals=3)
 
-        QMessageBox.about(self, "Cross Product Result ", f"Area of the shape or magnitude of the cross product is \n{area} m.")
+        QMessageBox.about(self, "Cross Product Result ", f"Area: \n{area} m.\n"
+                                                         f"Area (15 degree tilt): \n{np.around(area*1.03407, decimals = 3)} m")
+
+        self.measuring_button_clicked = False
+        self.setButtonsEnabled()
 
     def measureCircle(self):
 
@@ -850,8 +872,13 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab):
         diameter = np.around(LA.norm(P12), decimals=3)
         area = np.around((3.14/4)*(diameter*diameter), decimals=3)
 
-        QMessageBox.about(self, "Circle Shape Result", f"Diameter is \n{diameter} m.\n"
-                                                   f"Area of circle is \n{area} m.")
+        QMessageBox.about(self, "Circle Shape Result", f"Diameter: \n{diameter} m.\n"
+                                                       f"Diameter (15 degree tilt): \n{np.around(diameter*1.03407, decimals = 3)} m.\n\n"
+                                                       f"Area: \n{area} m^2.\n"
+                                                       f"Area (15 degree tilt): \n{np.around(area*1.03407, decimals = 3)} m^2.")
+
+        self.measuring_button_clicked = False
+        self.setButtonsEnabled()
 
 
     def measureTrapezoid(self):
@@ -883,4 +910,7 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab):
                                                 f"Length of first side is \n{first_side} m.\n"
                                                 f"Length of second side is \n{second_side} m.\n"
                                                 f"Height is \n{height} m.")
+        self.measuring_button_clicked = False
+        self.setButtonsEnabled()
+
 
