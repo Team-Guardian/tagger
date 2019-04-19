@@ -95,8 +95,6 @@ class Controller():
 
         # creates Text File
 
-        self.areaLog = open('areaLog.txt', 'w')
-        self.areaLog.close()
 
     # pseudo-slot since non-QObject types cannot have signals and slots
     def processImageAdded(self, new_image):

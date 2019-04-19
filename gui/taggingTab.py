@@ -24,6 +24,7 @@ from PyQt5.QtWidgets import QApplication, QWidget, QMessageBox
 import numpy as np
 from numpy import linalg as LA
 from .scale import Scale
+import logging
 
 # use this if you want to include modules from a subfolder
 import inspect
@@ -84,7 +85,10 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab):
         self.double_click_loc = []
         self.x = Scale()
 
-        self.taggerPath = '/home/ron/Desktop/tagger/areaLog.txt'
+        self.areaLogFmt = '%(asctime)s: %(levelname)s: %(funcName)s %(message)s'
+        self.areaLogDateFmt = '%m/%d/%Y'
+        logging.basicConfig(level=logging.DEBUG, filename='./areaLog.log', format=self.areaLogFmt,
+                            datefmt=self.areaLogDateFmt)
 
 
     def setInteropEnabled(self):
@@ -866,10 +870,8 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab):
         self.measuring_button_clicked = False
         self.setButtonsEnabled()
 
-        areaLog = open(self.taggerPath, 'a')
-        areaLog.write(f'{self.currentImage.filename}\n')
-        areaLog.write('Cross Product Area\n'f'Area: \n{area} m^2.\n\n')
-        areaLog.close()
+        logging.info(f'\nfilename: {self.currentImage.filename}'
+                     '\nCross Product Area\n'f'Area: \n{area} m^2\n\n')
 
 
     def measureCircle(self):
@@ -890,11 +892,9 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab):
         self.measuring_button_clicked = False
         self.setButtonsEnabled()
 
-        areaLog = open(self.taggerPath, 'a')
-        areaLog.write(f'{self.currentImage.filename}\n')
-        areaLog.write('Circle Area\n'f'Diameter: \n{diameter} m.\n'f'Area: \n{area} m^2.\n'
-                                     f'Circumference: \n{circumference} m.\n\n')
-        areaLog.close()
+        logging.info(f'\nfilename: {self.currentImage.filename}'
+                     '\nCircle Area\n'f'Diameter: \n{diameter} m\n'f'Area: \n{area} m^2\n'
+                     f'Circumference: \n{circumference} m\n\n')
 
 
     def measureTrapezoid(self):
@@ -923,22 +923,19 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab):
         area = np.around(0.5*(first_side + second_side)*height, decimals=3)
 
         QMessageBox.about(self, 'Trapezoid Area Result', f'Area of Trapezoid is \n{area} m^2.\n'
-                                f'Length of first side is \n{first_side} m.\n'
-                                f'Length of second side is \n{second_side} m.\n'
-                                f'Height is \n{height} m.')
+                          f'Length of first side is \n{first_side} m.\n'
+                          f'Length of second side is \n{second_side} m.\n'
+                          f'Height is \n{height} m.')
 
 
 
         self.measuring_button_clicked = False
         self.setButtonsEnabled()
 
-        areaLog = open(self.taggerPath, 'a')
-        areaLog.write(f'{self.currentImage.filename}\n')
-        areaLog.write('Trapezoid Area\n' f'Length of first side is \n{first_side} m.\n'
-                                         f'Length of second side is \n{second_side} m.\n'
-                                         f'Height is \n{height} m.\n'f'Area: \n{area} m^2\n\n')
-
-        areaLog.close()
+        logging.info(f'\nfilename: {self.currentImage.filename}'
+                     '\nTrapezoid Area\n' f'Length of first side is \n{first_side} m\n'
+                     f'Length of second side is \n{second_side} m\n'
+                     f'Height is \n{height} m\n'f'Area: \n{area} m^2\n\n')
 
 
 
