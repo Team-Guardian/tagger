@@ -12,14 +12,10 @@ from .targetsTab import TargetsTab
 from db.models import Image
 from utils.geolocate import geolocateLatLonFromPixelOnImage
 from .scale import Scale
-from PyQt5.QtGui import QPainter, QBrush, QPen
-from PyQt5.QtCore import Qt
 
 TAB_INDICES = {'TAB_SETUP': 0, 'TAB_TAGGING': 1, 'TAB_TARGETS': 2, 'TAB_MAP': 3}
 
  
-
-
 class MainWindow(QtWidgets.QMainWindow):
 
     # signals originating from this module
@@ -74,6 +70,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def processCurrentImageChanged(self):
         self.ui.actionSaveImage.setEnabled(True)
+
 
     # handles events from widgets we have registered with
     # use installEventFilter() on a widget to register
