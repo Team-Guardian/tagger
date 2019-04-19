@@ -81,6 +81,7 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab):
         self.interop_target_dialog = InteropTargetDialog(self.enableTargetCropping)
 
         self.measuring_button_clicked = False
+        self.cancel_button_clicked = False
         self.num_points_needed = 0
         self.double_click_loc = []
         self.x = Scale()
@@ -89,7 +90,6 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab):
         self.areaLogDateFmt = '%m/%d/%Y'
         logging.basicConfig(level=logging.DEBUG, filename='./areaLog.log', format=self.areaLogFmt,
                             datefmt=self.areaLogDateFmt)
-
 
     def setInteropEnabled(self):
         self.interop_enabled = True
@@ -151,6 +151,7 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab):
         self.button_square.clicked.connect(self.threePointShapeButtonToggled)
         self.button_trapezoid.clicked.connect(self.trapezoidButtonToggled)
         self.button_rectangle.clicked.connect(self.threePointShapeButtonToggled)
+        self.button_CANCEL.clicked.connect(self.cancelButtonToggled)
 
     def addTag(self):
         self.tag_dialog.setWindowTitle("Create tag")
@@ -801,6 +802,13 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab):
         self.button_circle.setEnabled(True)
         self.button_trapezoid.setEnabled(True)
 
+    def cancelButtonToggled(self):
+        if self.cancel_button_clicked == False:
+            self.measuring_button_clicked = False
+            self.cancel_button_clicked = True
+            self.setButtonsEnabled()
+            self.double_click_loc[:] = []
+
     def threePointShapeButtonToggled(self):
         if self.measuring_button_clicked == False:
             self.measuring_button_clicked = True
@@ -843,7 +851,6 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab):
             self.double_click_loc.append([])
             self.double_click_loc.append([])
 
-
         else:
             self.measuring_button_clicked = False
             self.num_points_needed = 0
@@ -863,15 +870,26 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab):
 
         crossProduct = np.cross(P12, P13)
         area = np.around(LA.norm(crossProduct), decimals=3)
+        lengthP1toP2 = np.around(LA.norm(P12), decimals=3)
+        lengthP1toP3 = np.around(LA.norm(P13), decimals=3)
+        perimeter = np.around((2*lengthP1toP2 + 2*lengthP1toP3), decimals=3)
 
-        QMessageBox.about(self, 'Cross Product Result', f'Area: \n{area} m.\n')
+        QMessageBox.about(self, 'Cross Product',
+                          f'\nArea: \n{area} m'
+                          f'\nPerimeter: \n{perimeter} m'
+                          f'\nLength from P1 to P2: \n{lengthP1toP2} m'
+                          f'\nLength from P1 to P3: \n{lengthP1toP3} m')
 
 
         self.measuring_button_clicked = False
         self.setButtonsEnabled()
 
         logging.info(f'\nfilename: {self.currentImage.filename}'
-                     '\nCross Product Area\n'f'Area: \n{area} m^2\n\n')
+                     '\nCross Product'
+                     f'\nArea: \n{area} m^2'
+                     f'\nPerimeter: \n{perimeter} m'
+                     f'\nLength from P1 to P2: \n{lengthP1toP2} m'
+                     f'\nLength from P1 to P3: \n{lengthP1toP3} m \n\n')
 
 
     def measureCircle(self):
@@ -885,57 +903,85 @@ class TaggingTab(QtWidgets.QWidget, Ui_TaggingTab):
         area = np.around((3.14/4)*(diameter*diameter), decimals=3)
         circumference = np.around((3.14*diameter), decimals=3)
 
-        QMessageBox.about(self, 'Circle Shape Result', f'Diameter: \n{diameter} m.\n 'f'Area: \n{area} m^2.\n'
-                                                       f'Circumference: \n{circumference} m.')
+        QMessageBox.about(self, 'Circle',
+                          f'Diameter: \n{diameter} m'
+                          f'\nArea: \n{area} m^2'
+                          f'\nCircumference: \n{circumference} m')
 
 
         self.measuring_button_clicked = False
         self.setButtonsEnabled()
 
         logging.info(f'\nfilename: {self.currentImage.filename}'
-                     '\nCircle Area\n'f'Diameter: \n{diameter} m\n'f'Area: \n{area} m^2\n'
-                     f'Circumference: \n{circumference} m\n\n')
+                     '\nCircle'
+                     f'\nArea: \n{area} m^2'
+                     f'\nDiameter: \n{diameter} m'
+                     f'\nCircumference: \n{circumference} m\n\n')
 
 
     def measureTrapezoid(self):
 
-        P12 = [Scale.distanceBetweenGeodeticCoordinates(self.x, self.double_click_loc[0][0], 0,
-                                                        self.double_click_loc[1][0], 0),
-               Scale.distanceBetweenGeodeticCoordinates(self.x, 0, self.double_click_loc[0][1], 0,
-                                                        self.double_click_loc[1][1])]
+
+        P1 = Scale.distanceBetweenGeodeticCoordinates(self.x, self.double_click_loc[0][0], 0,
+                                                      self.double_click_loc[1][0], 0)
+        P2 = Scale.distanceBetweenGeodeticCoordinates(self.x, 0, self.double_click_loc[0][1], 0,
+                                                      self.double_click_loc[1][1])
 
 
-        P34 = [Scale.distanceBetweenGeodeticCoordinates(self.x, self.double_click_loc[2][0], 0,
-                                                        self.double_click_loc[3][0], 0),
-               Scale.distanceBetweenGeodeticCoordinates(self.x, 0, self.double_click_loc[2][1], 0,
-                                                        self.double_click_loc[3][1])]
+
+        P3 = Scale.distanceBetweenGeodeticCoordinates(self.x, self.double_click_loc[2][0], 0,
+                                                      self.double_click_loc[3][0], 0)
+        P4 = Scale.distanceBetweenGeodeticCoordinates(self.x, 0, self.double_click_loc[2][1], 0,
+                                                      self.double_click_loc[3][1])
 
 
-        P56 = [Scale.distanceBetweenGeodeticCoordinates(self.x, self.double_click_loc[4][0], 0,
-                                                        self.double_click_loc[5][0], 0),
-               Scale.distanceBetweenGeodeticCoordinates(self.x, 0, self.double_click_loc[4][1], 0,
-                                                        self.double_click_loc[5][1])]
 
-        first_side = np.around(LA.norm(P12), decimals=3)
-        second_side = np.around(LA.norm(P34), decimals=3)
+        P5 = Scale.distanceBetweenGeodeticCoordinates(self.x, self.double_click_loc[4][0], 0,
+                                                      self.double_click_loc[5][0], 0)
+        P6 = Scale.distanceBetweenGeodeticCoordinates(self.x, 0, self.double_click_loc[4][1], 0,
+                                                      self.double_click_loc[5][1])
+
+        # This below is for the Area calculations.
+        P12 = [P1, P2]
+        P34 = [P3, P4]
+        P56 = [P5, P6]
+
+        # This below is for the Perimeter calculations.
+        P13 = [P1, P3]
+        P24 = [P2, P4]
+
+
+        firstSide = np.around(LA.norm(P12), decimals=3)
+        secondSide = np.around(LA.norm(P34), decimals=3)
         height = np.around(LA.norm(P56), decimals=3)
+        lengthP1toP3 = np.around(LA.norm(P13), decimals=3)
+        lengthP2toP4 = np.around(LA.norm(P24), decimals=3)
 
-        area = np.around(0.5*(first_side + second_side)*height, decimals=3)
+        area = np.around(0.5*(firstSide + secondSide)*height, decimals=3)
+        perimeter = np.around(firstSide + secondSide + lengthP1toP3 + lengthP2toP4, decimals=3)
 
-        QMessageBox.about(self, 'Trapezoid Area Result', f'Area of Trapezoid is \n{area} m^2.\n'
-                          f'Length of first side is \n{first_side} m.\n'
-                          f'Length of second side is \n{second_side} m.\n'
-                          f'Height is \n{height} m.')
-
+        QMessageBox.about(self, 'Trapezoid',
+                          f'Area: \n{area} m^2'
+                          f'\nLength of first side: \n{firstSide} m'
+                          f'\nLength of second side: \n{secondSide} m'
+                          f'\nLength of P1 to P3: \n{lengthP1toP3} m'
+                          f'\nLength of P2 to P4: \n{lengthP2toP4} m'
+                          f'\nHeight: \n{height} m'
+                          f'\nPerimeter: \n{perimeter} m')
 
 
         self.measuring_button_clicked = False
         self.setButtonsEnabled()
 
         logging.info(f'\nfilename: {self.currentImage.filename}'
-                     '\nTrapezoid Area\n' f'Length of first side is \n{first_side} m\n'
-                     f'Length of second side is \n{second_side} m\n'
-                     f'Height is \n{height} m\n'f'Area: \n{area} m^2\n\n')
+                     '\nTrapezoid'
+                     f'\nArea: \n{area} m^2'
+                     f'\nLength of first side: \n{firstSide} m'
+                     f'\nLength of second side: \n{secondSide} m'
+                     f'\nLength of P1 to P3: \n{lengthP1toP3} m'
+                     f'\nLength of P2 to P4: \n{lengthP2toP4} m'
+                     f'\nHeight: \n{height} m'
+                     f'\nPerimeter: \n{perimeter} m\n\n')
 
 
 

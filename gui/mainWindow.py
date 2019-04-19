@@ -100,10 +100,14 @@ class MainWindow(QtWidgets.QMainWindow):
                     image = self.taggingTab.getCurrentImage()
                     site_elevation = self.taggingTab.getCurrentFlight().reference_altitude
                     if image:
+                        if self.taggingTab.cancel_button_clicked == True:
+                            self.numClicks = 0
+                            self.taggingTab.cancel_button_clicked = False
                         point = self.taggingTab.viewer_single.mapToScene(event.pos())
                         lat, lon = geolocateLatLonFromPixelOnImage(image, site_elevation, point.x(), point.y())
                         self.taggingTab.double_click_loc[self.numClicks].append(lat)
                         self.taggingTab.double_click_loc[self.numClicks].append(lon)
+
                         if self.numClicks == self.taggingTab.num_points_needed - 1:
                             if self.taggingTab.num_points_needed == 3:
                                 self.taggingTab.three_points_acquired_signal.emit()
