@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<!-- Intrinsic matrix values. K values are the Distortion Coefficients. A,b,c values are the camera matrix values. A is first row, B is second row,
+c is third row. The data is in "Camera Intrinsic Parameters" on google drive. -->  
+
+<data>
+
+  <resolution camera = "FLIR BlackFlyS Mono" x="5472" y="3648" fl="0.0125">
+        <a>5303.8627</a>
+        <a>8.4562</a>
+        <a>28889.0284</a>
+            
+        <b>0</b>
+        <b>5320.3303</b>
+        <b>1932.7675</b>
+            
+        <c>0</c>
+        <c>0</c>
+        <c>1</c>
+            
+        <k k1="-0.1807" k2="0.0810" k3="0.00873" k4="0.0005" k5="0.004"></k>
+    </resolution>
+
+</data>
