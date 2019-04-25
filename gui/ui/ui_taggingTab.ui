@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1498</width>
-    <height>856</height>
+    <height>894</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -264,6 +264,13 @@
           </size>
          </property>
         </spacer>
+       </item>
+       <item>
+        <widget class="QPushButton" name="button_CANCEL">
+         <property name="text">
+          <string>CANCEL</string>
+         </property>
+        </widget>
        </item>
        <item>
         <widget class="QPushButton" name="button_square">

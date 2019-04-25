@@ -15,7 +15,7 @@ from .scale import Scale
 
 TAB_INDICES = {'TAB_SETUP': 0, 'TAB_TAGGING': 1, 'TAB_TARGETS': 2, 'TAB_MAP': 3}
 
-
+ 
 class MainWindow(QtWidgets.QMainWindow):
 
     # signals originating from this module
@@ -71,6 +71,7 @@ class MainWindow(QtWidgets.QMainWindow):
     def processCurrentImageChanged(self):
         self.ui.actionSaveImage.setEnabled(True)
 
+
     # handles events from widgets we have registered with
     # use installEventFilter() on a widget to register
     def eventFilter(self, source, event):
@@ -99,16 +100,20 @@ class MainWindow(QtWidgets.QMainWindow):
                     image = self.taggingTab.getCurrentImage()
                     site_elevation = self.taggingTab.getCurrentFlight().reference_altitude
                     if image:
+                        if self.taggingTab.cancel_button_clicked == True:
+                            self.numClicks = 0
+                            self.taggingTab.cancel_button_clicked = False
                         point = self.taggingTab.viewer_single.mapToScene(event.pos())
                         lat, lon = geolocateLatLonFromPixelOnImage(image, site_elevation, point.x(), point.y())
                         self.taggingTab.double_click_loc[self.numClicks].append(lat)
                         self.taggingTab.double_click_loc[self.numClicks].append(lon)
+
                         if self.numClicks == self.taggingTab.num_points_needed - 1:
                             if self.taggingTab.num_points_needed == 3:
                                 self.taggingTab.three_points_acquired_signal.emit()
                             elif self.taggingTab.num_points_needed == 2:
                                 self.taggingTab.circle_points_acquired_signal.emit()
-                            elif self.taggingTab.num_points_needed == 4:
+                            elif self.taggingTab.num_points_needed == 6:
                                 self.taggingTab.trapezoid_points_acquired_signal.emit()
                             self.taggingTab.measuring_button_clicked = False
                             self.numClicks = 0

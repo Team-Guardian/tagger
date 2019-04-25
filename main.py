@@ -93,6 +93,9 @@ class Controller():
         self.window.mapTab.map_context_menu.copy_latitude_longitude_signal.connect(self.window.mapTab.processCopyLatLon)
         self.window.mapTab.map_context_menu.reset_filters_signal.connect(self.window.mapTab.processResetFilters)
 
+        # creates Text File
+
+
     # pseudo-slot since non-QObject types cannot have signals and slots
     def processImageAdded(self, new_image):
         self.images.append(new_image)

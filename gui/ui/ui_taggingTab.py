@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'ui_taggingTab.ui'
 #
-# Created by: PyQt5 UI code generator 5.11.3
+# Created by: PyQt5 UI code generator 5.10.1
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -11,7 +11,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_TaggingTab(object):
     def setupUi(self, TaggingTab):
         TaggingTab.setObjectName("TaggingTab")
-        TaggingTab.resize(1498, 856)
+        TaggingTab.resize(1498, 894)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
@@ -134,6 +134,9 @@ class Ui_TaggingTab(object):
         self.horizontalLayout_2.setObjectName("horizontalLayout_2")
         spacerItem = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
         self.horizontalLayout_2.addItem(spacerItem)
+        self.button_CANCEL = QtWidgets.QPushButton(TaggingTab)
+        self.button_CANCEL.setObjectName("button_CANCEL")
+        self.horizontalLayout_2.addWidget(self.button_CANCEL)
         self.button_square = QtWidgets.QPushButton(TaggingTab)
         self.button_square.setObjectName("button_square")
         self.horizontalLayout_2.addWidget(self.button_square)
@@ -186,6 +189,7 @@ class Ui_TaggingTab(object):
         self.button_addImage.setText(_translate("TaggingTab", "Add Image"))
         self.button_toggleReviewed.setText(_translate("TaggingTab", "Mark as Reviewed"))
         self.button_toggleView.setText(_translate("TaggingTab", "Toggle View"))
+        self.button_CANCEL.setText(_translate("TaggingTab", "CANCEL"))
         self.button_square.setText(_translate("TaggingTab", "Square"))
         self.button_parallelogram.setText(_translate("TaggingTab", "Parallelogram"))
         self.button_trapezoid.setText(_translate("TaggingTab", "Trapezoid"))
@@ -194,3 +198,13 @@ class Ui_TaggingTab(object):
 
 from gui.miniMap import MiniMap
 from gui.photoViewer import PhotoViewer
+
+if __name__ == "__main__":
+    import sys
+    app = QtWidgets.QApplication(sys.argv)
+    TaggingTab = QtWidgets.QWidget()
+    ui = Ui_TaggingTab()
+    ui.setupUi(TaggingTab)
+    TaggingTab.show()
+    sys.exit(app.exec_())
+
